@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "1023390029011",
+    "project_id": "byop-9392c"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1023390029011:android:addac6b8c4115cb1",
+        "android_client_info": {
+          "package_name": "gsoc.google.com.byop"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1023390029011-nhu6d7ebc0is8lasgsqdjlgurb80e2qk.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "gsoc.google.com.byop",
+            "certificate_hash": "9BB6F502589A2CA3500E15EF3DE8F2FB7DEF163B"
+          }
+        },
+        {
+          "client_id": "1023390029011-07548pap7rfkmmv6390h7o62fatpkjin.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCZjXcOchbPe3YL7RxhXgShl26I_My01gw"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 1
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
