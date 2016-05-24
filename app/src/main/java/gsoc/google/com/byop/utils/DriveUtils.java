@@ -8,7 +8,6 @@ import com.google.android.gms.drive.Drive;
 import com.google.android.gms.drive.DriveApi;
 import com.google.android.gms.drive.DriveFolder;
 import com.google.android.gms.drive.DriveId;
-import com.google.android.gms.drive.DriveResource;
 import com.google.android.gms.drive.Metadata;
 import com.google.android.gms.drive.MetadataBuffer;
 import com.google.android.gms.drive.MetadataChangeSet;
@@ -30,7 +29,7 @@ public class DriveUtils {
         final DriveId[] dId = {null};
         if (parentId != null && titl != null) try {
             ArrayList<Filter> fltrs = new ArrayList<>();
-           // fltrs.add(Filters.in(SearchableField.PARENTS, parentId));
+            fltrs.add(Filters.in(SearchableField.PARENTS, parentId));
             fltrs.add(Filters.eq(SearchableField.TITLE, titl));
             fltrs.add(Filters.eq(SearchableField.MIME_TYPE, "application/vnd.google-apps.folder"));
             Query qry = new Query.Builder().addFilter(Filters.and(fltrs)).build();
@@ -40,20 +39,20 @@ public class DriveUtils {
 
                 @Override
                 public void onResult(DriveApi.MetadataBufferResult result) {
-                    if(result.getStatus().isSuccess()){
+                    if (result.getStatus().isSuccess()) {
                         boolean isFound = false;
-                        for(Metadata m : result.getMetadataBuffer()) {
-                            if(!isFound) {
+                        for (Metadata m : result.getMetadataBuffer()) {
+                            if (!isFound) {
                                 if (!m.isTrashed() && m.getTitle().equals(titl)) {
-                                     //Folder exists"
+                                    //Folder exists
                                     isFound = true;
                                     dId[0] = m.getDriveId();
                                 }
                             }
                         }
 
-                        if(!isFound) {
-                          //Folder not found; creating it.
+                        if (!isFound) {
+                            //Folder not found; creating it.
                             MetadataChangeSet changeSet = new MetadataChangeSet.Builder().setTitle(titl).build();
 
                             Drive.DriveApi.getRootFolder(googleApiClient)
@@ -65,7 +64,7 @@ public class DriveUtils {
                                                 Toast.makeText(folderListFragment.getActivity(), "FAIL", Toast.LENGTH_LONG).show();
                                             } else {
                                                 dId[0] = result.getDriveFolder().getDriveId();
-                                                Toast.makeText(folderListFragment.getActivity(),"Created a folder: " + result.getDriveFolder().getDriveId(),Toast.LENGTH_LONG).show();
+                                                Toast.makeText(folderListFragment.getActivity(), "Created a folder: " + result.getDriveFolder().getDriveId(), Toast.LENGTH_LONG).show();
                                             }
                                         }
                                     });
@@ -75,7 +74,9 @@ public class DriveUtils {
                 }
 
             });
-        } catch (Exception e) { e.printStackTrace(); }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return dId[0];
     }
 }
