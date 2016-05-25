@@ -8,23 +8,6 @@
     android:weightSum="4"
     tools:context=".ui.main.SignInActivity">
 
-<!--
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
-        <include
-            android:id="@+id/toolbar"
-            layout="@layout/actionbar"/>
-        <FrameLayout
-            android:id="@+id/mainFragment"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-        </FrameLayout>
-        </LinearLayout>-->
-
-
         <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
