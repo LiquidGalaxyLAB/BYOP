@@ -522,6 +522,16 @@ public class FolderListFragment extends Fragment implements GoogleApiClient.Conn
                 }
             });
 
+
+            MenuItem editItem =  menu.add(0, v.getId(), 0, R.string.context_menu_edit);
+            editItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener(){
+                @Override
+                public boolean onMenuItemClick(MenuItem item) {
+                    RenameDocumentFragment renameDocumentFragment = RenameDocumentFragment.newInstance(fileResourceId,documentTitle.getText().toString());
+                    fragmentStackManager.loadFragment(renameDocumentFragment, R.id.main_layout);
+                    return true;
+                }
+            });
         }
     }
 

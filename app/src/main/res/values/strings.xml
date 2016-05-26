@@ -66,4 +66,8 @@
     <string name="yes">Yes</string>
     <string name="no">No</string>
     <string name="empty_name_error">The name must not be empty</string>
+
+    <!--Rename Document-->
+    <string name="context_menu_edit">Rename</string>
+    <string name="edit_document_header">Rename Document</string>
 </resources>
