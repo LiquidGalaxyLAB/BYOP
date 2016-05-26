@@ -281,11 +281,11 @@ public class CreateDocumentFragment extends Fragment  implements GoogleApiClient
          */
         private void createFile() throws IOException {
             File fileMetadata = new File();
-            fileMetadata.setName(this.documentName);
+            fileMetadata.setName(this.documentName+".xml");
             List<String> parents = new ArrayList<String>();
             parents.add(this.folderId);
             fileMetadata.setParents(parents);
-            fileMetadata.setMimeType("text/plain");
+            fileMetadata.setMimeType("text/xml");
 
             FileContent xmlSkeleton = addXmlSkeleton();
 
@@ -295,11 +295,11 @@ public class CreateDocumentFragment extends Fragment  implements GoogleApiClient
 
         private FileContent addXmlSkeleton() throws IOException {
             //We add the xml format
-            String contentStr = "This is the temporary file content!!!!!!!!!!";
+            String contentStr = getKMLSkeleton();
 
             File newFile = new File();
-            newFile.setName(this.documentName);
-            newFile.setMimeType("text/plain");
+            newFile.setName(this.documentName+".xml");
+            newFile.setMimeType("text/xml");
 
             java.io.File outputDir = getContext().getCacheDir(); // context being the Activity pointer
             java.io.File outputFile = java.io.File.createTempFile("prefix", "extension", outputDir);
@@ -308,9 +308,24 @@ public class CreateDocumentFragment extends Fragment  implements GoogleApiClient
             bw.write(contentStr);
             bw.close();
 
-            FileContent mediaContent = new FileContent("text/plain", outputFile);
+            FileContent mediaContent = new FileContent("text/xml", outputFile);
 
             return mediaContent;
+        }
+
+        private String getKMLSkeleton() {
+            String str = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                    "<kml xmlns=\"http://www.opengis.net/kml/2.2\">\n" +
+                    "  <Document>\n" +
+                    "    <name></name>\n" +
+                    "    <open></open>\n" +
+                    "    <description></description>\n" +
+                    "    <Folder>\n" +
+                    "  </Folder>\n" +
+                    "</Document>\n" +
+                    "</kml>";
+
+            return str;
         }
 
 
