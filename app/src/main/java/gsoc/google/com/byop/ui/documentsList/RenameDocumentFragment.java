@@ -33,6 +33,7 @@ import java.util.Arrays;
 
 import gsoc.google.com.byop.R;
 import gsoc.google.com.byop.utils.AndroidUtils;
+import gsoc.google.com.byop.utils.Constants;
 import gsoc.google.com.byop.utils.FragmentStackManager;
 import gsoc.google.com.byop.utils.GooglePlayUtils;
 import pub.devrel.easypermissions.AfterPermissionGranted;
@@ -60,15 +61,6 @@ public class RenameDocumentFragment extends Fragment {
     private String actualName;
 
     GoogleAccountCredential mCredential;
-    private static final String[] SCOPES = {DriveScopes.DRIVE};
-
-    static final int REQUEST_ACCOUNT_PICKER = 1000;
-    static final int REQUEST_AUTHORIZATION = 1001;
-    static final int REQUEST_GOOGLE_PLAY_SERVICES = 1002;
-    static final int REQUEST_PERMISSION_GET_ACCOUNTS = 1003;
-
-    private static final String PREF_ACCOUNT_NAME = "accountName";
-
 
     public static RenameDocumentFragment newInstance(String fileId,String actualName) {
         RenameDocumentFragment renameDocument = new RenameDocumentFragment();
@@ -91,8 +83,6 @@ public class RenameDocumentFragment extends Fragment {
         document_name_input = (EditText) rootView.findViewById(R.id.rename_document_name_input);
 
         document_name = (TextInputLayout) rootView.findViewById(R.id.rename_document_name);
-        //document_name_input.setText(actualName);
-
 
         saveDocument.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -111,7 +101,7 @@ public class RenameDocumentFragment extends Fragment {
         });
 
         // Initialize credentials and service object.
-        mCredential = GoogleAccountCredential.usingOAuth2(getContext(), Arrays.asList(SCOPES))
+        mCredential = GoogleAccountCredential.usingOAuth2(getContext(), Arrays.asList(Constants.SCOPES))
                 .setBackOff(new ExponentialBackOff());
 
         return rootView;
@@ -139,12 +129,12 @@ public class RenameDocumentFragment extends Fragment {
         }
     }
 
-    @AfterPermissionGranted(REQUEST_PERMISSION_GET_ACCOUNTS)
+    @AfterPermissionGranted(Constants.REQUEST_PERMISSION_GET_ACCOUNTS)
     private void chooseAccountForEdition(EditText documentName){
         if (EasyPermissions.hasPermissions(
                 this.getActivity(), Manifest.permission.GET_ACCOUNTS)) {
             String accountName = this.getActivity().getPreferences(Context.MODE_PRIVATE)
-                    .getString(PREF_ACCOUNT_NAME, null);
+                    .getString(Constants.PREF_ACCOUNT_NAME, null);
             if (accountName != null) {
                 mCredential.setSelectedAccountName(accountName);
                 renameFileThroughApi(documentName);
@@ -152,14 +142,14 @@ public class RenameDocumentFragment extends Fragment {
                 // Start a dialog from which the user can choose an account
                 startActivityForResult(
                         mCredential.newChooseAccountIntent(),
-                        REQUEST_ACCOUNT_PICKER);
+                        Constants.REQUEST_ACCOUNT_PICKER);
             }
         } else {
             // Request the GET_ACCOUNTS permission via a user dialog
             EasyPermissions.requestPermissions(
                     this.getActivity(),
                     "This app needs to access your Google account (via Contacts).",
-                    REQUEST_PERMISSION_GET_ACCOUNTS,
+                    Constants.REQUEST_PERMISSION_GET_ACCOUNTS,
                     Manifest.permission.GET_ACCOUNTS);
         }
     }
@@ -178,7 +168,7 @@ public class RenameDocumentFragment extends Fragment {
         GoogleApiAvailability apiAvailability = GoogleApiAvailability.getInstance();
         Dialog dialog = apiAvailability.getErrorDialog(
                 this.getActivity(), connectionStatusCode,
-                REQUEST_GOOGLE_PLAY_SERVICES);
+                Constants.REQUEST_GOOGLE_PLAY_SERVICES);
         dialog.show();
     }
 
@@ -243,7 +233,6 @@ public class RenameDocumentFragment extends Fragment {
                 imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
             }
            fragmentStackManager.popBackStatFragment();
-
         }
 
 
@@ -258,7 +247,7 @@ public class RenameDocumentFragment extends Fragment {
                 } else if (mLastError instanceof UserRecoverableAuthIOException) {
                     startActivityForResult(
                             ((UserRecoverableAuthIOException) mLastError).getIntent(),
-                            REQUEST_AUTHORIZATION);
+                            Constants.REQUEST_AUTHORIZATION);
                 } else {
                    /* AndroidUtils.showMessage(("The following error occurred:\n"
                             + mLastError.getMessage()), getActivity());*/

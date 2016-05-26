@@ -13,6 +13,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
@@ -66,7 +67,9 @@ import java.util.List;
 
 import gsoc.google.com.byop.R;
 import gsoc.google.com.byop.model.DriveDocument;
+import gsoc.google.com.byop.ui.poisList.POISListFragment;
 import gsoc.google.com.byop.utils.AndroidUtils;
+import gsoc.google.com.byop.utils.Constants;
 import gsoc.google.com.byop.utils.DriveUtils;
 import gsoc.google.com.byop.utils.FragmentStackManager;
 import gsoc.google.com.byop.utils.GooglePlayUtils;
@@ -78,18 +81,7 @@ import pub.devrel.easypermissions.EasyPermissions;
  */
 public class FolderListFragment extends Fragment implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, EasyPermissions.PermissionCallbacks {
 
-    /**
-     * Standard activity result: operation canceled.
-     */
-    public static final int RESULT_CANCELED = 0;
-    /**
-     * Standard activity result: operation succeeded.
-     */
-    public static final int RESULT_OK = -1;
-    /**
-     * Start of user-defined activity results.
-     */
-    public static final int RESULT_FIRST_USER = 1;
+
 
     private static String TAG = FolderListFragment.class.toString();
     private RecyclerView rv = null;
@@ -109,14 +101,7 @@ public class FolderListFragment extends Fragment implements GoogleApiClient.Conn
      * Needed for  DRIVE REST API V3
      */
     GoogleAccountCredential mCredential;
-    //private static final String[] SCOPES = {DriveScopes.DRIVE_METADATA_READONLY};
-    private static final String[] SCOPES = {DriveScopes.DRIVE};
 
-    static final int REQUEST_ACCOUNT_PICKER = 1000;
-    static final int REQUEST_AUTHORIZATION = 1001;
-    static final int REQUEST_GOOGLE_PLAY_SERVICES = 1002;
-    static final int REQUEST_PERMISSION_GET_ACCOUNTS = 1003;
-    private static final String PREF_ACCOUNT_NAME = "accountName";
 
     private String folderId = "";
 
@@ -165,7 +150,7 @@ public class FolderListFragment extends Fragment implements GoogleApiClient.Conn
                 .build();
 
         // Initialize credentials and service object.
-        mCredential = GoogleAccountCredential.usingOAuth2(getContext(), Arrays.asList(SCOPES))
+        mCredential = GoogleAccountCredential.usingOAuth2(getContext(), Arrays.asList(Constants.SCOPES))
                 .setBackOff(new ExponentialBackOff());
 
         refreshLayout = (SwipeRefreshLayout) rootView.findViewById(R.id.swipeRefresh);
@@ -254,12 +239,12 @@ public class FolderListFragment extends Fragment implements GoogleApiClient.Conn
         }
     }
 
-    @AfterPermissionGranted(REQUEST_PERMISSION_GET_ACCOUNTS)
+    @AfterPermissionGranted(Constants.REQUEST_PERMISSION_GET_ACCOUNTS)
     private void chooseAccountForDeletion(String fileResourceId){
         if (EasyPermissions.hasPermissions(
                 this.getActivity(), Manifest.permission.GET_ACCOUNTS)) {
             String accountName = this.getActivity().getPreferences(Context.MODE_PRIVATE)
-                    .getString(PREF_ACCOUNT_NAME, null);
+                    .getString(Constants.PREF_ACCOUNT_NAME, null);
             if (accountName != null) {
                 mCredential.setSelectedAccountName(accountName);
                 deleteFilesThroughApi(fileResourceId);
@@ -267,14 +252,14 @@ public class FolderListFragment extends Fragment implements GoogleApiClient.Conn
                 // Start a dialog from which the user can choose an account
                 startActivityForResult(
                         mCredential.newChooseAccountIntent(),
-                        REQUEST_ACCOUNT_PICKER);
+                        Constants.REQUEST_ACCOUNT_PICKER);
             }
         } else {
             // Request the GET_ACCOUNTS permission via a user dialog
             EasyPermissions.requestPermissions(
                     this.getActivity(),
                     "This app needs to access your Google account (via Contacts).",
-                    REQUEST_PERMISSION_GET_ACCOUNTS,
+                    Constants.REQUEST_PERMISSION_GET_ACCOUNTS,
                     Manifest.permission.GET_ACCOUNTS);
         }
     }
@@ -294,12 +279,12 @@ public class FolderListFragment extends Fragment implements GoogleApiClient.Conn
 
 
 
-    @AfterPermissionGranted(REQUEST_PERMISSION_GET_ACCOUNTS)
+    @AfterPermissionGranted(Constants.REQUEST_PERMISSION_GET_ACCOUNTS)
     private void chooseAccount() {
         if (EasyPermissions.hasPermissions(
                 this.getActivity(), Manifest.permission.GET_ACCOUNTS)) {
             String accountName = this.getActivity().getPreferences(Context.MODE_PRIVATE)
-                    .getString(PREF_ACCOUNT_NAME, null);
+                    .getString(Constants.PREF_ACCOUNT_NAME, null);
             if (accountName != null) {
                 mCredential.setSelectedAccountName(accountName);
                 getFilesFromApi();
@@ -307,14 +292,14 @@ public class FolderListFragment extends Fragment implements GoogleApiClient.Conn
                 // Start a dialog from which the user can choose an account
                 startActivityForResult(
                         mCredential.newChooseAccountIntent(),
-                        REQUEST_ACCOUNT_PICKER);
+                        Constants.REQUEST_ACCOUNT_PICKER);
             }
         } else {
             // Request the GET_ACCOUNTS permission via a user dialog
             EasyPermissions.requestPermissions(
                     this.getActivity(),
                     "This app needs to access your Google account (via Contacts).",
-                    REQUEST_PERMISSION_GET_ACCOUNTS,
+                    Constants.REQUEST_PERMISSION_GET_ACCOUNTS,
                     Manifest.permission.GET_ACCOUNTS);
         }
     }
@@ -377,32 +362,19 @@ public class FolderListFragment extends Fragment implements GoogleApiClient.Conn
 
 
         parallaxRecyclerAdapter.setParallaxHeader(getActivity().getLayoutInflater().inflate(R.layout.drivedocument_list_header_layout, rv, false), rv);
-        parallaxRecyclerAdapter.setOnClickEvent(new ParallaxRecyclerAdapter.OnClickEvent() {
-            @Override
-            public void onClick(View view, int position) {
-                DriveDocument driveDocument = parallaxRecyclerAdapter.getData().get(position);
-            }
-        });
+
         rv.setAdapter(parallaxRecyclerAdapter);
 
-
-//        parallaxRecyclerAdapter.setOnParallaxScroll(new ParallaxRecyclerAdapter.OnParallaxScroll() {
-//            @Override
-//            public void onParallaxScroll(float percentage, float offset, View parallax) {
-//
-//                Drawable c = toolbar.getBackground();
-//                c.setAlpha(Math.round(percentage * 255));
-//                toolbar.setBackground(c);
-//            }
-//        });
 
         //On click on recycler view item
         parallaxRecyclerAdapter.setOnClickEvent(new ParallaxRecyclerAdapter.OnClickEvent() {
             @Override
             public void onClick(View view, int i) {
                 DriveDocument document = documents.get(i);
+                POISListFragment poisListFragment = POISListFragment.newInstance(document);
+                fragmentStackManager.loadFragment(poisListFragment, R.id.main_layout);
 
-                AndroidUtils.showMessage(document.getResourceId(), getActivity());
+                //AndroidUtils.showMessage(document.getResourceId(), getActivity());
             }
         });
     }
@@ -422,8 +394,8 @@ public class FolderListFragment extends Fragment implements GoogleApiClient.Conn
             int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         switch (requestCode) {
-            case REQUEST_GOOGLE_PLAY_SERVICES:
-                if (resultCode != RESULT_OK) {
+            case Constants.REQUEST_GOOGLE_PLAY_SERVICES:
+                if (resultCode != Constants.RESULT_OK) {
                     AndroidUtils.showMessage(
                             "This app requires Google Play Services. Please install " +
                                     "Google Play Services on your device and relaunch this app.", getActivity());
@@ -431,8 +403,8 @@ public class FolderListFragment extends Fragment implements GoogleApiClient.Conn
                     getFilesFromApi();
                 }
                 break;
-            case REQUEST_ACCOUNT_PICKER:
-                if (resultCode == RESULT_OK && data != null &&
+            case Constants.REQUEST_ACCOUNT_PICKER:
+                if (resultCode == Constants.RESULT_OK && data != null &&
                         data.getExtras() != null) {
                     String accountName =
                             data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
@@ -440,15 +412,15 @@ public class FolderListFragment extends Fragment implements GoogleApiClient.Conn
                         SharedPreferences settings =
                                 this.getActivity().getPreferences(Context.MODE_PRIVATE);
                         SharedPreferences.Editor editor = settings.edit();
-                        editor.putString(PREF_ACCOUNT_NAME, accountName);
+                        editor.putString(Constants.PREF_ACCOUNT_NAME, accountName);
                         editor.apply();
                         mCredential.setSelectedAccountName(accountName);
                         getFilesFromApi();
                     }
                 }
                 break;
-            case REQUEST_AUTHORIZATION:
-                if (resultCode == RESULT_OK) {
+            case Constants.REQUEST_AUTHORIZATION:
+                if (resultCode == Constants.RESULT_OK) {
                     getFilesFromApi();
                 }
                 break;
@@ -610,11 +582,13 @@ public class FolderListFragment extends Fragment implements GoogleApiClient.Conn
             List<File> files = result.getFiles();
             if (files != null) {
                 for (File file : files) {
-                    DriveDocument document = new DriveDocument();
-                    document.setTitle(file.getName());
-                    document.setExtension(file.getFileExtension());
-                    document.setResourceId(file.getId());
-                    documentsList.add(document);
+                    if(file.getTrashed()==null || !file.getTrashed()) {
+                        DriveDocument document = new DriveDocument();
+                        document.setTitle(file.getName());
+                        document.setExtension(file.getFileExtension());
+                        document.setResourceId(file.getId());
+                        documentsList.add(document);
+                    }
                 }
             }
             return documentsList;
@@ -642,7 +616,7 @@ public class FolderListFragment extends Fragment implements GoogleApiClient.Conn
                 } else if (mLastError instanceof UserRecoverableAuthIOException) {
                     startActivityForResult(
                             ((UserRecoverableAuthIOException) mLastError).getIntent(),
-                            REQUEST_AUTHORIZATION);
+                            Constants.REQUEST_AUTHORIZATION);
                 } else {
                    /* AndroidUtils.showMessage(("The following error occurred:\n"
                             + mLastError.getMessage()), getActivity());*/
@@ -718,7 +692,7 @@ public class FolderListFragment extends Fragment implements GoogleApiClient.Conn
                 } else if (mLastError instanceof UserRecoverableAuthIOException) {
                     startActivityForResult(
                             ((UserRecoverableAuthIOException) mLastError).getIntent(),
-                            REQUEST_AUTHORIZATION);
+                            Constants.REQUEST_AUTHORIZATION);
                 } else {
                    /* AndroidUtils.showMessage(("The following error occurred:\n"
                             + mLastError.getMessage()), getActivity());*/

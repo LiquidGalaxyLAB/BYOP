@@ -6,6 +6,9 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.ParcelFileDescriptor;
+import android.os.Parcelable;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TextInputLayout;
 import android.support.v4.app.Fragment;
@@ -16,11 +19,20 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 
+import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.drive.Drive;
+import com.google.android.gms.drive.DriveApi;
+import com.google.android.gms.drive.DriveContents;
+import com.google.android.gms.drive.DriveFile;
+import com.google.android.gms.drive.MetadataChangeSet;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GooglePlayServicesAvailabilityIOException;
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
+import com.google.api.client.http.FileContent;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
@@ -28,14 +40,22 @@ import com.google.api.client.util.ExponentialBackOff;
 import com.google.api.services.drive.DriveScopes;
 import com.google.api.services.drive.model.File;
 
+import java.io.BufferedWriter;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 import gsoc.google.com.byop.R;
 import gsoc.google.com.byop.utils.AndroidUtils;
+import gsoc.google.com.byop.utils.Constants;
 import gsoc.google.com.byop.utils.FragmentStackManager;
 import gsoc.google.com.byop.utils.GooglePlayUtils;
 import pub.devrel.easypermissions.AfterPermissionGranted;
@@ -44,11 +64,12 @@ import pub.devrel.easypermissions.EasyPermissions;
 /**
  * Created by lgwork on 25/05/16.
  */
-public class CreateDocumentFragment extends Fragment {
+public class CreateDocumentFragment extends Fragment  implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener{
     private static String TAG = CreateDocumentFragment.class.toString();
     protected FragmentStackManager fragmentStackManager;
 
     public static final String ARG_FOLDER_ID = "folderId";
+    public static final String ARG_API_CLIENT = "apliClient";
 
     private EditText new_document_name_input;
 
@@ -61,14 +82,12 @@ public class CreateDocumentFragment extends Fragment {
     private String folderId;
 
     GoogleAccountCredential mCredential;
-    private static final String[] SCOPES = {DriveScopes.DRIVE};
 
-    static final int REQUEST_ACCOUNT_PICKER = 1000;
-    static final int REQUEST_AUTHORIZATION = 1001;
-    static final int REQUEST_GOOGLE_PLAY_SERVICES = 1002;
-    static final int REQUEST_PERMISSION_GET_ACCOUNTS = 1003;
+    /**
+     * Google API client.
+     */
+    private GoogleApiClient mGoogleApiClient;
 
-    private static final String PREF_ACCOUNT_NAME = "accountName";
 
 
     public static CreateDocumentFragment newInstance(String folderId) {
@@ -108,8 +127,15 @@ public class CreateDocumentFragment extends Fragment {
             }
         });
 
+        mGoogleApiClient = new GoogleApiClient.Builder(this.getActivity())
+                .addApi(Drive.API)
+                .addScope(Drive.SCOPE_FILE)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .build();
+
         // Initialize credentials and service object.
-        mCredential = GoogleAccountCredential.usingOAuth2(getContext(), Arrays.asList(SCOPES))
+        mCredential = GoogleAccountCredential.usingOAuth2(getContext(), Arrays.asList(Constants.SCOPES))
                 .setBackOff(new ExponentialBackOff());
 
         return rootView;
@@ -120,6 +146,20 @@ public class CreateDocumentFragment extends Fragment {
         super.onActivityCreated(savedInstanceState);
         folderId = getArguments().getString(ARG_FOLDER_ID);
     }
+/*
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        mGoogleApiClient.connect();
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        mGoogleApiClient.disconnect();
+    }
+*/
 
 
     private void createFileThroughApi(EditText documentName){
@@ -135,12 +175,12 @@ public class CreateDocumentFragment extends Fragment {
         }
     }
 
-    @AfterPermissionGranted(REQUEST_PERMISSION_GET_ACCOUNTS)
+    @AfterPermissionGranted(Constants.REQUEST_PERMISSION_GET_ACCOUNTS)
     private void chooseAccountForCreation(EditText documentName){
         if (EasyPermissions.hasPermissions(
                 this.getActivity(), Manifest.permission.GET_ACCOUNTS)) {
             String accountName = this.getActivity().getPreferences(Context.MODE_PRIVATE)
-                    .getString(PREF_ACCOUNT_NAME, null);
+                    .getString(Constants.PREF_ACCOUNT_NAME, null);
             if (accountName != null) {
                 mCredential.setSelectedAccountName(accountName);
                 createFileThroughApi(documentName);
@@ -148,14 +188,14 @@ public class CreateDocumentFragment extends Fragment {
                 // Start a dialog from which the user can choose an account
                 startActivityForResult(
                         mCredential.newChooseAccountIntent(),
-                        REQUEST_ACCOUNT_PICKER);
+                        Constants.REQUEST_ACCOUNT_PICKER);
             }
         } else {
             // Request the GET_ACCOUNTS permission via a user dialog
             EasyPermissions.requestPermissions(
                     this.getActivity(),
                     "This app needs to access your Google account (via Contacts).",
-                    REQUEST_PERMISSION_GET_ACCOUNTS,
+                    Constants.REQUEST_PERMISSION_GET_ACCOUNTS,
                     Manifest.permission.GET_ACCOUNTS);
         }
     }
@@ -174,8 +214,23 @@ public class CreateDocumentFragment extends Fragment {
         GoogleApiAvailability apiAvailability = GoogleApiAvailability.getInstance();
         Dialog dialog = apiAvailability.getErrorDialog(
                 this.getActivity(), connectionStatusCode,
-                REQUEST_GOOGLE_PLAY_SERVICES);
+                Constants.REQUEST_GOOGLE_PLAY_SERVICES);
         dialog.show();
+    }
+
+    @Override
+    public void onConnected(@Nullable Bundle bundle) {
+        //AndroidUtils.showMessage("Connected", getActivity());
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+        //Do nothing
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+        //Do nothing
     }
 
 
@@ -184,6 +239,8 @@ public class CreateDocumentFragment extends Fragment {
         private Exception mLastError = null;
         private String documentName = "";
         private String folderId = "";
+
+        private File newDocument;
 
 
         public CreateTask(GoogleAccountCredential credential, EditText documentName,String folderId) {
@@ -228,10 +285,34 @@ public class CreateDocumentFragment extends Fragment {
             List<String> parents = new ArrayList<String>();
             parents.add(this.folderId);
             fileMetadata.setParents(parents);
+            fileMetadata.setMimeType("text/plain");
 
-            mService.files().create(fileMetadata).execute();
+            FileContent xmlSkeleton = addXmlSkeleton();
 
+
+           newDocument =  mService.files().create(fileMetadata,xmlSkeleton).execute();
         }
+
+        private FileContent addXmlSkeleton() throws IOException {
+            //We add the xml format
+            String contentStr = "This is the temporary file content!!!!!!!!!!";
+
+            File newFile = new File();
+            newFile.setName(this.documentName);
+            newFile.setMimeType("text/plain");
+
+            java.io.File outputDir = getContext().getCacheDir(); // context being the Activity pointer
+            java.io.File outputFile = java.io.File.createTempFile("prefix", "extension", outputDir);
+
+            BufferedWriter bw = new BufferedWriter(new FileWriter(outputFile));
+            bw.write(contentStr);
+            bw.close();
+
+            FileContent mediaContent = new FileContent("text/plain", outputFile);
+
+            return mediaContent;
+        }
+
 
         @Override
         protected void onPostExecute(Void aVoid) {
@@ -241,8 +322,10 @@ public class CreateDocumentFragment extends Fragment {
                 imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
             }
            fragmentStackManager.popBackStatFragment();
-
         }
+
+
+
 
 
         @Override
@@ -256,7 +339,7 @@ public class CreateDocumentFragment extends Fragment {
                 } else if (mLastError instanceof UserRecoverableAuthIOException) {
                     startActivityForResult(
                             ((UserRecoverableAuthIOException) mLastError).getIntent(),
-                            REQUEST_AUTHORIZATION);
+                            Constants.REQUEST_AUTHORIZATION);
                 } else {
                    /* AndroidUtils.showMessage(("The following error occurred:\n"
                             + mLastError.getMessage()), getActivity());*/
@@ -266,4 +349,6 @@ public class CreateDocumentFragment extends Fragment {
             }
         }
     }
+
+
 }
