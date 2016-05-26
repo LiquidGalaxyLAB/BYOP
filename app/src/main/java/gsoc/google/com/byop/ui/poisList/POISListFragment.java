@@ -10,67 +10,52 @@ import android.content.IntentSender;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.ParcelFileDescriptor;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
-import com.google.android.gms.common.api.Status;
 import com.google.android.gms.drive.Drive;
 import com.google.android.gms.drive.DriveApi;
 import com.google.android.gms.drive.DriveContents;
 import com.google.android.gms.drive.DriveFile;
-import com.google.android.gms.drive.DriveId;
-import com.google.android.gms.drive.DriveResource;
-import com.google.android.gms.drive.ExecutionOptions;
-import com.google.android.gms.drive.Metadata;
-import com.google.android.gms.drive.MetadataChangeSet;
-import com.google.android.gms.drive.query.Filter;
-import com.google.android.gms.drive.query.Filters;
-import com.google.android.gms.drive.query.Query;
-import com.google.android.gms.drive.query.SearchableField;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GooglePlayServicesAvailabilityIOException;
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
-import com.google.api.client.http.ByteArrayContent;
-import com.google.api.client.http.FileContent;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.ExponentialBackOff;
 import com.google.api.services.drive.model.File;
-import com.google.api.services.drive.model.FileList;
 import com.poliveira.parallaxrecyclerview.ParallaxRecyclerAdapter;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
+import org.xmlpull.v1.XmlPullParserException;
+
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 
 import gsoc.google.com.byop.R;
 import gsoc.google.com.byop.model.DriveDocument;
 import gsoc.google.com.byop.utils.AndroidUtils;
+import gsoc.google.com.byop.utils.BYOPXmlPullParser;
 import gsoc.google.com.byop.utils.Constants;
 import gsoc.google.com.byop.utils.FragmentStackManager;
 import gsoc.google.com.byop.utils.GooglePlayUtils;
@@ -85,7 +70,7 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
 
     private static String TAG = POISListFragment.class.toString();
     private RecyclerView rv = null;
-    private ParallaxRecyclerAdapter<DriveDocument> parallaxRecyclerAdapter;
+    private ParallaxRecyclerAdapter<BYOPXmlPullParser.POI> parallaxRecyclerAdapter;
     private SwipeRefreshLayout refreshLayout;
     private RequestContentsTask requestContentsTask;
     private FloatingActionButton fab;
@@ -137,14 +122,14 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.folder_list, container, false);
-        rv = (RecyclerView) rootView.findViewById(R.id.rv);
+        View rootView = inflater.inflate(R.layout.pois_list, container, false);
+        rv = (RecyclerView) rootView.findViewById(R.id.rvPOIS);
         LinearLayoutManager llm = new LinearLayoutManager(getActivity());
         llm.setOrientation(LinearLayoutManager.VERTICAL);
         rv.setLayoutManager(llm);
         rv.setHasFixedSize(true);
-        refreshLayout = (SwipeRefreshLayout) rootView.findViewById(R.id.swipeRefresh);
-        fab = (FloatingActionButton) rootView.findViewById(R.id.add_document);
+        refreshLayout = (SwipeRefreshLayout) rootView.findViewById(R.id.swipeRefreshPois);
+        fab = (FloatingActionButton) rootView.findViewById(R.id.add_POI);
 
         mGoogleApiClient = new GoogleApiClient.Builder(this.getActivity())
                 .addApi(Drive.API)
@@ -156,8 +141,6 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
         // Initialize credentials and service object.
         mCredential = GoogleAccountCredential.usingOAuth2(getContext(), Arrays.asList(Constants.SCOPES))
                 .setBackOff(new ExponentialBackOff());
-
-        refreshLayout = (SwipeRefreshLayout) rootView.findViewById(R.id.swipeRefresh);
 
         return rootView;
     }
@@ -316,11 +299,122 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
     }
 
 
+    private class POIHolder extends RecyclerView.ViewHolder {
+        CardView cv;
+        TextView poiName;
+        TextView poiLatitude;
+        TextView poiLongitude;
+        ImageView filePhoto;
+
+        String fileResourceId = "";
+
+        public POIHolder(View itemView) {
+            super(itemView);
+            poiName = (TextView) itemView.findViewById(R.id.poi_name);
+            filePhoto = (ImageView) itemView.findViewById(R.id.file_photo_poi);
+            poiLatitude = (TextView) itemView.findViewById(R.id.poi_latitude);
+            poiLongitude = (TextView) itemView.findViewById(R.id.poi_longitude);
+            //itemView.setOnCreateContextMenuListener(this);
+        }
+
+        public void bind(@NonNull String data) {
+            fileResourceId = data;
+        }
+
+     /*   @Override
+        public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+            menu.setHeaderTitle(getResources().getString(R.string.context_menu_title));
+
+            MenuItem deleteItem =  menu.add(0, v.getId(), 0, R.string.context_menu_delete);
+            deleteItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener(){
+                @Override
+                public boolean onMenuItemClick(MenuItem item) {
+
+                    AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
+                    alert.setTitle(getResources().getString(R.string.are_you_sure));
+
+                    alert.setPositiveButton(getResources().getString(R.string.yes), new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int whichButton) {
+                            //deleteFilesThroughApi(fileResourceId);
+                        }
+                    });
+
+                    alert.setNegativeButton(getResources().getString(R.string.no),
+                            new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int whichButton) {
+                                }
+                            });
+
+                    alert.show();
+                    return true;
+                }
+            });
+
+
+            MenuItem editItem =  menu.add(0, v.getId(), 0, R.string.context_menu_edit);
+            editItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener(){
+                @Override
+                public boolean onMenuItemClick(MenuItem item) {
+                    RenameDocumentFragment renameDocumentFragment = RenameDocumentFragment.newInstance(fileResourceId,documentTitle.getText().toString());
+                    fragmentStackManager.loadFragment(renameDocumentFragment, R.id.main_layout);
+                    return true;
+                }
+            });
+        }*/
+    }
+
+    private void fillAdapter(final List<BYOPXmlPullParser.POI> poisList) {
+        parallaxRecyclerAdapter = new ParallaxRecyclerAdapter<BYOPXmlPullParser.POI>(poisList) {
+            @Override
+            public void onBindViewHolderImpl(RecyclerView.ViewHolder viewHolder, ParallaxRecyclerAdapter<BYOPXmlPullParser.POI> parallaxRecyclerAdapter, int i) {
+                BYOPXmlPullParser.POI poi = parallaxRecyclerAdapter.getData().get(i);
+
+
+                POIHolder poiHolder = (POIHolder) viewHolder;
+                poiHolder.poiName.setText(poi.getTitle());
+                poiHolder.poiLatitude.setText(poi.getPoint().getLatitude());
+                poiHolder.poiLongitude.setText(poi.getPoint().getLongitude());
+                poiHolder.filePhoto.setImageDrawable(ContextCompat.getDrawable(getActivity().getApplicationContext(), R.drawable.xml_file));
+            }
+
+            @Override
+            public RecyclerView.ViewHolder onCreateViewHolderImpl(ViewGroup viewGroup, ParallaxRecyclerAdapter<BYOPXmlPullParser.POI> parallaxRecyclerAdapter, int i) {
+                return new POIHolder(LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.poi_list_item_card, viewGroup, false));
+            }
+
+            @Override
+            public int getItemCountImpl(ParallaxRecyclerAdapter<BYOPXmlPullParser.POI> parallaxRecyclerAdapter) {
+                return poisList.size();
+            }
+
+
+        };
+
+
+        parallaxRecyclerAdapter.setParallaxHeader(getActivity().getLayoutInflater().inflate(R.layout.poi_list_header_layout, rv, false), rv);
+
+        rv.setAdapter(parallaxRecyclerAdapter);
+
+
+        //On click on recycler view item
+        parallaxRecyclerAdapter.setOnClickEvent(new ParallaxRecyclerAdapter.OnClickEvent() {
+            @Override
+            public void onClick(View view, int i) {
+                BYOPXmlPullParser.POI poi = poisList.get(i);
+//                POISListFragment poisListFragment = POISListFragment.newInstance(document);
+//                fragmentStackManager.loadFragment(poisListFragment, R.id.main_layout);
+
+                //AndroidUtils.showMessage(document.getResourceId(), getActivity());
+            }
+        });
+    }
+
+
     /**
      * An asynchronous task that handles the Drive API call.
      * Placing the API calls in their own task ensures the UI stays responsive.
      */
-    private class RequestContentsTask extends AsyncTask<Void, Void, List<DriveDocument>> {
+    private class RequestContentsTask extends AsyncTask<Void, Void, List<BYOPXmlPullParser.POI>> {
         private com.google.api.services.drive.Drive mService = null;
         private Exception mLastError = null;
         private String folderId = "";
@@ -331,10 +425,10 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
             JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
             mService = new com.google.api.services.drive.Drive.Builder(
                     transport, jsonFactory, credential)
-                    .setApplicationName("BYOP")
+                    .setApplicationName(getResources().getString(R.string.app_name))
                     .build();
 
-            this.folderId = folderId;
+
         }
 
         @Override
@@ -364,7 +458,7 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
          * @param params no parameters needed for this task.
          */
         @Override
-        protected List<DriveDocument> doInBackground(Void... params) {
+        protected List<BYOPXmlPullParser.POI> doInBackground(Void... params) {
             try {
                 return getFileContentsFromApi();
             } catch (Exception e) {
@@ -381,8 +475,8 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
          * found.
          * @throws IOException
          */
-        private List<DriveDocument> getFileContentsFromApi() throws IOException {
-            List<DriveDocument> documentsList = new ArrayList<DriveDocument>();
+        private List<BYOPXmlPullParser.POI> getFileContentsFromApi() throws IOException {
+            List<BYOPXmlPullParser.POI> poisList = new ArrayList<BYOPXmlPullParser.POI>();
 
 
             File driveFile = mService.files().get(document.getResourceId()).execute();
@@ -405,21 +499,26 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
                                         // to the actual byte stream
                                         DriveContents contents = driveContentsResult.getDriveContents();
 
-                                        BufferedReader reader = new BufferedReader(new InputStreamReader(contents.getInputStream()));
-                                        StringBuilder builder = new StringBuilder();
-                                        String line;
+
+//                                        BufferedReader reader = new BufferedReader(new InputStreamReader(contents.getInputStream()));
+//                                        StringBuilder builder = new StringBuilder();
+//                                        String line;
                                         try {
-                                            while ((line = reader.readLine()) != null) {
-                                                builder.append(line);
-                                            }
-                                            String contentsAsString = builder.toString();
 
-                                            //checkContents(contents);
+                                            checkContents(contents.getInputStream());
 
+//                                            while ((line = reader.readLine()) != null) {
+//                                                builder.append(line);
+//                                            }
+//                                            String contentsAsString = builder.toString();
+//
+//                                            checkContents(contentsAsString,contents);
 
-                                            AndroidUtils.showMessage(contentsAsString, getActivity());
+//                                            AndroidUtils.showMessage(contentsAsString, getActivity());
 
                                         } catch (IOException e) {
+                                            e.printStackTrace();
+                                        } catch (XmlPullParserException e) {
                                             e.printStackTrace();
                                         }
 
@@ -428,15 +527,15 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
                     }
                 }
             });
-            return documentsList;
+            return poisList;
         }
 
 
         @Override
-        protected void onPostExecute(List<DriveDocument> output) {
+        protected void onPostExecute(List<BYOPXmlPullParser.POI> output) {
             super.onPostExecute(output);
             if (output != null)
-                //fillAdapter(output);
+                fillAdapter(output);
                 if (dialog != null && dialog.isShowing())
                     dialog.hide();
             refreshLayout.setRefreshing(false);
@@ -464,17 +563,9 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
         }
     }
 
-    private void checkContents(DriveContents contents) throws IOException {
-        ParcelFileDescriptor parcelFileDescriptor = contents.getParcelFileDescriptor();
-        FileInputStream fileInputStream = new FileInputStream(parcelFileDescriptor.getFileDescriptor());
-
-        // Read to the end of the file.
-        fileInputStream.read(new byte[fileInputStream.available()]);
-
-        // Append to the file.
-        FileOutputStream fileOutputStream = new FileOutputStream(parcelFileDescriptor.getFileDescriptor());
-        Writer writer = new OutputStreamWriter(fileOutputStream);
-        writer.write("hello world");
+    private void checkContents(InputStream inputStream) throws IOException, XmlPullParserException {
+        BYOPXmlPullParser parser = new BYOPXmlPullParser();
+        parser.parse(inputStream);
 
     }
 }

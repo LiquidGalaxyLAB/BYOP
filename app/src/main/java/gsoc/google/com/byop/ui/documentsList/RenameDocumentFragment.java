@@ -25,7 +25,6 @@ import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.ExponentialBackOff;
-import com.google.api.services.drive.DriveScopes;
 import com.google.api.services.drive.model.File;
 
 import java.io.IOException;
