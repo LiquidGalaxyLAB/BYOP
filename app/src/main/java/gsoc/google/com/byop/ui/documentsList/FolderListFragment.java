@@ -101,7 +101,8 @@ public class FolderListFragment extends Fragment implements GoogleApiClient.Conn
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         setHasOptionsMenu(true);
-        getActivity().setTitle(getActivity().getResources().getString(R.string.app_name));
+        getActivity().setTitle(getActivity().getResources().getString(R.string.app_name) + " " + getResources().getString(R.string.folderList));
+
         fragmentStackManager = FragmentStackManager.getInstance(getActivity());
         refreshLayout.setOnRefreshListener(
                 new SwipeRefreshLayout.OnRefreshListener() {
@@ -125,6 +126,7 @@ public class FolderListFragment extends Fragment implements GoogleApiClient.Conn
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.folder_list, container, false);
+
         rv = (RecyclerView) rootView.findViewById(R.id.rv);
         LinearLayoutManager llm = new LinearLayoutManager(getActivity());
         llm.setOrientation(LinearLayoutManager.VERTICAL);

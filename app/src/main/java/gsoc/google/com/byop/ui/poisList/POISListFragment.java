@@ -73,6 +73,7 @@ import pub.devrel.easypermissions.EasyPermissions;
 public class POISListFragment extends Fragment implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, EasyPermissions.PermissionCallbacks {
     protected FragmentStackManager fragmentStackManager;
 
+
     private static String TAG = POISListFragment.class.toString();
     private RecyclerView rv = null;
     private ParallaxRecyclerAdapter<POI> parallaxRecyclerAdapter;
@@ -84,6 +85,10 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
 
     public static final String ARG_DOCUMENT = "document";
     private DriveDocument document;
+
+    private POIUtils poiUtils;
+
+    private static POISListFragment poisFragment;
 
 
     /**
@@ -98,12 +103,12 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
 
 
     public static POISListFragment newInstance(DriveDocument document) {
-        POISListFragment renameDocument = new POISListFragment();
+        poisFragment = new POISListFragment();
         Bundle bundle = new Bundle();
         bundle.putParcelable(ARG_DOCUMENT, document);
 
-        renameDocument.setArguments(bundle);
-        return renameDocument;
+        poisFragment.setArguments(bundle);
+        return poisFragment;
     }
 
     @Override
@@ -111,9 +116,11 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
         super.onActivityCreated(savedInstanceState);
 
         document = getArguments().getParcelable(ARG_DOCUMENT);
+        getActivity().setTitle(getActivity().getResources().getString(R.string.app_name) + " " + getResources().getString(R.string.poisList) + ": " + document.getTitle());
 
         setHasOptionsMenu(true);
-        getActivity().setTitle(getActivity().getResources().getString(R.string.app_name));
+
+
         fragmentStackManager = FragmentStackManager.getInstance(getActivity());
 
         refreshLayout.setOnRefreshListener(
@@ -138,6 +145,7 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.pois_list, container, false);
+
         rv = (RecyclerView) rootView.findViewById(R.id.rvPOIS);
         LinearLayoutManager llm = new LinearLayoutManager(getActivity());
         llm.setOrientation(LinearLayoutManager.VERTICAL);
@@ -156,6 +164,7 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
         // Initialize credentials and service object.
         mCredential = GoogleAccountCredential.usingOAuth2(getContext(), Arrays.asList(Constants.SCOPES))
                 .setBackOff(new ExponentialBackOff());
+
 
         return rootView;
     }
@@ -351,10 +360,13 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
 
                     alert.setPositiveButton(getResources().getString(R.string.yes), new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int whichButton) {
-                            //TODO: Delete POI
-                            POIUtils.deletePOI(poiName.getText().toString(), poiDescription.getText().toString(),
-                                    poiLatitude.getText().toString(), poiLongitude.getText().toString(),
-                                    document, mGoogleApiClient, getActivity());
+                            //Delete POI
+                            poiUtils = new POIUtils(poiName.getText().toString(), poiDescription.getText().toString(),
+                                    latitude, longitude, document, mGoogleApiClient, mCredential, getActivity(), poisFragment);
+
+                            poiUtils.deletePOI();
+
+                            populateUI();
                         }
                     });
 
@@ -395,7 +407,7 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
         }
     }
 
-    private void fillAdapter(final List<POI> poisList) {
+    public void fillAdapter(final List<POI> poisList) {
         parallaxRecyclerAdapter = new ParallaxRecyclerAdapter<POI>(poisList) {
             @Override
             public void onBindViewHolderImpl(RecyclerView.ViewHolder viewHolder, ParallaxRecyclerAdapter<POI> parallaxRecyclerAdapter, int i) {

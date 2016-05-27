@@ -1,6 +1,7 @@
 package gsoc.google.com.byop.utils;
 
 import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -38,5 +39,18 @@ public class StringUtils {
 
         return sb.toString();
 
+    }
+
+    public static String getStringFromFileInputStream(FileInputStream fis) {
+        StringBuilder builder = new StringBuilder();
+        int ch;
+        try {
+            while ((ch = fis.read()) != -1) {
+                builder.append((char) ch);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return builder.toString();
     }
 }

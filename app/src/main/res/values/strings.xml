@@ -72,6 +72,8 @@
 
     <!--Rename Document-->
     <string name="edit_document_header">Rename Document</string>
+    <string name="folderList">Pois Documents</string>
+    <string name="poisList">Pois List in document</string>
 
 
 </resources>

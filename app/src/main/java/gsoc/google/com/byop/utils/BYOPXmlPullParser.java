@@ -22,6 +22,7 @@ public class BYOPXmlPullParser {
 
     // We don't use namespaces
 
+
     public List<POI> parse(InputStream in) throws XmlPullParserException, IOException {
         try {
             XmlPullParser parser = Xml.newPullParser();
