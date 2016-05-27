@@ -63,6 +63,7 @@
     <!--Add Document-->
     <string name="add_document_header">New POIS File</string>
     <string name="new_document_name">Name</string>
+    <string name="new_document_description">Description</string>
     <string name="save_new_document">Save</string>
     <string name="are_you_sure">Are you sure?</string>
     <string name="yes">Yes</string>
@@ -71,5 +72,6 @@
 
     <!--Rename Document-->
     <string name="edit_document_header">Rename Document</string>
+
 
 </resources>

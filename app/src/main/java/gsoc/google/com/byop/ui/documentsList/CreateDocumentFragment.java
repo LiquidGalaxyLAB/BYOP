@@ -51,6 +51,7 @@ import pub.devrel.easypermissions.EasyPermissions;
  * Created by lgwork on 25/05/16.
  */
 public class CreateDocumentFragment extends Fragment  implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener{
+
     private static String TAG = CreateDocumentFragment.class.toString();
     protected FragmentStackManager fragmentStackManager;
 
@@ -58,8 +59,10 @@ public class CreateDocumentFragment extends Fragment  implements GoogleApiClient
     public static final String ARG_API_CLIENT = "apliClient";
 
     private EditText new_document_name_input;
-
     private TextInputLayout new_document_name;
+
+    private EditText new_document_description_input;
+    private TextInputLayout new_document_description;
 
     private Button saveDocument;
 
@@ -73,8 +76,6 @@ public class CreateDocumentFragment extends Fragment  implements GoogleApiClient
      * Google API client.
      */
     private GoogleApiClient mGoogleApiClient;
-
-
 
     public static CreateDocumentFragment newInstance(String folderId) {
         CreateDocumentFragment createDocument = new CreateDocumentFragment();
@@ -92,10 +93,11 @@ public class CreateDocumentFragment extends Fragment  implements GoogleApiClient
 
         saveDocument = (Button) rootView.findViewById(R.id.btn_add_document);
 
-
         new_document_name_input = (EditText) rootView.findViewById(R.id.new_document_name_input);
-
         new_document_name = (TextInputLayout) rootView.findViewById(R.id.new_document_name);
+
+        new_document_description_input = (EditText) rootView.findViewById(R.id.new_document_description_input);
+        new_document_description = (TextInputLayout) rootView.findViewById(R.id.new_document_description);
 
         saveDocument.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -106,7 +108,7 @@ public class CreateDocumentFragment extends Fragment  implements GoogleApiClient
                     new_document_name.setError(res.getString(R.string.empty_name_error));
                 }else{
                     new_document_name.setErrorEnabled(false);
-                    createFileThroughApi(new_document_name_input);
+                    createFileThroughApi(new_document_name_input, new_document_description_input);
                 }
 
 
@@ -132,23 +134,9 @@ public class CreateDocumentFragment extends Fragment  implements GoogleApiClient
         super.onActivityCreated(savedInstanceState);
         folderId = getArguments().getString(ARG_FOLDER_ID);
     }
-/*
-
-    @Override
-    public void onStart() {
-        super.onStart();
-        mGoogleApiClient.connect();
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-        mGoogleApiClient.disconnect();
-    }
-*/
 
 
-    private void createFileThroughApi(EditText documentName){
+    private void createFileThroughApi(EditText documentName, EditText documentDescription) {
         if (!GooglePlayUtils.isGooglePlayServicesAvailable(this.getActivity())) {
             GooglePlayUtils.acquireGooglePlayServices(this.getActivity());
         } else if (mCredential.getSelectedAccountName() == null) {
@@ -156,7 +144,7 @@ public class CreateDocumentFragment extends Fragment  implements GoogleApiClient
         } else if (!GooglePlayUtils.isDeviceOnline(this.getActivity())) {
             AndroidUtils.showMessage("No network connection available.", getActivity());
         } else {
-            CreateTask createTask = new CreateTask(mCredential,documentName,this.folderId);
+            CreateTask createTask = new CreateTask(mCredential, documentName, documentDescription, this.folderId);
             createTask.execute();
         }
     }
@@ -169,7 +157,7 @@ public class CreateDocumentFragment extends Fragment  implements GoogleApiClient
                     .getString(Constants.PREF_ACCOUNT_NAME, null);
             if (accountName != null) {
                 mCredential.setSelectedAccountName(accountName);
-                createFileThroughApi(documentName);
+                createFileThroughApi(documentName, new_document_description_input);
             } else {
                 // Start a dialog from which the user can choose an account
                 startActivityForResult(
@@ -224,12 +212,13 @@ public class CreateDocumentFragment extends Fragment  implements GoogleApiClient
         private com.google.api.services.drive.Drive mService = null;
         private Exception mLastError = null;
         private String documentName = "";
+        private String documentDescription;
         private String folderId = "";
 
         private File newDocument;
 
 
-        public CreateTask(GoogleAccountCredential credential, EditText documentName,String folderId) {
+        public CreateTask(GoogleAccountCredential credential, EditText documentName, EditText documentDescription, String folderId) {
             HttpTransport transport = AndroidHttp.newCompatibleTransport();
             JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
             mService = new com.google.api.services.drive.Drive.Builder(
@@ -238,6 +227,7 @@ public class CreateDocumentFragment extends Fragment  implements GoogleApiClient
                     .build();
 
             this.documentName = documentName.getText().toString();
+            this.documentDescription = documentDescription != null ? documentDescription.getText().toString() : "";
             this.folderId = folderId;
         }
 
@@ -268,6 +258,8 @@ public class CreateDocumentFragment extends Fragment  implements GoogleApiClient
         private void createFile() throws IOException {
             File fileMetadata = new File();
             fileMetadata.setName(this.documentName+".xml");
+            fileMetadata.setDescription(this.documentDescription);
+
             List<String> parents = new ArrayList<String>();
             parents.add(this.folderId);
             fileMetadata.setParents(parents);

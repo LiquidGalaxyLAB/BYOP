@@ -20,7 +20,6 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
@@ -75,8 +74,6 @@ import pub.devrel.easypermissions.EasyPermissions;
  */
 public class FolderListFragment extends Fragment implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, EasyPermissions.PermissionCallbacks {
 
-
-
     private static String TAG = FolderListFragment.class.toString();
     private RecyclerView rv = null;
     private ParallaxRecyclerAdapter<DriveDocument> parallaxRecyclerAdapter;
@@ -104,7 +101,6 @@ public class FolderListFragment extends Fragment implements GoogleApiClient.Conn
         super.onActivityCreated(savedInstanceState);
         setHasOptionsMenu(true);
         getActivity().setTitle(getActivity().getResources().getString(R.string.app_name));
-        //populateUI(folderId);
         fragmentStackManager = FragmentStackManager.getInstance(getActivity());
         refreshLayout.setOnRefreshListener(
                 new SwipeRefreshLayout.OnRefreshListener() {
@@ -195,27 +191,21 @@ public class FolderListFragment extends Fragment implements GoogleApiClient.Conn
                     for (Metadata m : result.getMetadataBuffer()) {
                         if (!isFound) {
                             if (!m.isTrashed() && m.getTitle().equals(folderName)) {
-                                //Folder exists"
+                                //Folder exists
                                 isFound = true;
                                 byopFolderId = m.getDriveId();
                             }
                         }
                     }
                     if (isFound) {
-                        //Existing Folder
-                        //Fetch the folder contents
+                        //Existing Folder, fetch its contents
                         DriveFolder folder = Drive.DriveApi.getFolder(getGoogleApiClient(), byopFolderId);
                         folderId = byopFolderId.getResourceId();
-                       getFilesFromApi();
+                        getFilesFromApi();
                     }
                 }
-
             }
         });
-
-        if (existingFolderId != null) {
-            Log.d(TAG, existingFolderId.toString());
-        }
     }
 
     private void deleteFilesThroughApi(String fileResourceId){
@@ -296,15 +286,8 @@ public class FolderListFragment extends Fragment implements GoogleApiClient.Conn
         }
     }
 
-
-
-
-
-
     @Override
-    public void onConnectionSuspended(int i) {
-
-    }
+    public void onConnectionSuspended(int i) {/* Do nothing.*/}
 
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
@@ -323,9 +306,7 @@ public class FolderListFragment extends Fragment implements GoogleApiClient.Conn
     private void populateUI(String folderId) {
         requestTask = new MakeRequestTask(mCredential, folderId);
         requestTask.execute();
-
     }
-
 
     private void fillAdapter(final List<DriveDocument> documents) {
         parallaxRecyclerAdapter = new ParallaxRecyclerAdapter<DriveDocument>(documents) {
@@ -335,6 +316,7 @@ public class FolderListFragment extends Fragment implements GoogleApiClient.Conn
                 DriveDocumentHolder documentHolder = (DriveDocumentHolder) viewHolder;
                 documentHolder.fileResourceId = driveDoc.getResourceId();
                 documentHolder.documentTitle.setText(driveDoc.getTitle());
+                documentHolder.documentDescription.setText(driveDoc.getDescription());
                 documentHolder.documentExtension.setText(driveDoc.getExtension());
                 documentHolder.filePhoto.setImageDrawable(ContextCompat.getDrawable(getActivity().getApplicationContext(), R.drawable.xml_file));
             }
@@ -372,14 +354,10 @@ public class FolderListFragment extends Fragment implements GoogleApiClient.Conn
     }
 
     @Override
-    public void onPermissionsGranted(int requestCode, List<String> perms) {
-        // Do nothing.
-    }
+    public void onPermissionsGranted(int requestCode, List<String> perms) {/* Do nothing.*/}
 
     @Override
-    public void onPermissionsDenied(int requestCode, List<String> perms) {
-// Do nothing.
-    }
+    public void onPermissionsDenied(int requestCode, List<String> perms) {/* Do nothing.*/}
 
     @Override
     public void onActivityResult(
@@ -429,9 +407,7 @@ public class FolderListFragment extends Fragment implements GoogleApiClient.Conn
      *                     which is either PERMISSION_GRANTED or PERMISSION_DENIED. Never null.
      */
     @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           @NonNull String[] permissions,
-                                           @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         EasyPermissions.onRequestPermissionsResult(
                 requestCode, permissions, grantResults, this);
@@ -440,6 +416,7 @@ public class FolderListFragment extends Fragment implements GoogleApiClient.Conn
     private class DriveDocumentHolder extends RecyclerView.ViewHolder implements View.OnCreateContextMenuListener{
         CardView cv;
         TextView documentTitle;
+        TextView documentDescription;
         TextView documentExtension;
         ImageView filePhoto;
 
@@ -448,6 +425,7 @@ public class FolderListFragment extends Fragment implements GoogleApiClient.Conn
         public DriveDocumentHolder(View itemView) {
             super(itemView);
             documentTitle = (TextView) itemView.findViewById(R.id.document_title);
+            documentDescription = (TextView) itemView.findViewById(R.id.document_description);
             documentExtension = (TextView) itemView.findViewById(R.id.document_extension);
             filePhoto = (ImageView) itemView.findViewById(R.id.file_photo);
             itemView.setOnCreateContextMenuListener(this);
@@ -491,7 +469,7 @@ public class FolderListFragment extends Fragment implements GoogleApiClient.Conn
             editItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener(){
                 @Override
                 public boolean onMenuItemClick(MenuItem item) {
-                    RenameDocumentFragment renameDocumentFragment = RenameDocumentFragment.newInstance(fileResourceId,documentTitle.getText().toString());
+                    RenameDocumentFragment renameDocumentFragment = RenameDocumentFragment.newInstance(fileResourceId, documentTitle.getText().toString(), documentDescription.getText().toString());
                     fragmentStackManager.loadFragment(renameDocumentFragment, R.id.main_layout);
                     return true;
                 }
@@ -539,7 +517,6 @@ public class FolderListFragment extends Fragment implements GoogleApiClient.Conn
                 });
                 dialog.show();
             }
-           // dialog.show(getActivity(), "Showing Data..", "please wait", true, false);
         }
 
         /**
@@ -558,18 +535,11 @@ public class FolderListFragment extends Fragment implements GoogleApiClient.Conn
             }
         }
 
-        /**
-         * Fetch a list of up to 10 file names and IDs.
-         *
-         * @return List of Strings describing files, or an empty list if no files
-         * found.
-         * @throws IOException
-         */
         private List<DriveDocument> getDataFromApi() throws IOException {
             List<DriveDocument> documentsList = new ArrayList<DriveDocument>();
 
 
-            FileList result = mService.files().list().setQ("\'" + this.folderId + "\' in parents").execute();
+            FileList result = mService.files().list().setQ("\'" + this.folderId + "\' in parents").setFields("files(description,id,name)").execute();
 
             List<File> files = result.getFiles();
             if (files != null) {
@@ -579,13 +549,13 @@ public class FolderListFragment extends Fragment implements GoogleApiClient.Conn
                         document.setTitle(file.getName());
                         document.setExtension(file.getFileExtension());
                         document.setResourceId(file.getId());
+                        document.setDescription(file.getDescription());
                         documentsList.add(document);
                     }
                 }
             }
             return documentsList;
         }
-
 
         @Override
         protected void onPostExecute(List<DriveDocument> output) {

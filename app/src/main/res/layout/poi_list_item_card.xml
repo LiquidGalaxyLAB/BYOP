@@ -5,17 +5,17 @@
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-
-        >
+        android:layout_height="wrap_content">
 
         <ImageView
-            android:layout_width="95dp"
-            android:layout_height="95dp"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
             android:id="@+id/file_photo_poi"
+            android:layout_centerHorizontal="true"
+            android:layout_centerVertical="true"
             android:layout_alignParentLeft="true"
-            android:layout_alignParentTop="true"
-            android:layout_marginRight="16dp" />
+            android:layout_marginRight="16dp"
+            android:layout_marginLeft="16dp" />
 
 
         <TextView
@@ -23,7 +23,7 @@
             android:layout_height="wrap_content"
             android:id="@+id/poi_name"
             android:layout_toRightOf="@+id/file_photo_poi"
-            android:layout_alignParentTop="true"
+            android:textStyle="bold"
             android:textSize="15sp"
             android:maxLines="2" />
 
@@ -33,6 +33,7 @@
             android:id="@+id/poi_description"
             android:layout_toRightOf="@+id/file_photo_poi"
             android:textSize="10sp"
+            android:textStyle="italic"
             android:layout_below="@+id/poi_name"
             android:maxLines="2" />
 

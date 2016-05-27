@@ -47,10 +47,13 @@ public class RenameDocumentFragment extends Fragment {
 
     public static final String ARG_FILE_ID = "fileId";
     public static final String ARG_NAME = "name";
+    public static final String ARG_DESC = "description";
 
     private EditText document_name_input;
-
     private TextInputLayout document_name;
+
+    private EditText document_description_input;
+    private TextInputLayout document_description;
 
     private Button saveDocument;
 
@@ -58,14 +61,16 @@ public class RenameDocumentFragment extends Fragment {
 
     private String fileId;
     private String actualName;
+    private String actualDescription;
 
     GoogleAccountCredential mCredential;
 
-    public static RenameDocumentFragment newInstance(String fileId,String actualName) {
+    public static RenameDocumentFragment newInstance(String fileId, String actualName, String actualDescription) {
         RenameDocumentFragment renameDocument = new RenameDocumentFragment();
         Bundle bundle = new Bundle();
         bundle.putString(ARG_FILE_ID, fileId);
         bundle.putString(ARG_NAME, actualName);
+        bundle.putString(ARG_DESC, actualDescription);
         renameDocument.setArguments(bundle);
         return renameDocument;
     }
@@ -78,10 +83,11 @@ public class RenameDocumentFragment extends Fragment {
 
         saveDocument = (Button) rootView.findViewById(R.id.btn_rename_document);
 
-
         document_name_input = (EditText) rootView.findViewById(R.id.rename_document_name_input);
-
         document_name = (TextInputLayout) rootView.findViewById(R.id.rename_document_name);
+
+        document_description_input = (EditText) rootView.findViewById(R.id.rename_document_description_input);
+        document_description = (TextInputLayout) rootView.findViewById(R.id.rename_document_description);
 
         saveDocument.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -92,7 +98,7 @@ public class RenameDocumentFragment extends Fragment {
                     document_name.setError(res.getString(R.string.empty_name_error));
                 }else{
                     document_name.setErrorEnabled(false);
-                    renameFileThroughApi(document_name_input);
+                    renameFileThroughApi(document_name_input, document_description_input);
                 }
 
 
@@ -111,11 +117,14 @@ public class RenameDocumentFragment extends Fragment {
         super.onActivityCreated(savedInstanceState);
         fileId = getArguments().getString(ARG_FILE_ID);
         actualName = getArguments().getString(ARG_NAME);
+        actualDescription = getArguments().getString(ARG_DESC);
+
         document_name_input.setText(actualName);
+        document_description_input.setText(actualDescription);
     }
 
 
-    private void renameFileThroughApi(EditText documentName){
+    private void renameFileThroughApi(EditText documentName, EditText documentDescription) {
         if (!GooglePlayUtils.isGooglePlayServicesAvailable(this.getActivity())) {
             GooglePlayUtils.acquireGooglePlayServices(this.getActivity());
         } else if (mCredential.getSelectedAccountName() == null) {
@@ -123,7 +132,7 @@ public class RenameDocumentFragment extends Fragment {
         } else if (!GooglePlayUtils.isDeviceOnline(this.getActivity())) {
             AndroidUtils.showMessage("No network connection available.", getActivity());
         } else {
-            RenameTask renameTask = new RenameTask(mCredential,documentName,this.fileId);
+            RenameTask renameTask = new RenameTask(mCredential, documentName, documentDescription, this.fileId);
             renameTask.execute();
         }
     }
@@ -136,7 +145,7 @@ public class RenameDocumentFragment extends Fragment {
                     .getString(Constants.PREF_ACCOUNT_NAME, null);
             if (accountName != null) {
                 mCredential.setSelectedAccountName(accountName);
-                renameFileThroughApi(documentName);
+                renameFileThroughApi(documentName, document_description_input);
             } else {
                 // Start a dialog from which the user can choose an account
                 startActivityForResult(
@@ -176,10 +185,11 @@ public class RenameDocumentFragment extends Fragment {
         private com.google.api.services.drive.Drive mService = null;
         private Exception mLastError = null;
         private String documentName = "";
+        private String documentDescription;
         private String fileId = "";
 
 
-        public RenameTask(GoogleAccountCredential credential, EditText documentName,String fileId) {
+        public RenameTask(GoogleAccountCredential credential, EditText documentName, EditText documentDescription, String fileId) {
             HttpTransport transport = AndroidHttp.newCompatibleTransport();
             JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
             mService = new com.google.api.services.drive.Drive.Builder(
@@ -188,6 +198,7 @@ public class RenameDocumentFragment extends Fragment {
                     .build();
 
             this.documentName = documentName.getText().toString();
+            this.documentDescription = documentDescription != null ? documentDescription.getText().toString() : "";
             this.fileId = fileId;
         }
 
@@ -218,10 +229,9 @@ public class RenameDocumentFragment extends Fragment {
         private void createFile() throws IOException {
             File fileMetadata = new File();
             fileMetadata.setName(this.documentName);
-
+            fileMetadata.setDescription(this.documentDescription);
 
             mService.files().update(this.fileId,fileMetadata).execute();
-
         }
 
         @Override

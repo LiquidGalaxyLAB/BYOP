@@ -9,6 +9,7 @@ import android.os.Parcelable;
 public class DriveDocument implements Parcelable {
     private String driveId;
     private String title;
+    private String description;
     private String extension;
     private String resourceId;
 
@@ -18,14 +19,24 @@ public class DriveDocument implements Parcelable {
         this.title = "";
         this.extension = "";
         this.resourceId = "";
+        this.description = "";
     }
 
 
-    public DriveDocument(String driveId, String title, String extension,String resourceId) {
+    public DriveDocument(String driveId, String title, String extension, String resourceId, String description) {
         this.driveId = driveId;
         this.title = title;
         this.extension = extension;
         this.resourceId = resourceId;
+        this.description = description;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public String getResourceId() {
@@ -96,6 +107,7 @@ public class DriveDocument implements Parcelable {
         title = in.readString();
         extension = in.readString();
         resourceId = in.readString();
+        description = in.readString();
     }
 
     @Override
@@ -110,6 +122,6 @@ public class DriveDocument implements Parcelable {
         dest.writeString(title);
         dest.writeString(extension);
         dest.writeString(resourceId);
-
+        dest.writeString(description);
     }
 }
