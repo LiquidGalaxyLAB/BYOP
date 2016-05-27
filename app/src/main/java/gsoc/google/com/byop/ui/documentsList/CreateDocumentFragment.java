@@ -2,7 +2,9 @@ package gsoc.google.com.byop.ui.documentsList;
 
 import android.Manifest;
 import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.res.Resources;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -54,6 +56,7 @@ public class CreateDocumentFragment extends Fragment  implements GoogleApiClient
 
     private static String TAG = CreateDocumentFragment.class.toString();
     protected FragmentStackManager fragmentStackManager;
+
 
     public static final String ARG_FOLDER_ID = "folderId";
     public static final String ARG_API_CLIENT = "apliClient";
@@ -144,7 +147,7 @@ public class CreateDocumentFragment extends Fragment  implements GoogleApiClient
         } else if (!GooglePlayUtils.isDeviceOnline(this.getActivity())) {
             AndroidUtils.showMessage("No network connection available.", getActivity());
         } else {
-            CreateTask createTask = new CreateTask(mCredential, documentName, documentDescription, this.folderId);
+            createTask = new CreateTask(mCredential, documentName, documentDescription, this.folderId);
             createTask.execute();
         }
     }
@@ -215,6 +218,9 @@ public class CreateDocumentFragment extends Fragment  implements GoogleApiClient
         private String documentDescription;
         private String folderId = "";
 
+
+        private ProgressDialog dialog;
+
         private File newDocument;
 
 
@@ -229,6 +235,26 @@ public class CreateDocumentFragment extends Fragment  implements GoogleApiClient
             this.documentName = documentName.getText().toString();
             this.documentDescription = documentDescription != null ? documentDescription.getText().toString() : "";
             this.folderId = folderId;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            if (dialog == null) {
+                dialog = new ProgressDialog(getContext());
+                dialog.setMessage(getActivity().getResources().getString(R.string.loading));
+                dialog.setIndeterminate(false);
+                dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+                dialog.setCancelable(true);
+                dialog.setCanceledOnTouchOutside(false);
+                dialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                    @Override
+                    public void onCancel(DialogInterface dialog) {
+                        createTask.cancel(true);
+                    }
+                });
+                dialog.show();
+            }
         }
 
         /**
@@ -266,7 +292,6 @@ public class CreateDocumentFragment extends Fragment  implements GoogleApiClient
             fileMetadata.setMimeType("text/xml");
 
             FileContent xmlSkeleton = addXmlSkeleton();
-
 
            newDocument =  mService.files().create(fileMetadata,xmlSkeleton).execute();
         }
@@ -314,6 +339,9 @@ public class CreateDocumentFragment extends Fragment  implements GoogleApiClient
                 InputMethodManager imm = (InputMethodManager)getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
                 imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
             }
+            if (dialog != null && dialog.isShowing())
+                dialog.hide();
+
            fragmentStackManager.popBackStatFragment();
         }
 

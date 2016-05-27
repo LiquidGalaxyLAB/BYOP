@@ -79,6 +79,7 @@ public class FolderListFragment extends Fragment implements GoogleApiClient.Conn
     private ParallaxRecyclerAdapter<DriveDocument> parallaxRecyclerAdapter;
     private SwipeRefreshLayout refreshLayout;
     private MakeRequestTask requestTask;
+    private MakeDeleteTask deleteTask;
     private FloatingActionButton fab;
 
     protected FragmentStackManager fragmentStackManager;
@@ -216,8 +217,8 @@ public class FolderListFragment extends Fragment implements GoogleApiClient.Conn
         } else if (!GooglePlayUtils.isDeviceOnline(this.getActivity())) {
             AndroidUtils.showMessage("No network connection available.", getActivity());
         } else {
-            MakeDeleteTask deleteTasks = new MakeDeleteTask(mCredential,fileResourceId);
-            deleteTasks.execute();
+            deleteTask = new MakeDeleteTask(mCredential, fileResourceId);
+            deleteTask.execute();
         }
     }
 
@@ -595,6 +596,8 @@ public class FolderListFragment extends Fragment implements GoogleApiClient.Conn
         private Exception mLastError = null;
         private String resourceId = "";
 
+        private ProgressDialog dialog;
+
         public MakeDeleteTask(GoogleAccountCredential credential, String resourceId) {
             HttpTransport transport = AndroidHttp.newCompatibleTransport();
             JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
@@ -604,6 +607,26 @@ public class FolderListFragment extends Fragment implements GoogleApiClient.Conn
                     .build();
 
             this.resourceId = resourceId;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            if (dialog == null) {
+                dialog = new ProgressDialog(getContext());
+                dialog.setMessage(getActivity().getResources().getString(R.string.loading));
+                dialog.setIndeterminate(false);
+                dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+                dialog.setCancelable(true);
+                dialog.setCanceledOnTouchOutside(false);
+                dialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                    @Override
+                    public void onCancel(DialogInterface dialog) {
+                        deleteTask.cancel(true);
+                    }
+                });
+                dialog.show();
+            }
         }
 
         /**
@@ -640,6 +663,9 @@ public class FolderListFragment extends Fragment implements GoogleApiClient.Conn
         protected void onPostExecute(Void aVoid) {
             requestTask = new MakeRequestTask(mCredential, folderId);
             requestTask.execute();
+
+            if (dialog != null && dialog.isShowing())
+                dialog.hide();
             refreshLayout.setRefreshing(false);
         }
 

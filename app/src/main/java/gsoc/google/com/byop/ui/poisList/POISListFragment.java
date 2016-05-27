@@ -63,6 +63,7 @@ import gsoc.google.com.byop.utils.BYOPXmlPullParser;
 import gsoc.google.com.byop.utils.Constants;
 import gsoc.google.com.byop.utils.FragmentStackManager;
 import gsoc.google.com.byop.utils.GooglePlayUtils;
+import gsoc.google.com.byop.utils.POIUtils;
 import pub.devrel.easypermissions.AfterPermissionGranted;
 import pub.devrel.easypermissions.EasyPermissions;
 
@@ -351,7 +352,9 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
                     alert.setPositiveButton(getResources().getString(R.string.yes), new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int whichButton) {
                             //TODO: Delete POI
-                            //deleteFilesThroughApi(fileResourceId);
+                            POIUtils.deletePOI(poiName.getText().toString(), poiDescription.getText().toString(),
+                                    poiLatitude.getText().toString(), poiLongitude.getText().toString(),
+                                    document, mGoogleApiClient, getActivity());
                         }
                     });
 
@@ -544,12 +547,14 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
 
                                     }
                                 });
+                    } else {
+                        AndroidUtils.showMessage("Something went wrong:" + driveIdResult.getStatus(), getActivity());
+                        fragmentStackManager.popBackStatFragment();
+                        return;
                     }
                 }
             });
-            while (!isCompleted) {
-                //wait for complete
-            }
+            while (!isCompleted) {/*wait for complete*/}
             return innerPOIList;
         }
 
