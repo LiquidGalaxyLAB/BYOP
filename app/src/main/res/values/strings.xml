@@ -57,6 +57,8 @@
     <!--Contextual Menu -->
     <string name="context_menu_title">Actions</string>
     <string name="context_menu_delete">Delete</string>
+    <string name="context_menu_view">View</string>
+    <string name="context_menu_edit">Edit</string>
 
     <!--Add Document-->
     <string name="add_document_header">New POIS File</string>
@@ -68,6 +70,6 @@
     <string name="empty_name_error">The name must not be empty</string>
 
     <!--Rename Document-->
-    <string name="context_menu_edit">Rename</string>
     <string name="edit_document_header">Rename Document</string>
+
 </resources>

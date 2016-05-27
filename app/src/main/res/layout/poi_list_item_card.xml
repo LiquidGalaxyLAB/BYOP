@@ -1,6 +1,6 @@
 <android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="80dp"
+    android:layout_height="100dp"
     android:layout_margin="8dp">
 
     <RelativeLayout
@@ -10,8 +10,8 @@
         >
 
         <ImageView
-            android:layout_width="75dp"
-            android:layout_height="75dp"
+            android:layout_width="95dp"
+            android:layout_height="95dp"
             android:id="@+id/file_photo_poi"
             android:layout_alignParentLeft="true"
             android:layout_alignParentTop="true"
@@ -24,15 +24,25 @@
             android:id="@+id/poi_name"
             android:layout_toRightOf="@+id/file_photo_poi"
             android:layout_alignParentTop="true"
-            android:textSize="25sp"
+            android:textSize="15sp"
             android:maxLines="2" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/poi_description"
+            android:layout_toRightOf="@+id/file_photo_poi"
+            android:textSize="10sp"
+            android:layout_below="@+id/poi_name"
+            android:maxLines="2" />
+
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/poi_latitude"
             android:layout_toRightOf="@+id/file_photo_poi"
-            android:layout_below="@+id/poi_name" />
+            android:layout_below="@+id/poi_description" />
 
         <TextView
             android:layout_width="wrap_content"

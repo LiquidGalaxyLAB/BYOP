@@ -16,10 +16,13 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.ContextMenu;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -54,6 +57,7 @@ import java.util.List;
 
 import gsoc.google.com.byop.R;
 import gsoc.google.com.byop.model.DriveDocument;
+import gsoc.google.com.byop.model.POI;
 import gsoc.google.com.byop.utils.AndroidUtils;
 import gsoc.google.com.byop.utils.BYOPXmlPullParser;
 import gsoc.google.com.byop.utils.Constants;
@@ -70,10 +74,12 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
 
     private static String TAG = POISListFragment.class.toString();
     private RecyclerView rv = null;
-    private ParallaxRecyclerAdapter<BYOPXmlPullParser.POI> parallaxRecyclerAdapter;
+    private ParallaxRecyclerAdapter<POI> parallaxRecyclerAdapter;
     private SwipeRefreshLayout refreshLayout;
     private RequestContentsTask requestContentsTask;
     private FloatingActionButton fab;
+
+    List<POI> poisList = new ArrayList<POI>();
 
     public static final String ARG_DOCUMENT = "document";
     private DriveDocument document;
@@ -109,6 +115,14 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
         getActivity().setTitle(getActivity().getResources().getString(R.string.app_name));
         fragmentStackManager = FragmentStackManager.getInstance(getActivity());
 
+        refreshLayout.setOnRefreshListener(
+                new SwipeRefreshLayout.OnRefreshListener() {
+                    @Override
+                    public void onRefresh() {
+                        populateUI();
+                    }
+                }
+        );
 
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -145,7 +159,7 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
         return rootView;
     }
 
-    private void populateUI(String folderId) {
+    private void populateUI() {
         requestContentsTask = new RequestContentsTask(mCredential, document);
         requestContentsTask.execute();
 
@@ -299,29 +313,30 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
     }
 
 
-    private class POIHolder extends RecyclerView.ViewHolder {
+    private class POIHolder extends RecyclerView.ViewHolder implements View.OnCreateContextMenuListener {
         CardView cv;
         TextView poiName;
+        TextView poiDescription;
         TextView poiLatitude;
         TextView poiLongitude;
         ImageView filePhoto;
 
-        String fileResourceId = "";
+        String latitude;
+        String longitude;
+
 
         public POIHolder(View itemView) {
             super(itemView);
             poiName = (TextView) itemView.findViewById(R.id.poi_name);
+            poiDescription = (TextView) itemView.findViewById(R.id.poi_description);
             filePhoto = (ImageView) itemView.findViewById(R.id.file_photo_poi);
             poiLatitude = (TextView) itemView.findViewById(R.id.poi_latitude);
             poiLongitude = (TextView) itemView.findViewById(R.id.poi_longitude);
-            //itemView.setOnCreateContextMenuListener(this);
+            itemView.setOnCreateContextMenuListener(this);
         }
 
-        public void bind(@NonNull String data) {
-            fileResourceId = data;
-        }
 
-     /*   @Override
+        @Override
         public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
             menu.setHeaderTitle(getResources().getString(R.string.context_menu_title));
 
@@ -335,6 +350,7 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
 
                     alert.setPositiveButton(getResources().getString(R.string.yes), new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int whichButton) {
+                            //TODO: Delete POI
                             //deleteFilesThroughApi(fileResourceId);
                         }
                     });
@@ -355,35 +371,54 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
             editItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener(){
                 @Override
                 public boolean onMenuItemClick(MenuItem item) {
-                    RenameDocumentFragment renameDocumentFragment = RenameDocumentFragment.newInstance(fileResourceId,documentTitle.getText().toString());
-                    fragmentStackManager.loadFragment(renameDocumentFragment, R.id.main_layout);
+                    //TODO: Edit POI
+//                    RenameDocumentFragment renameDocumentFragment = RenameDocumentFragment.newInstance(fileResourceId,documentTitle.getText().toString());
+//                    fragmentStackManager.loadFragment(renameDocumentFragment, R.id.main_layout);
                     return true;
                 }
             });
-        }*/
+
+            MenuItem viewItem = menu.add(0, v.getId(), 0, R.string.context_menu_view);
+            viewItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+                @Override
+                public boolean onMenuItemClick(MenuItem item) {
+                    //View POI
+                    POIMapFragment poiMapFragment = POIMapFragment.newInstance(latitude, longitude, poiName.getText().toString(), poiDescription.getText().toString());
+                    fragmentStackManager.loadFragment(poiMapFragment, R.id.main_layout);
+                    return true;
+                }
+            });
+
+        }
     }
 
-    private void fillAdapter(final List<BYOPXmlPullParser.POI> poisList) {
-        parallaxRecyclerAdapter = new ParallaxRecyclerAdapter<BYOPXmlPullParser.POI>(poisList) {
+    private void fillAdapter(final List<POI> poisList) {
+        parallaxRecyclerAdapter = new ParallaxRecyclerAdapter<POI>(poisList) {
             @Override
-            public void onBindViewHolderImpl(RecyclerView.ViewHolder viewHolder, ParallaxRecyclerAdapter<BYOPXmlPullParser.POI> parallaxRecyclerAdapter, int i) {
-                BYOPXmlPullParser.POI poi = parallaxRecyclerAdapter.getData().get(i);
+            public void onBindViewHolderImpl(RecyclerView.ViewHolder viewHolder, ParallaxRecyclerAdapter<POI> parallaxRecyclerAdapter, int i) {
+                POI poi = parallaxRecyclerAdapter.getData().get(i);
 
 
                 POIHolder poiHolder = (POIHolder) viewHolder;
-                poiHolder.poiName.setText(poi.getTitle());
-                poiHolder.poiLatitude.setText(poi.getPoint().getLatitude());
-                poiHolder.poiLongitude.setText(poi.getPoint().getLongitude());
-                poiHolder.filePhoto.setImageDrawable(ContextCompat.getDrawable(getActivity().getApplicationContext(), R.drawable.xml_file));
+                poiHolder.poiName.setText(poi.getName());
+                poiHolder.poiDescription.setText(poi.getDescription());
+
+                poiHolder.poiLatitude.setText("Lat:" + poi.getPoint().getLatitude());
+                poiHolder.poiLongitude.setText("Lon:" + poi.getPoint().getLongitude());
+
+                poiHolder.latitude = poi.getPoint().getLatitude();
+                poiHolder.longitude = poi.getPoint().getLongitude();
+
+                poiHolder.filePhoto.setImageDrawable(ContextCompat.getDrawable(getActivity().getApplicationContext(), R.drawable.poi_icon));
             }
 
             @Override
-            public RecyclerView.ViewHolder onCreateViewHolderImpl(ViewGroup viewGroup, ParallaxRecyclerAdapter<BYOPXmlPullParser.POI> parallaxRecyclerAdapter, int i) {
+            public RecyclerView.ViewHolder onCreateViewHolderImpl(ViewGroup viewGroup, ParallaxRecyclerAdapter<POI> parallaxRecyclerAdapter, int i) {
                 return new POIHolder(LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.poi_list_item_card, viewGroup, false));
             }
 
             @Override
-            public int getItemCountImpl(ParallaxRecyclerAdapter<BYOPXmlPullParser.POI> parallaxRecyclerAdapter) {
+            public int getItemCountImpl(ParallaxRecyclerAdapter<POI> parallaxRecyclerAdapter) {
                 return poisList.size();
             }
 
@@ -400,11 +435,10 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
         parallaxRecyclerAdapter.setOnClickEvent(new ParallaxRecyclerAdapter.OnClickEvent() {
             @Override
             public void onClick(View view, int i) {
-                BYOPXmlPullParser.POI poi = poisList.get(i);
-//                POISListFragment poisListFragment = POISListFragment.newInstance(document);
-//                fragmentStackManager.loadFragment(poisListFragment, R.id.main_layout);
-
-                //AndroidUtils.showMessage(document.getResourceId(), getActivity());
+                POI poi = poisList.get(i);
+                POIMapFragment poiMapFragment = POIMapFragment.newInstance(poi.getPoint().getLatitude(), poi.getPoint().getLongitude(),
+                        poi.getName(), poi.getDescription());
+                fragmentStackManager.loadFragment(poiMapFragment, R.id.main_layout);
             }
         });
     }
@@ -414,11 +448,14 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
      * An asynchronous task that handles the Drive API call.
      * Placing the API calls in their own task ensures the UI stays responsive.
      */
-    private class RequestContentsTask extends AsyncTask<Void, Void, List<BYOPXmlPullParser.POI>> {
+    private class RequestContentsTask extends AsyncTask<Void, Void, List<POI>> {
         private com.google.api.services.drive.Drive mService = null;
         private Exception mLastError = null;
         private String folderId = "";
         private ProgressDialog dialog;
+
+        private List<POI> innerPOIList = new ArrayList<POI>();
+        private boolean isCompleted = false;
 
         public RequestContentsTask(GoogleAccountCredential credential, DriveDocument document) {
             HttpTransport transport = AndroidHttp.newCompatibleTransport();
@@ -449,7 +486,6 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
                 });
                 dialog.show();
             }
-            // dialog.show(getActivity(), "Showing Data..", "please wait", true, false);
         }
 
         /**
@@ -458,7 +494,7 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
          * @param params no parameters needed for this task.
          */
         @Override
-        protected List<BYOPXmlPullParser.POI> doInBackground(Void... params) {
+        protected List<POI> doInBackground(Void... params) {
             try {
                 return getFileContentsFromApi();
             } catch (Exception e) {
@@ -475,9 +511,7 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
          * found.
          * @throws IOException
          */
-        private List<BYOPXmlPullParser.POI> getFileContentsFromApi() throws IOException {
-            List<BYOPXmlPullParser.POI> poisList = new ArrayList<BYOPXmlPullParser.POI>();
-
+        private List<POI> getFileContentsFromApi() throws IOException {
 
             File driveFile = mService.files().get(document.getResourceId()).execute();
 
@@ -486,8 +520,8 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
                 @Override
                 public void onResult(@NonNull DriveApi.DriveIdResult driveIdResult) {
                     if (driveIdResult.getStatus().isSuccess()) {
-                        DriveFile file = Drive.DriveApi.getFile(getGoogleApiClient(), driveIdResult.getDriveId());
-                          file.open(mGoogleApiClient, DriveFile.MODE_READ_ONLY, null)
+                        final DriveFile[] file = {Drive.DriveApi.getFile(getGoogleApiClient(), driveIdResult.getDriveId())};
+                        file[0].open(mGoogleApiClient, DriveFile.MODE_READ_ONLY, null)
                                 .setResultCallback(new ResultCallback<DriveApi.DriveContentsResult>() {
                                     @Override
                                     public void onResult(@NonNull DriveApi.DriveContentsResult driveContentsResult) {
@@ -498,24 +532,10 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
                                         // DriveContents object contains pointers
                                         // to the actual byte stream
                                         DriveContents contents = driveContentsResult.getDriveContents();
-
-
-//                                        BufferedReader reader = new BufferedReader(new InputStreamReader(contents.getInputStream()));
-//                                        StringBuilder builder = new StringBuilder();
-//                                        String line;
                                         try {
 
-                                            checkContents(contents.getInputStream());
-
-//                                            while ((line = reader.readLine()) != null) {
-//                                                builder.append(line);
-//                                            }
-//                                            String contentsAsString = builder.toString();
-//
-//                                            checkContents(contentsAsString,contents);
-
-//                                            AndroidUtils.showMessage(contentsAsString, getActivity());
-
+                                            innerPOIList = checkContents(contents.getInputStream());
+                                            isCompleted = true;
                                         } catch (IOException e) {
                                             e.printStackTrace();
                                         } catch (XmlPullParserException e) {
@@ -527,12 +547,15 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
                     }
                 }
             });
-            return poisList;
+            while (!isCompleted) {
+                //wait for complete
+            }
+            return innerPOIList;
         }
 
 
         @Override
-        protected void onPostExecute(List<BYOPXmlPullParser.POI> output) {
+        protected void onPostExecute(List<POI> output) {
             super.onPostExecute(output);
             if (output != null)
                 fillAdapter(output);
@@ -563,9 +586,10 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
         }
     }
 
-    private void checkContents(InputStream inputStream) throws IOException, XmlPullParserException {
+    private List<POI> checkContents(InputStream inputStream) throws IOException, XmlPullParserException {
         BYOPXmlPullParser parser = new BYOPXmlPullParser();
-        parser.parse(inputStream);
+        List<POI> poiList = parser.parse(inputStream);
 
+        return poiList;
     }
 }

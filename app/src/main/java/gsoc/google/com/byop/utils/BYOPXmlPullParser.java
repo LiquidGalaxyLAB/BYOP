@@ -10,6 +10,9 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import gsoc.google.com.byop.model.POI;
+import gsoc.google.com.byop.model.Point;
+
 /**
  * Created by lgwork on 26/05/16.
  */
@@ -40,102 +43,84 @@ public class BYOPXmlPullParser {
                 continue;
             }
             String name = parser.getName();
-            // Starts by looking for the entry tag
-            if (name.equals("Folder")) {
-                entries.add(readEntry(parser));
-            } else if (!name.equals("Document")) {
+            // Starts by looking for the folder tag
+            if (name.equalsIgnoreCase("Folder")) {
+                entries = readFolder(parser);
+            } else if (!name.equalsIgnoreCase("Document")) {
                 skip(parser);
             }
         }
         return entries;
     }
 
-    public static class Point {
-        public final String latitude;
-        public final String longitude;
+    private List<POI> readFolder(XmlPullParser parser) throws XmlPullParserException, IOException {
+        parser.require(XmlPullParser.START_TAG, ns, "Folder");
 
-        public Point() {
-            this.latitude = "";
-            this.longitude = "";
-        }
+        List<POI> entries = new ArrayList<POI>();
 
-        private Point(String latitude, String longitude) {
-            this.latitude = latitude;
-            this.longitude = longitude;
-        }
-
-        public String getLatitude() {
-            return latitude;
-        }
-
-        public String getLongitude() {
-            return longitude;
-        }
-    }
-
-    // This class represents a single entry (post) in the XML feed.
-    // It includes the data members "title," "link," and "summary."
-    public static class POI {
-        public final String title;
-        public final Point point;
-
-        public POI() {
-            this.title = "";
-            this.point = new Point();
-        }
-
-        public POI(String title, Point point) {
-            this.title = title;
-            this.point = point;
-        }
-
-        public String getTitle() {
-            return title;
-        }
-
-        public Point getPoint() {
-            return point;
-        }
-    }
-
-    // Parses the contents of an entry. If it encounters a title, summary, or link tag, hands them
-    // off
-    // to their respective &quot;read&quot; methods for processing. Otherwise, skips the tag.
-    private POI readEntry(XmlPullParser parser) throws XmlPullParserException, IOException {
-        parser.require(XmlPullParser.START_TAG, ns, "Placemark");
-        String title = null;
-        Point point = null;
         while (parser.next() != XmlPullParser.END_TAG) {
             if (parser.getEventType() != XmlPullParser.START_TAG) {
                 continue;
             }
             String name = parser.getName();
-            if (name.equals("name")) {
-                title = readTitle(parser);
-            } else if (name.equals("Point")) {
-                point = readPoint(parser);
-            } else if (!name.equals("Placemark")) {
+            if (name.equalsIgnoreCase("Placemark")) {
+                entries.add(readPlacemark(parser));
+            } else {
                 skip(parser);
             }
         }
-        return new POI(title, point);
+        return entries;
     }
 
-    // Processes title tags in the feed.
-    private String readTitle(XmlPullParser parser) throws IOException, XmlPullParserException {
+
+    private POI readPlacemark(XmlPullParser parser) throws XmlPullParserException, IOException {
+        parser.require(XmlPullParser.START_TAG, ns, "Placemark");
+
+        String poiName = "";
+        String poiDescription = "";
+        Point point = null;
+
+        while (parser.next() != XmlPullParser.END_TAG) {
+            if (parser.getEventType() != XmlPullParser.START_TAG) {
+                continue;
+            }
+            String name = parser.getName();
+            if (name.equalsIgnoreCase("name")) {
+                poiName = readPoiName(parser);
+            } else if (name.equals("description")) {
+                poiDescription = readPoiDescription(parser);
+            } else if (name.equalsIgnoreCase("Point")) {
+                point = readPoint(parser);
+            } else if (!name.equalsIgnoreCase("Placemark")) {
+                skip(parser);
+            }
+        }
+        return new POI(poiName, poiDescription, point);
+    }
+
+    // Processes the name of the placemark
+    private String readPoiName(XmlPullParser parser) throws IOException, XmlPullParserException {
         parser.require(XmlPullParser.START_TAG, ns, "name");
         String title = readText(parser);
         parser.require(XmlPullParser.END_TAG, ns, "name");
         return title;
     }
 
-    // Processes link tags in the feed.
+    // Processes the description of the placemark
+    private String readPoiDescription(XmlPullParser parser) throws IOException, XmlPullParserException {
+        parser.require(XmlPullParser.START_TAG, ns, "description");
+        String description = readText(parser);
+        parser.require(XmlPullParser.END_TAG, ns, "description");
+        return description;
+    }
+
+    // Processes the point of the placemark
     private Point readPoint(XmlPullParser parser) throws IOException, XmlPullParserException {
         Point point = new Point();
         parser.require(XmlPullParser.START_TAG, ns, "Point");
         String tag = parser.getName();
 
-        if (tag.equals("Point")) {
+        if (tag.equalsIgnoreCase("Point")) {
             point = readCoordinates(parser);
         }
         parser.require(XmlPullParser.END_TAG, ns, "Point");
@@ -143,28 +128,42 @@ public class BYOPXmlPullParser {
     }
 
     private Point readCoordinates(XmlPullParser parser) throws IOException, XmlPullParserException {
-        String coordinates = "";
-        String[] coordinatesSplit = new String[]{};
-        //  parser.require(XmlPullParser.START_TAG, ns, "coordinates");
+
+        parser.require(XmlPullParser.START_TAG, ns, "Point");
+
+        Point point = new Point();
+
         while (parser.next() != XmlPullParser.END_TAG) {
             if (parser.getEventType() != XmlPullParser.START_TAG) {
                 continue;
             }
             String name = parser.getName();
-            if (name.equals("coordinates")) {
-                coordinates = readText(parser);
-                coordinatesSplit = coordinates.split(",");
+            if (name.equalsIgnoreCase("coordinates")) {
+                point = readCoordinatesString(parser);
             } else {
                 skip(parser);
             }
         }
+        return point;
+
+    }
+
+    private Point readCoordinatesString(XmlPullParser parser) throws IOException, XmlPullParserException {
+
+        String coordinates = "";
+        String[] coordinatesSplit = new String[]{};
+
+        parser.require(XmlPullParser.START_TAG, ns, "coordinates");
+        coordinates = readText(parser);
         parser.require(XmlPullParser.END_TAG, ns, "coordinates");
+
+        coordinatesSplit = coordinates.split(",");
 
         return new Point(coordinatesSplit[1], coordinatesSplit[0]);
     }
 
 
-    // For the tags title and summary, extracts their text values.
+    // Extract the text value of a tag
     private String readText(XmlPullParser parser) throws IOException, XmlPullParserException {
         String result = "";
         if (parser.next() == XmlPullParser.TEXT) {
