@@ -1,6 +1,8 @@
 package gsoc.google.com.byop.ui.poisList;
 
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,15 +17,21 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import gsoc.google.com.byop.R;
+import gsoc.google.com.byop.model.DriveDocument;
+import gsoc.google.com.byop.model.POI;
+import gsoc.google.com.byop.model.Point;
+import gsoc.google.com.byop.utils.FragmentStackManager;
 
 /**
- * Created by lgwork on 27/05/16.
+ * Created by lgwork on 30/05/16.
  */
-public class POIMapFragment extends Fragment implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener {
+public class EditPOIMapFragment extends Fragment implements GoogleMap.OnMarkerDragListener, OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+
+    protected FragmentStackManager fragmentStackManager;
 
     public static final String POI_LOCATION_LON = "LONGITUDE";
     public static final String POI_LOCATION_LAT = "LATITUDE";
@@ -40,17 +48,30 @@ public class POIMapFragment extends Fragment implements OnMapReadyCallback, Goog
     private GoogleMap googleMap;
     private GoogleApiClient googleApiClient;
 
-    public static POIMapFragment newInstance(String poiLatitude, String poiLongitude, String poiName, String poiDescription) {
-        POIMapFragment poiMapFragment = new POIMapFragment();
+    private DriveDocument driveDoc;
+
+    private POISListFragment poisFragment;
+
+    public POISListFragment getPoisFragment() {
+        return poisFragment;
+    }
+
+    public void setPoisFragment(POISListFragment poisFragment) {
+        this.poisFragment = poisFragment;
+    }
+
+    POI managedPoi;
+
+    public static EditPOIMapFragment newInstance(String poiLatitude, String poiLongitude, String poiName, String poiDescription) {
+        EditPOIMapFragment editPoiMapFragment = new EditPOIMapFragment();
         Bundle bundle = new Bundle();
         bundle.putString(POI_LOCATION_LON, poiLongitude);
         bundle.putString(POI_LOCATION_LAT, poiLatitude);
         bundle.putString(POI_NAME, poiName);
         bundle.putString(POI_DESC, poiDescription);
-        poiMapFragment.setArguments(bundle);
-        return poiMapFragment;
+        editPoiMapFragment.setArguments(bundle);
+        return editPoiMapFragment;
     }
-
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -61,14 +82,15 @@ public class POIMapFragment extends Fragment implements OnMapReadyCallback, Goog
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+
+        fragmentStackManager = FragmentStackManager.getInstance(getActivity());
+
         poiLatitude = getArguments().getString(POI_LOCATION_LAT);
         poiLongitude = getArguments().getString(POI_LOCATION_LON);
         poiName = getArguments().getString(POI_NAME);
         poiDescription = getArguments().getString(POI_DESC);
 
-
         latLon = new LatLng(Double.parseDouble(poiLatitude), Double.parseDouble(poiLongitude));
-
 
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
@@ -79,6 +101,14 @@ public class POIMapFragment extends Fragment implements OnMapReadyCallback, Goog
                 .addApi(LocationServices.API)
                 .build();
 
+
+        managedPoi = new POI();
+        managedPoi.setName(poiName);
+        managedPoi.setDescription(poiDescription);
+        Point point = new Point();
+        point.setLatitude(poiLatitude);
+        point.setLongitude(poiLongitude);
+        managedPoi.setPoint(point);
     }
 
     @Override
@@ -93,7 +123,6 @@ public class POIMapFragment extends Fragment implements OnMapReadyCallback, Goog
         super.onStop();
     }
 
-
     @Override
     public void onMapReady(GoogleMap map) {
         googleMap = map;
@@ -104,31 +133,46 @@ public class POIMapFragment extends Fragment implements OnMapReadyCallback, Goog
         // googleMap.setMyLocationEnabled(true);
         googleMap.getUiSettings().setRotateGesturesEnabled(true);
 
-
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLon, 17));
-        MarkerOptions marker = new MarkerOptions().position(latLon).title(poiName).snippet(poiDescription);
-        marker.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ROSE));
+        MarkerOptions marker = new MarkerOptions().draggable(true).position(latLon).title(poiName).snippet(poiDescription).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ROSE));
+
         googleMap.addMarker(marker);
-    }
-
-
-    @Override
-    public void onResume() {
-        super.onResume();
+        googleMap.setOnMarkerDragListener(this);
     }
 
     @Override
-    public void onConnected(Bundle bundle) {
-
+    public void onConnected(@Nullable Bundle bundle) {
     }
 
     @Override
     public void onConnectionSuspended(int i) {
-
     }
 
     @Override
-    public void onConnectionFailed(ConnectionResult connectionResult) {
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+    }
 
+    @Override
+    public void onMarkerDragStart(Marker marker) {
+    }
+
+    @Override
+    public void onMarkerDrag(Marker marker) {
+    }
+
+    @Override
+    public void onMarkerDragEnd(Marker marker) {
+
+        EditPoiDataFragment fragment = EditPoiDataFragment.newInstance(marker.getPosition().latitude, marker.getPosition().longitude, poiName, poiDescription);
+
+        fragment.setDriveDocument(this.driveDoc);
+        fragment.setManagedPoi(managedPoi);
+        fragment.setPoisFragment(getPoisFragment());
+
+        fragmentStackManager.loadFragment(fragment, R.id.map);
+    }
+
+    public void setDriveDocument(DriveDocument driveDocument) {
+        this.driveDoc = driveDocument;
     }
 }

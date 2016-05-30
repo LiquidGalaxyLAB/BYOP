@@ -350,7 +350,7 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
         public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
             menu.setHeaderTitle(getResources().getString(R.string.context_menu_title));
 
-            MenuItem deleteItem =  menu.add(0, v.getId(), 0, R.string.context_menu_delete);
+            MenuItem deleteItem = menu.add(0, v.getId(), 2, R.string.context_menu_delete);
             deleteItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener(){
                 @Override
                 public boolean onMenuItemClick(MenuItem item) {
@@ -382,13 +382,19 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
             });
 
 
-            MenuItem editItem =  menu.add(0, v.getId(), 0, R.string.context_menu_edit);
+            MenuItem editItem = menu.add(0, v.getId(), 1, R.string.context_menu_edit);
             editItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener(){
                 @Override
                 public boolean onMenuItemClick(MenuItem item) {
-                    //TODO: Edit POI
-//                    RenameDocumentFragment renameDocumentFragment = RenameDocumentFragment.newInstance(fileResourceId,documentTitle.getText().toString());
-//                    fragmentStackManager.loadFragment(renameDocumentFragment, R.id.main_layout);
+                    //Edit POI
+
+                    EditPOIMapFragment editPOIMapFragment = EditPOIMapFragment.newInstance(latitude, longitude, poiName.getText().toString(), poiDescription.getText().toString());
+
+                    // editPOIMapFragment.setPoisFragment(poisFragment);
+
+                    editPOIMapFragment.setDriveDocument(document);
+
+                    fragmentStackManager.loadFragment(editPOIMapFragment, R.id.main_layout);
                     return true;
                 }
             });
@@ -398,7 +404,7 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
                 @Override
                 public boolean onMenuItemClick(MenuItem item) {
                     //View POI
-                    POIMapFragment poiMapFragment = POIMapFragment.newInstance(latitude, longitude, poiName.getText().toString(), poiDescription.getText().toString());
+                    ViewPOIMapFragment poiMapFragment = ViewPOIMapFragment.newInstance(latitude, longitude, poiName.getText().toString(), poiDescription.getText().toString());
                     fragmentStackManager.loadFragment(poiMapFragment, R.id.main_layout);
                     return true;
                 }
@@ -451,7 +457,7 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
             @Override
             public void onClick(View view, int i) {
                 POI poi = poisList.get(i);
-                POIMapFragment poiMapFragment = POIMapFragment.newInstance(poi.getPoint().getLatitude(), poi.getPoint().getLongitude(),
+                ViewPOIMapFragment poiMapFragment = ViewPOIMapFragment.newInstance(poi.getPoint().getLatitude(), poi.getPoint().getLongitude(),
                         poi.getName(), poi.getDescription());
                 fragmentStackManager.loadFragment(poiMapFragment, R.id.main_layout);
             }

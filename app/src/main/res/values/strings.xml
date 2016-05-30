@@ -54,6 +54,11 @@
     <string name="name_auth_code_activity">ServerAuthCodeActivity</string>
 
 
+    <!--General-->
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="saving">Saving...</string>
+
     <!--Contextual Menu -->
     <string name="context_menu_title">Actions</string>
     <string name="context_menu_delete">Delete</string>
@@ -74,6 +79,14 @@
     <string name="edit_document_header">Rename Document</string>
     <string name="folderList">Pois Documents</string>
     <string name="poisList">Pois List in document</string>
+
+
+    <!--Edit POI-->
+    <string name="edit_poi_name">POI Name</string>
+    <string name="edit_poi_desc">POI Description</string>
+    <string name="poi_data">POI DATA</string>
+    <string name="edit_poi_latitude">Latitude</string>
+    <string name="edit_poi_longitude">Longitude</string>
 
 
 </resources>
