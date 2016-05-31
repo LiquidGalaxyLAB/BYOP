@@ -1,7 +1,6 @@
 package gsoc.google.com.byop.ui.documentsList;
 
 import android.Manifest;
-import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -20,7 +19,6 @@ import android.widget.Button;
 import android.widget.EditText;
 
 import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.drive.Drive;
 import com.google.api.client.extensions.android.http.AndroidHttp;
@@ -54,18 +52,15 @@ import pub.devrel.easypermissions.EasyPermissions;
  */
 public class CreateDocumentFragment extends Fragment  implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener{
 
-    private static String TAG = CreateDocumentFragment.class.toString();
     protected FragmentStackManager fragmentStackManager;
 
-
     public static final String ARG_FOLDER_ID = "folderId";
-    public static final String ARG_API_CLIENT = "apliClient";
 
     private EditText new_document_name_input;
     private TextInputLayout new_document_name;
 
     private EditText new_document_description_input;
-    private TextInputLayout new_document_description;
+
 
     private Button saveDocument;
 
@@ -100,7 +95,6 @@ public class CreateDocumentFragment extends Fragment  implements GoogleApiClient
         new_document_name = (TextInputLayout) rootView.findViewById(R.id.new_document_name);
 
         new_document_description_input = (EditText) rootView.findViewById(R.id.new_document_description_input);
-        new_document_description = (TextInputLayout) rootView.findViewById(R.id.new_document_description);
 
         saveDocument.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -113,8 +107,6 @@ public class CreateDocumentFragment extends Fragment  implements GoogleApiClient
                     new_document_name.setErrorEnabled(false);
                     createFileThroughApi(new_document_name_input, new_document_description_input);
                 }
-
-
             }
         });
 
@@ -137,7 +129,6 @@ public class CreateDocumentFragment extends Fragment  implements GoogleApiClient
         super.onActivityCreated(savedInstanceState);
         folderId = getArguments().getString(ARG_FOLDER_ID);
     }
-
 
     private void createFileThroughApi(EditText documentName, EditText documentDescription) {
         if (!GooglePlayUtils.isGooglePlayServicesAvailable(this.getActivity())) {
@@ -177,38 +168,14 @@ public class CreateDocumentFragment extends Fragment  implements GoogleApiClient
         }
     }
 
-
-
-    /**
-     * Display an error dialog showing that Google Play Services is missing
-     * or out of date.
-     *
-     * @param connectionStatusCode code describing the presence (or lack of)
-     *                             Google Play Services on this device.
-     */
-    void showGooglePlayServicesAvailabilityErrorDialog(
-            final int connectionStatusCode) {
-        GoogleApiAvailability apiAvailability = GoogleApiAvailability.getInstance();
-        Dialog dialog = apiAvailability.getErrorDialog(
-                this.getActivity(), connectionStatusCode,
-                Constants.REQUEST_GOOGLE_PLAY_SERVICES);
-        dialog.show();
-    }
+    @Override
+    public void onConnected(@Nullable Bundle bundle) {/*Do Nothing*/}
 
     @Override
-    public void onConnected(@Nullable Bundle bundle) {
-        //AndroidUtils.showMessage("Connected", getActivity());
-    }
+    public void onConnectionSuspended(int i) {/*Do Nothing*/}
 
     @Override
-    public void onConnectionSuspended(int i) {
-        //Do nothing
-    }
-
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-        //Do nothing
-    }
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {/*Do Nothing*/}
 
 
     private class CreateTask extends AsyncTask<Void, Void, Void> {
@@ -218,18 +185,14 @@ public class CreateDocumentFragment extends Fragment  implements GoogleApiClient
         private String documentDescription;
         private String folderId = "";
 
-
         private ProgressDialog dialog;
-
-        private File newDocument;
-
 
         public CreateTask(GoogleAccountCredential credential, EditText documentName, EditText documentDescription, String folderId) {
             HttpTransport transport = AndroidHttp.newCompatibleTransport();
             JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
             mService = new com.google.api.services.drive.Drive.Builder(
                     transport, jsonFactory, credential)
-                    .setApplicationName("BYOP")
+                    .setApplicationName(getResources().getString(R.string.app_name))
                     .build();
 
             this.documentName = documentName.getText().toString();
@@ -257,11 +220,6 @@ public class CreateDocumentFragment extends Fragment  implements GoogleApiClient
             }
         }
 
-        /**
-         * Background task to call Drive API.
-         *
-         * @param params no parameters needed for this task.
-         */
         @Override
         protected Void doInBackground(Void... params) {
             try {
@@ -274,13 +232,6 @@ public class CreateDocumentFragment extends Fragment  implements GoogleApiClient
             return null;
         }
 
-        /**
-         * Fetch a list of up to 10 file names and IDs.
-         *
-         * @return List of Strings describing files, or an empty list if no files
-         * found.
-         * @throws IOException
-         */
         private void createFile() throws IOException {
             File fileMetadata = new File();
             fileMetadata.setName(this.documentName+".xml");
@@ -293,7 +244,7 @@ public class CreateDocumentFragment extends Fragment  implements GoogleApiClient
 
             FileContent xmlSkeleton = addXmlSkeleton();
 
-           newDocument =  mService.files().create(fileMetadata,xmlSkeleton).execute();
+            mService.files().create(fileMetadata, xmlSkeleton).execute();
         }
 
         private FileContent addXmlSkeleton() throws IOException {
@@ -331,7 +282,6 @@ public class CreateDocumentFragment extends Fragment  implements GoogleApiClient
             return str;
         }
 
-
         @Override
         protected void onPostExecute(Void aVoid) {
             View view = getActivity().getCurrentFocus();
@@ -345,16 +295,12 @@ public class CreateDocumentFragment extends Fragment  implements GoogleApiClient
            fragmentStackManager.popBackStatFragment();
         }
 
-
-
-
-
         @Override
         protected void onCancelled() {
 
             if (mLastError != null) {
                 if (mLastError instanceof GooglePlayServicesAvailabilityIOException) {
-                    showGooglePlayServicesAvailabilityErrorDialog(
+                    GooglePlayUtils.showGooglePlayServicesAvailabilityErrorDialog(getActivity(),
                             ((GooglePlayServicesAvailabilityIOException) mLastError)
                                     .getConnectionStatusCode());
                 } else if (mLastError instanceof UserRecoverableAuthIOException) {
@@ -362,8 +308,8 @@ public class CreateDocumentFragment extends Fragment  implements GoogleApiClient
                             ((UserRecoverableAuthIOException) mLastError).getIntent(),
                             Constants.REQUEST_AUTHORIZATION);
                 } else {
-                   /* AndroidUtils.showMessage(("The following error occurred:\n"
-                            + mLastError.getMessage()), getActivity());*/
+                    AndroidUtils.showMessage(("The following error occurred:\n"
+                            + mLastError.getMessage()), getActivity());
                 }
             } else {
                 AndroidUtils.showMessage("Request cancelled.", getActivity());

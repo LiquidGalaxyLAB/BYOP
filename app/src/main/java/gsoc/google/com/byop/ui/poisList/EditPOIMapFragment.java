@@ -50,16 +50,6 @@ public class EditPOIMapFragment extends Fragment implements GoogleMap.OnMarkerDr
 
     private DriveDocument driveDoc;
 
-    private POISListFragment poisFragment;
-
-    public POISListFragment getPoisFragment() {
-        return poisFragment;
-    }
-
-    public void setPoisFragment(POISListFragment poisFragment) {
-        this.poisFragment = poisFragment;
-    }
-
     POI managedPoi;
 
     public static EditPOIMapFragment newInstance(String poiLatitude, String poiLongitude, String poiName, String poiDescription) {
@@ -101,7 +91,6 @@ public class EditPOIMapFragment extends Fragment implements GoogleMap.OnMarkerDr
                 .addApi(LocationServices.API)
                 .build();
 
-
         managedPoi = new POI();
         managedPoi.setName(poiName);
         managedPoi.setDescription(poiDescription);
@@ -141,33 +130,27 @@ public class EditPOIMapFragment extends Fragment implements GoogleMap.OnMarkerDr
     }
 
     @Override
-    public void onConnected(@Nullable Bundle bundle) {
-    }
+    public void onConnected(@Nullable Bundle bundle) {/*Do Nothing*/}
 
     @Override
-    public void onConnectionSuspended(int i) {
-    }
+    public void onConnectionSuspended(int i) {/*Do Nothing*/}
 
     @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-    }
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {/*Do Nothing*/}
 
     @Override
-    public void onMarkerDragStart(Marker marker) {
-    }
+    public void onMarkerDragStart(Marker marker) {/*Do Nothing*/}
 
     @Override
-    public void onMarkerDrag(Marker marker) {
-    }
+    public void onMarkerDrag(Marker marker) {/*Do Nothing*/}
 
     @Override
     public void onMarkerDragEnd(Marker marker) {
 
-        EditPoiDataFragment fragment = EditPoiDataFragment.newInstance(marker.getPosition().latitude, marker.getPosition().longitude, poiName, poiDescription);
+        EditPOIDataFragment fragment = EditPOIDataFragment.newInstance(marker.getPosition().latitude, marker.getPosition().longitude, poiName, poiDescription);
 
         fragment.setDriveDocument(this.driveDoc);
         fragment.setManagedPoi(managedPoi);
-        fragment.setPoisFragment(getPoisFragment());
 
         fragmentStackManager.loadFragment(fragment, R.id.map);
     }

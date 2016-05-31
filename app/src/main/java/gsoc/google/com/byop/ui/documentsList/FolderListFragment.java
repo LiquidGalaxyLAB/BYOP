@@ -63,7 +63,6 @@ import gsoc.google.com.byop.model.DriveDocument;
 import gsoc.google.com.byop.ui.poisList.POISListFragment;
 import gsoc.google.com.byop.utils.AndroidUtils;
 import gsoc.google.com.byop.utils.Constants;
-import gsoc.google.com.byop.utils.DriveUtils;
 import gsoc.google.com.byop.utils.FragmentStackManager;
 import gsoc.google.com.byop.utils.GooglePlayUtils;
 import pub.devrel.easypermissions.AfterPermissionGranted;
@@ -74,7 +73,6 @@ import pub.devrel.easypermissions.EasyPermissions;
  */
 public class FolderListFragment extends Fragment implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, EasyPermissions.PermissionCallbacks {
 
-    private static String TAG = FolderListFragment.class.toString();
     private RecyclerView rv = null;
     private ParallaxRecyclerAdapter<DriveDocument> parallaxRecyclerAdapter;
     private SwipeRefreshLayout refreshLayout;
@@ -84,16 +82,9 @@ public class FolderListFragment extends Fragment implements GoogleApiClient.Conn
 
     protected FragmentStackManager fragmentStackManager;
 
-    /**
-     * Google API client.
-     */
     private GoogleApiClient mGoogleApiClient;
 
-    /**
-     * Needed for  DRIVE REST API V3
-     */
     GoogleAccountCredential mCredential;
-
 
     private String folderId = "";
 
@@ -169,13 +160,9 @@ public class FolderListFragment extends Fragment implements GoogleApiClient.Conn
     @Override
     public void onConnected(Bundle bundle) {
 
-
-        final String folderName = "BYOP POIS";
+        final String folderName = getResources().getString(R.string.folderName);
 
         DriveId driveId = Drive.DriveApi.getRootFolder(mGoogleApiClient).getDriveId();
-
-        DriveId existingFolderId = DriveUtils.getFolder(this, driveId, folderName, mGoogleApiClient);
-
 
         ArrayList<Filter> fltrs = new ArrayList<>();
         fltrs.add(Filters.eq(SearchableField.TITLE, folderName));
@@ -261,9 +248,6 @@ public class FolderListFragment extends Fragment implements GoogleApiClient.Conn
         }
     }
 
-
-
-
     @AfterPermissionGranted(Constants.REQUEST_PERMISSION_GET_ACCOUNTS)
     private void chooseAccount() {
         if (EasyPermissions.hasPermissions(
@@ -333,15 +317,11 @@ public class FolderListFragment extends Fragment implements GoogleApiClient.Conn
             public int getItemCountImpl(ParallaxRecyclerAdapter<DriveDocument> parallaxRecyclerAdapter) {
                 return documents.size();
             }
-
-
         };
-
 
         parallaxRecyclerAdapter.setParallaxHeader(getActivity().getLayoutInflater().inflate(R.layout.drivedocument_list_header_layout, rv, false), rv);
 
         rv.setAdapter(parallaxRecyclerAdapter);
-
 
         //On click on recycler view item
         parallaxRecyclerAdapter.setOnClickEvent(new ParallaxRecyclerAdapter.OnClickEvent() {
@@ -350,8 +330,6 @@ public class FolderListFragment extends Fragment implements GoogleApiClient.Conn
                 DriveDocument document = documents.get(i);
                 POISListFragment poisListFragment = POISListFragment.newInstance(document);
                 fragmentStackManager.loadFragment(poisListFragment, R.id.main_layout);
-
-                //AndroidUtils.showMessage(document.getResourceId(), getActivity());
             }
         });
     }
@@ -400,15 +378,6 @@ public class FolderListFragment extends Fragment implements GoogleApiClient.Conn
         }
     }
 
-    /**
-     * Respond to requests for permissions at runtime for API 23 and above.
-     *
-     * @param requestCode  The request code passed in
-     *                     requestPermissions(android.app.Activity, String, int, String[])
-     * @param permissions  The requested permissions. Never null.
-     * @param grantResults The grant results for the corresponding permissions
-     *                     which is either PERMISSION_GRANTED or PERMISSION_DENIED. Never null.
-     */
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -481,10 +450,6 @@ public class FolderListFragment extends Fragment implements GoogleApiClient.Conn
     }
 
 
-    /**
-     * An asynchronous task that handles the Drive API call.
-     * Placing the API calls in their own task ensures the UI stays responsive.
-     */
     private class MakeRequestTask extends AsyncTask<Void, Void, List<DriveDocument>> {
         private com.google.api.services.drive.Drive mService = null;
         private Exception mLastError = null;
@@ -496,7 +461,7 @@ public class FolderListFragment extends Fragment implements GoogleApiClient.Conn
             JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
             mService = new com.google.api.services.drive.Drive.Builder(
                     transport, jsonFactory, credential)
-                    .setApplicationName("BYOP")
+                    .setApplicationName(getResources().getString(R.string.app_name))
                     .build();
 
             this.folderId = folderId;
@@ -522,11 +487,7 @@ public class FolderListFragment extends Fragment implements GoogleApiClient.Conn
             }
         }
 
-        /**
-         * Background task to call Drive API.
-         *
-         * @param params no parameters needed for this task.
-         */
+
         @Override
         protected List<DriveDocument> doInBackground(Void... params) {
             try {
@@ -583,15 +544,14 @@ public class FolderListFragment extends Fragment implements GoogleApiClient.Conn
                             ((UserRecoverableAuthIOException) mLastError).getIntent(),
                             Constants.REQUEST_AUTHORIZATION);
                 } else {
-                   /* AndroidUtils.showMessage(("The following error occurred:\n"
-                            + mLastError.getMessage()), getActivity());*/
+                    AndroidUtils.showMessage(("The following error occurred:\n"
+                            + mLastError.getMessage()), getActivity());
                 }
             } else {
                 AndroidUtils.showMessage("Request cancelled.", getActivity());
             }
         }
     }
-
 
     private class MakeDeleteTask extends AsyncTask<Void, Void, Void> {
         private com.google.api.services.drive.Drive mService = null;
@@ -605,7 +565,7 @@ public class FolderListFragment extends Fragment implements GoogleApiClient.Conn
             JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
             mService = new com.google.api.services.drive.Drive.Builder(
                     transport, jsonFactory, credential)
-                    .setApplicationName("BYOP")
+                    .setApplicationName(getResources().getString(R.string.app_name))
                     .build();
 
             this.resourceId = resourceId;
@@ -631,11 +591,6 @@ public class FolderListFragment extends Fragment implements GoogleApiClient.Conn
             }
         }
 
-        /**
-         * Background task to call Drive API.
-         *
-         * @param params no parameters needed for this task.
-         */
         @Override
         protected Void doInBackground(Void... params) {
             try {
@@ -648,13 +603,6 @@ public class FolderListFragment extends Fragment implements GoogleApiClient.Conn
             return null;
         }
 
-        /**
-         * Fetch a list of up to 10 file names and IDs.
-         *
-         * @return List of Strings describing files, or an empty list if no files
-         * found.
-         * @throws IOException
-         */
         private void deleteFile() throws IOException {
 
            mService.files().delete(this.resourceId).execute();
@@ -671,7 +619,6 @@ public class FolderListFragment extends Fragment implements GoogleApiClient.Conn
             refreshLayout.setRefreshing(false);
         }
 
-
         @Override
         protected void onCancelled() {
 
@@ -684,8 +631,8 @@ public class FolderListFragment extends Fragment implements GoogleApiClient.Conn
                             ((UserRecoverableAuthIOException) mLastError).getIntent(),
                             Constants.REQUEST_AUTHORIZATION);
                 } else {
-                   /* AndroidUtils.showMessage(("The following error occurred:\n"
-                            + mLastError.getMessage()), getActivity());*/
+                    AndroidUtils.showMessage(("The following error occurred:\n"
+                            + mLastError.getMessage()), getActivity());
                 }
             } else {
                 AndroidUtils.showMessage("Request cancelled.", getActivity());

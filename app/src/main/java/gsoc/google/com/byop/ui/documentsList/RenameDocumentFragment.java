@@ -1,7 +1,6 @@
 package gsoc.google.com.byop.ui.documentsList;
 
 import android.Manifest;
-import android.app.Dialog;
 import android.content.Context;
 import android.content.res.Resources;
 import android.os.AsyncTask;
@@ -16,7 +15,6 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 
-import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GooglePlayServicesAvailabilityIOException;
@@ -164,21 +162,6 @@ public class RenameDocumentFragment extends Fragment {
 
 
 
-    /**
-     * Display an error dialog showing that Google Play Services is missing
-     * or out of date.
-     *
-     * @param connectionStatusCode code describing the presence (or lack of)
-     *                             Google Play Services on this device.
-     */
-    void showGooglePlayServicesAvailabilityErrorDialog(
-            final int connectionStatusCode) {
-        GoogleApiAvailability apiAvailability = GoogleApiAvailability.getInstance();
-        Dialog dialog = apiAvailability.getErrorDialog(
-                this.getActivity(), connectionStatusCode,
-                Constants.REQUEST_GOOGLE_PLAY_SERVICES);
-        dialog.show();
-    }
 
 
     private class RenameTask extends AsyncTask<Void, Void, Void> {
@@ -194,7 +177,7 @@ public class RenameDocumentFragment extends Fragment {
             JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
             mService = new com.google.api.services.drive.Drive.Builder(
                     transport, jsonFactory, credential)
-                    .setApplicationName("BYOP")
+                    .setApplicationName(getResources().getString(R.string.app_name))
                     .build();
 
             this.documentName = documentName.getText().toString();
@@ -250,7 +233,7 @@ public class RenameDocumentFragment extends Fragment {
 
             if (mLastError != null) {
                 if (mLastError instanceof GooglePlayServicesAvailabilityIOException) {
-                    showGooglePlayServicesAvailabilityErrorDialog(
+                    GooglePlayUtils.showGooglePlayServicesAvailabilityErrorDialog(getActivity(),
                             ((GooglePlayServicesAvailabilityIOException) mLastError)
                                     .getConnectionStatusCode());
                 } else if (mLastError instanceof UserRecoverableAuthIOException) {
@@ -258,8 +241,8 @@ public class RenameDocumentFragment extends Fragment {
                             ((UserRecoverableAuthIOException) mLastError).getIntent(),
                             Constants.REQUEST_AUTHORIZATION);
                 } else {
-                   /* AndroidUtils.showMessage(("The following error occurred:\n"
-                            + mLastError.getMessage()), getActivity());*/
+                    AndroidUtils.showMessage(("The following error occurred:\n"
+                            + mLastError.getMessage()), getActivity());
                 }
             } else {
                 AndroidUtils.showMessage("Request cancelled.", getActivity());

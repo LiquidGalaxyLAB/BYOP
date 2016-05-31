@@ -16,6 +16,7 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 
@@ -60,51 +61,33 @@ import pub.devrel.easypermissions.EasyPermissions;
 /**
  * Created by lgwork on 30/05/16.
  */
-public class EditPoiDataFragment extends Fragment implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, EasyPermissions.PermissionCallbacks {
+public class EditPOIDataFragment extends Fragment implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, EasyPermissions.PermissionCallbacks {
 
-
-    protected FragmentStackManager fragmentStackManager;
 
     public static final String POI_LOCATION_LON = "LONGITUDE";
     public static final String POI_LOCATION_LAT = "LATITUDE";
     public static final String POI_NAME = "POI_NAME";
     public static final String POI_DESC = "POI_DESC";
-
     public double newPoiLatitude;
     public double newPoiLongitude;
     public String actualPOIName;
     public String actualPOIDescription;
-
+    protected FragmentStackManager fragmentStackManager;
+    POI managedPoi;
+    GoogleAccountCredential mCredential;
     private EditText poi_name_input;
     private EditText poi_description_input;
     private EditText poi_latitude_input;
     private EditText poi_longitude_input;
-
-    POI managedPoi;
-
     private EditPOITask editPoiTask;
-
     private Button saveChanges;
 
-    GoogleAccountCredential mCredential;
-
-    /**
-     * Google API client.
-     */
     private GoogleApiClient mGoogleApiClient;
 
     private DriveDocument driveDocument;
 
-    private POISListFragment poisFragment;
-
-
-    public void setPoisFragment(POISListFragment poisFragment) {
-        this.poisFragment = poisFragment;
-    }
-
-
-    public static EditPoiDataFragment newInstance(double poiLatitude, double poiLongitude, String poiName, String poiDescription) {
-        EditPoiDataFragment editPoiDataFragment = new EditPoiDataFragment();
+    public static EditPOIDataFragment newInstance(double poiLatitude, double poiLongitude, String poiName, String poiDescription) {
+        EditPOIDataFragment editPoiDataFragment = new EditPOIDataFragment();
         Bundle bundle = new Bundle();
         bundle.putDouble(POI_LOCATION_LON, poiLongitude);
         bundle.putDouble(POI_LOCATION_LAT, poiLatitude);
@@ -114,21 +97,16 @@ public class EditPoiDataFragment extends Fragment implements GoogleApiClient.Con
         return editPoiDataFragment;
     }
 
-
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
     }
 
     @Override
-    public void onPermissionsGranted(int requestCode, List<String> perms) {
-        // Do nothing.
-    }
+    public void onPermissionsGranted(int requestCode, List<String> perms) {/*Do Nothing*/}
 
     @Override
-    public void onPermissionsDenied(int requestCode, List<String> perms) {
-// Do nothing.
-    }
+    public void onPermissionsDenied(int requestCode, List<String> perms) {/*Do Nothing*/}
 
     @Override
     public void onActivityResult(
@@ -168,19 +146,8 @@ public class EditPoiDataFragment extends Fragment implements GoogleApiClient.Con
         }
     }
 
-    /**
-     * Respond to requests for permissions at runtime for API 23 and above.
-     *
-     * @param requestCode  The request code passed in
-     *                     requestPermissions(android.app.Activity, String, int, String[])
-     * @param permissions  The requested permissions. Never null.
-     * @param grantResults The grant results for the corresponding permissions
-     *                     which is either PERMISSION_GRANTED or PERMISSION_DENIED. Never null.
-     */
     @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           @NonNull String[] permissions,
-                                           @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         EasyPermissions.onRequestPermissionsResult(
                 requestCode, permissions, grantResults, this);
@@ -222,7 +189,6 @@ public class EditPoiDataFragment extends Fragment implements GoogleApiClient.Con
         saveChanges.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
                 POI editedPoi = new POI();
                 editedPoi.setName(poi_name_input.getText().toString());
                 editedPoi.setDescription(poi_description_input.getText().toString());
@@ -232,7 +198,6 @@ public class EditPoiDataFragment extends Fragment implements GoogleApiClient.Con
                 editedPoi.setPoint(point);
 
                 editPoiThroughApi();
-
             }
         });
 
@@ -303,19 +268,13 @@ public class EditPoiDataFragment extends Fragment implements GoogleApiClient.Con
     }
 
     @Override
-    public void onConnected(@Nullable Bundle bundle) {
-        //Do nothing
-    }
+    public void onConnected(@Nullable Bundle bundle) {/*Do Nothing*/}
 
     @Override
-    public void onConnectionSuspended(int i) {
-        //Do nothing
-    }
+    public void onConnectionSuspended(int i) {/*Do Nothing*/}
 
     @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-        //Do nothing
-    }
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {/*Do Nothing*/}
 
     public void setDriveDocument(DriveDocument driveDoc) {
         this.driveDocument = driveDoc;
@@ -324,7 +283,6 @@ public class EditPoiDataFragment extends Fragment implements GoogleApiClient.Con
     public void setManagedPoi(POI managedPoi) {
         this.managedPoi = managedPoi;
     }
-
 
     private class EditPOITask extends AsyncTask<Void, Void, Void> {
         private com.google.api.services.drive.Drive mService = null;
@@ -358,18 +316,13 @@ public class EditPoiDataFragment extends Fragment implements GoogleApiClient.Con
                 dialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
                     @Override
                     public void onCancel(DialogInterface dialog) {
-                        //requestContentsTask.cancel(true);
+                        editPoiTask.cancel(true);
                     }
                 });
                 dialog.show();
             }
         }
 
-        /**
-         * Background task to call Drive API.
-         *
-         * @param params no parameters needed for this task.
-         */
         @Override
         protected Void doInBackground(Void... params) {
             try {
@@ -381,13 +334,6 @@ public class EditPoiDataFragment extends Fragment implements GoogleApiClient.Con
             return null;
         }
 
-        /**
-         * Fetch a list of up to 10 file names and IDs.
-         *
-         * @return List of Strings describing files, or an empty list if no files
-         * found.
-         * @throws IOException
-         */
         private void getFileContentsFromApi() throws IOException {
 
             File driveFile = mService.files().get(driveDocument.getResourceId()).execute();
@@ -474,9 +420,16 @@ public class EditPoiDataFragment extends Fragment implements GoogleApiClient.Con
 
         @Override
         protected void onPostExecute(Void aVoid) {
-            fragmentStackManager.popBackStatFragment();
+            View view = getActivity().getCurrentFocus();
+            if (view != null) {
+                InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+            }
+
             if (dialog != null && dialog.isShowing())
                 dialog.hide();
+
+            fragmentStackManager.popBackStatFragment();
         }
 
         @Override
@@ -501,5 +454,4 @@ public class EditPoiDataFragment extends Fragment implements GoogleApiClient.Con
         }
 
     }
-
 }

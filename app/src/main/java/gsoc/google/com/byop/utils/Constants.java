@@ -26,5 +26,11 @@ public class Constants {
     public static final int REQUEST_PERMISSION_GET_ACCOUNTS = 1003;
     public static final String PREF_ACCOUNT_NAME = "accountName";
 
+
+    /**
+     * Location
+     **/
+    public static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
+
     public static final String[] SCOPES = {DriveScopes.DRIVE};
 }

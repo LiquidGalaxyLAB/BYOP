@@ -17,7 +17,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.ContextMenu;
@@ -73,15 +72,11 @@ import pub.devrel.easypermissions.EasyPermissions;
 public class POISListFragment extends Fragment implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, EasyPermissions.PermissionCallbacks {
     protected FragmentStackManager fragmentStackManager;
 
-
-    private static String TAG = POISListFragment.class.toString();
     private RecyclerView rv = null;
     private ParallaxRecyclerAdapter<POI> parallaxRecyclerAdapter;
     private SwipeRefreshLayout refreshLayout;
     private RequestContentsTask requestContentsTask;
     private FloatingActionButton fab;
-
-    List<POI> poisList = new ArrayList<POI>();
 
     public static final String ARG_DOCUMENT = "document";
     private DriveDocument document;
@@ -90,15 +85,8 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
 
     private static POISListFragment poisFragment;
 
-
-    /**
-     * Google API client.
-     */
     private GoogleApiClient mGoogleApiClient;
 
-    /**
-     * Needed for  DRIVE REST API V3
-     */
     GoogleAccountCredential mCredential;
 
 
@@ -120,7 +108,6 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
 
         setHasOptionsMenu(true);
 
-
         fragmentStackManager = FragmentStackManager.getInstance(getActivity());
 
         refreshLayout.setOnRefreshListener(
@@ -135,8 +122,8 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //    CreateDocumentFragment newDocumentFragment = CreateDocumentFragment.newInstance(folderId);
-                //  fragmentStackManager.loadFragment(newDocumentFragment, R.id.main_layout);
+                CreatePOIMapFragment createPOIMapFragment = CreatePOIMapFragment.newInstance(document);
+                fragmentStackManager.loadFragment(createPOIMapFragment, R.id.main_layout);
             }
         });
     }
@@ -170,7 +157,7 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
     }
 
     private void populateUI() {
-        requestContentsTask = new RequestContentsTask(mCredential, document);
+        requestContentsTask = new RequestContentsTask(mCredential);
         requestContentsTask.execute();
 
     }
@@ -183,7 +170,7 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
         } else if (!GooglePlayUtils.isDeviceOnline(this.getActivity())) {
             AndroidUtils.showMessage("No network connection available.", getActivity());
         } else {
-            new RequestContentsTask(mCredential, document).execute();
+            new RequestContentsTask(mCredential).execute();
         }
     }
 
@@ -237,9 +224,7 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
 
 
     @Override
-    public void onConnectionSuspended(int i) {
-
-    }
+    public void onConnectionSuspended(int i) {/*Do Nothing*/}
 
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
@@ -252,19 +237,14 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
         } else {
             GooglePlayServicesUtil.getErrorDialog(connectionResult.getErrorCode(), this.getActivity(), 0).show();
         }
-
     }
 
 
     @Override
-    public void onPermissionsGranted(int requestCode, List<String> perms) {
-        // Do nothing.
-    }
+    public void onPermissionsGranted(int requestCode, List<String> perms) {/*Do Nothing*/}
 
     @Override
-    public void onPermissionsDenied(int requestCode, List<String> perms) {
-// Do nothing.
-    }
+    public void onPermissionsDenied(int requestCode, List<String> perms) {/*Do Nothing*/}
 
     @Override
     public void onActivityResult(
@@ -304,15 +284,6 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
         }
     }
 
-    /**
-     * Respond to requests for permissions at runtime for API 23 and above.
-     *
-     * @param requestCode  The request code passed in
-     *                     requestPermissions(android.app.Activity, String, int, String[])
-     * @param permissions  The requested permissions. Never null.
-     * @param grantResults The grant results for the corresponding permissions
-     *                     which is either PERMISSION_GRANTED or PERMISSION_DENIED. Never null.
-     */
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            @NonNull String[] permissions,
@@ -324,7 +295,6 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
 
 
     private class POIHolder extends RecyclerView.ViewHolder implements View.OnCreateContextMenuListener {
-        CardView cv;
         TextView poiName;
         TextView poiDescription;
         TextView poiLatitude;
@@ -390,8 +360,6 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
 
                     EditPOIMapFragment editPOIMapFragment = EditPOIMapFragment.newInstance(latitude, longitude, poiName.getText().toString(), poiDescription.getText().toString());
 
-                    // editPOIMapFragment.setPoisFragment(poisFragment);
-
                     editPOIMapFragment.setDriveDocument(document);
 
                     fragmentStackManager.loadFragment(editPOIMapFragment, R.id.main_layout);
@@ -442,15 +410,11 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
             public int getItemCountImpl(ParallaxRecyclerAdapter<POI> parallaxRecyclerAdapter) {
                 return poisList.size();
             }
-
-
         };
-
 
         parallaxRecyclerAdapter.setParallaxHeader(getActivity().getLayoutInflater().inflate(R.layout.poi_list_header_layout, rv, false), rv);
 
         rv.setAdapter(parallaxRecyclerAdapter);
-
 
         //On click on recycler view item
         parallaxRecyclerAdapter.setOnClickEvent(new ParallaxRecyclerAdapter.OnClickEvent() {
@@ -465,20 +429,15 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
     }
 
 
-    /**
-     * An asynchronous task that handles the Drive API call.
-     * Placing the API calls in their own task ensures the UI stays responsive.
-     */
     private class RequestContentsTask extends AsyncTask<Void, Void, List<POI>> {
         private com.google.api.services.drive.Drive mService = null;
         private Exception mLastError = null;
-        private String folderId = "";
         private ProgressDialog dialog;
 
         private List<POI> innerPOIList = new ArrayList<POI>();
         private boolean isCompleted = false;
 
-        public RequestContentsTask(GoogleAccountCredential credential, DriveDocument document) {
+        public RequestContentsTask(GoogleAccountCredential credential) {
             HttpTransport transport = AndroidHttp.newCompatibleTransport();
             JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
             mService = new com.google.api.services.drive.Drive.Builder(
@@ -509,11 +468,7 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
             }
         }
 
-        /**
-         * Background task to call Drive API.
-         *
-         * @param params no parameters needed for this task.
-         */
+
         @Override
         protected List<POI> doInBackground(Void... params) {
             try {
@@ -525,13 +480,6 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
             }
         }
 
-        /**
-         * Fetch a list of up to 10 file names and IDs.
-         *
-         * @return List of Strings describing files, or an empty list if no files
-         * found.
-         * @throws IOException
-         */
         private List<POI> getFileContentsFromApi() throws IOException {
 
             File driveFile = mService.files().get(document.getResourceId()).execute();
@@ -600,8 +548,8 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
                             ((UserRecoverableAuthIOException) mLastError).getIntent(),
                             Constants.REQUEST_AUTHORIZATION);
                 } else {
-                   /* AndroidUtils.showMessage(("The following error occurred:\n"
-                            + mLastError.getMessage()), getActivity());*/
+                    AndroidUtils.showMessage(("The following error occurred:\n"
+                            + mLastError.getMessage()), getActivity());
                 }
             } else {
                 AndroidUtils.showMessage("Request cancelled.", getActivity());

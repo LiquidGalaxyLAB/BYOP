@@ -104,7 +104,6 @@ public class ViewPOIMapFragment extends Fragment implements OnMapReadyCallback, 
         // googleMap.setMyLocationEnabled(true);
         googleMap.getUiSettings().setRotateGesturesEnabled(true);
 
-
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLon, 17));
         MarkerOptions marker = new MarkerOptions().position(latLon).title(poiName).snippet(poiDescription);
         marker.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ROSE));
@@ -118,17 +117,11 @@ public class ViewPOIMapFragment extends Fragment implements OnMapReadyCallback, 
     }
 
     @Override
-    public void onConnected(Bundle bundle) {
-
-    }
+    public void onConnected(Bundle bundle) {/*Do Nothing*/}
 
     @Override
-    public void onConnectionSuspended(int i) {
-
-    }
+    public void onConnectionSuspended(int i) {/*Do Nothing*/}
 
     @Override
-    public void onConnectionFailed(ConnectionResult connectionResult) {
-
-    }
+    public void onConnectionFailed(ConnectionResult connectionResult) {/*Do Nothing*/}
 }
