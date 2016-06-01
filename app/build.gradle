@@ -16,10 +16,13 @@ android {
 
     defaultConfig {
         applicationId "gsoc.google.com.byop"
-        minSdkVersion 22
+        minSdkVersion 19
         targetSdkVersion 23
         versionCode 1
         versionName "1.0"
+
+        // Enabling multidex support.
+        multiDexEnabled true
     }
     buildTypes {
         release {
@@ -49,6 +52,12 @@ dependencies {
     compile('com.google.apis:google-api-services-drive:v3-rev26-1.22.0') {
         exclude group: 'org.apache.httpcomponents'
     }
+
+    compile 'com.mcxiaoke.volley:library-aar:1.0.0'
+
+    compile 'com.android.support:multidex:1.0.1'
+
+    compile project(':uribeacon-library-release')
 }
 
 

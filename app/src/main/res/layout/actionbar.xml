@@ -1,20 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.v7.widget.Toolbar xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/toolbar"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@color/blue_grey_500"
     android:minHeight="?attr/actionBarSize"
-    android:navigationIcon="@mipmap/ic_launcher"
+    android:navigationIcon="@drawable/lg_icon_trans"
     android:popupTheme="@style/ThemeOverlay.AppCompat.Light"
     android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
 
-    <item
-        android:id="@+id/action_search"
-        android:icon="@drawable/ic_search"
-        android:orderInCategory="200"
-        android:title="Search"
-        app:showAsAction="ifRoom"></item>
 
 </android.support.v7.widget.Toolbar>

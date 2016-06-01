@@ -123,7 +123,7 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
             @Override
             public void onClick(View v) {
                 CreatePOIMapFragment createPOIMapFragment = CreatePOIMapFragment.newInstance(document);
-                fragmentStackManager.loadFragment(createPOIMapFragment, R.id.main_layout);
+                fragmentStackManager.loadFragment(createPOIMapFragment, R.id.main_frame);
             }
         });
     }
@@ -362,7 +362,7 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
 
                     editPOIMapFragment.setDriveDocument(document);
 
-                    fragmentStackManager.loadFragment(editPOIMapFragment, R.id.main_layout);
+                    fragmentStackManager.loadFragment(editPOIMapFragment, R.id.main_frame);
                     return true;
                 }
             });
@@ -373,7 +373,7 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
                 public boolean onMenuItemClick(MenuItem item) {
                     //View POI
                     ViewPOIMapFragment poiMapFragment = ViewPOIMapFragment.newInstance(latitude, longitude, poiName.getText().toString(), poiDescription.getText().toString());
-                    fragmentStackManager.loadFragment(poiMapFragment, R.id.main_layout);
+                    fragmentStackManager.loadFragment(poiMapFragment, R.id.main_frame);
                     return true;
                 }
             });
@@ -423,7 +423,7 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
                 POI poi = poisList.get(i);
                 ViewPOIMapFragment poiMapFragment = ViewPOIMapFragment.newInstance(poi.getPoint().getLatitude(), poi.getPoint().getLongitude(),
                         poi.getName(), poi.getDescription());
-                fragmentStackManager.loadFragment(poiMapFragment, R.id.main_layout);
+                fragmentStackManager.loadFragment(poiMapFragment, R.id.main_frame);
             }
         });
     }

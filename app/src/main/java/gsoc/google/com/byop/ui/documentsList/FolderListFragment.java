@@ -108,7 +108,7 @@ public class FolderListFragment extends Fragment implements GoogleApiClient.Conn
             @Override
             public void onClick(View v) {
                 CreateDocumentFragment newDocumentFragment = CreateDocumentFragment.newInstance(folderId);
-                fragmentStackManager.loadFragment(newDocumentFragment, R.id.main_layout);
+                fragmentStackManager.loadFragment(newDocumentFragment, R.id.main_frame);
             }
         });
     }
@@ -329,7 +329,7 @@ public class FolderListFragment extends Fragment implements GoogleApiClient.Conn
             public void onClick(View view, int i) {
                 DriveDocument document = documents.get(i);
                 POISListFragment poisListFragment = POISListFragment.newInstance(document);
-                fragmentStackManager.loadFragment(poisListFragment, R.id.main_layout);
+                fragmentStackManager.loadFragment(poisListFragment, R.id.main_frame);
             }
         });
     }
@@ -442,7 +442,7 @@ public class FolderListFragment extends Fragment implements GoogleApiClient.Conn
                 @Override
                 public boolean onMenuItemClick(MenuItem item) {
                     RenameDocumentFragment renameDocumentFragment = RenameDocumentFragment.newInstance(fileResourceId, documentTitle.getText().toString(), documentDescription.getText().toString());
-                    fragmentStackManager.loadFragment(renameDocumentFragment, R.id.main_layout);
+                    fragmentStackManager.loadFragment(renameDocumentFragment, R.id.main_frame);
                     return true;
                 }
             });
