@@ -71,6 +71,10 @@ import gsoc.google.com.byop.R;
 
 public class BeaconConfigFragment extends Fragment implements TextView.OnEditorActionListener {
 
+    public static final String ARG_FILE_LINK = "fileLink";
+    private String fileLink;
+
+
     private static final String TAG = "BeaconConfigFragment";
     private static final byte TX_POWER_DEFAULT = -22;
     private static final long SCAN_TIME_MILLIS = TimeUnit.SECONDS.toMillis(15);
@@ -107,6 +111,13 @@ public class BeaconConfigFragment extends Fragment implements TextView.OnEditorA
         return new BeaconConfigFragment();
     }
 
+    public static BeaconConfigFragment newInstance(String link) {
+        BeaconConfigFragment beaconConfigFragment = new BeaconConfigFragment();
+        Bundle bundle = new Bundle();
+        bundle.putString(ARG_FILE_LINK, link);
+        beaconConfigFragment.setArguments(bundle);
+        return beaconConfigFragment;
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -153,6 +164,8 @@ public class BeaconConfigFragment extends Fragment implements TextView.OnEditorA
                 saveEditCardUrlToBeacon();
             }
         });
+
+        fileLink = getArguments().getString(ARG_FILE_LINK);
 
         return view;
     }
@@ -374,8 +387,15 @@ public class BeaconConfigFragment extends Fragment implements TextView.OnEditorA
     }
 
     public void setEditCardUrl(String url) {
-        // Update the url edit text field with the given url
-        mEditCardUrl.setText(url);
+
+        //if the fragment is called within BYOP, the fileLink field is not empty and we can set it
+        if (fileLink != null && !fileLink.isEmpty()) {
+            mEditCardUrl.setText(fileLink);
+        } else {
+            // Update the url edit text field with the given url
+            mEditCardUrl.setText(url);
+        }
+
         // Show the beacon configuration card
         showConfigurableBeaconCard();
     }

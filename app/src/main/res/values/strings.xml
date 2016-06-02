@@ -60,7 +60,7 @@
     <string name="permission_required_toast">Location permission is required for this demo.</string>
 
     <!--General-->
-    <string name="folderName">BYOP POIS</string>
+    <string name="folderName">BYOP POIS II</string>
     <string name="save">Save</string>
     <string name="cancel">Cancel</string>
     <string name="saving">Saving...</string>
@@ -70,6 +70,7 @@
     <string name="context_menu_delete">Delete</string>
     <string name="context_menu_view">View</string>
     <string name="context_menu_edit">Edit</string>
+    <string name="context_menu_share">Share Link</string>
 
     <!--Add Document-->
     <string name="add_document_header">New POIS File</string>

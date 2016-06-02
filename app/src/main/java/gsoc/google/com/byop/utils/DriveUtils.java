@@ -1,5 +1,6 @@
 package gsoc.google.com.byop.utils;
 
+import android.support.v4.app.FragmentActivity;
 import android.widget.Toast;
 
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -18,15 +19,16 @@ import com.google.android.gms.drive.query.SearchableField;
 
 import java.util.ArrayList;
 
-import gsoc.google.com.byop.ui.documentsList.FolderListFragment;
-
 /**
  * Created by lgwork on 23/05/16.
  */
 public class DriveUtils {
 
-    public static DriveId getFolder(final FolderListFragment folderListFragment, DriveId parentId, final String titl, final GoogleApiClient googleApiClient) {
+    public static DriveId getFolder(final FragmentActivity folderListFragment, DriveId parentId, final String titl, final GoogleApiClient googleApiClient) {
         final DriveId[] dId = {null};
+
+        boolean isCompleted = false;
+
         if (parentId != null && titl != null) try {
             ArrayList<Filter> fltrs = new ArrayList<>();
             fltrs.add(Filters.in(SearchableField.PARENTS, parentId));
@@ -61,10 +63,10 @@ public class DriveUtils {
                                         @Override
                                         public void onResult(DriveFolder.DriveFolderResult result) {
                                             if (!result.getStatus().isSuccess()) {
-                                                Toast.makeText(folderListFragment.getActivity(), "FAIL", Toast.LENGTH_LONG).show();
+                                                Toast.makeText(folderListFragment, "FAIL", Toast.LENGTH_LONG).show();
                                             } else {
                                                 dId[0] = result.getDriveFolder().getDriveId();
-                                                Toast.makeText(folderListFragment.getActivity(), "Created a folder: " + result.getDriveFolder().getDriveId(), Toast.LENGTH_LONG).show();
+                                                Toast.makeText(folderListFragment, "Created a folder: " + result.getDriveFolder().getDriveId(), Toast.LENGTH_LONG).show();
                                             }
                                         }
                                     });

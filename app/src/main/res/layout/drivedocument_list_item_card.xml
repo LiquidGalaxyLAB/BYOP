@@ -7,6 +7,12 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
+            <!--<android.support.v7.widget.Toolbar-->
+            <!--android:id="@+id/card_toolbar"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:background="@android:color/white" />-->
+
             <ImageView
                 android:layout_width="60dp"
                 android:layout_height="60dp"
@@ -16,8 +22,6 @@
                 android:layout_alignParentLeft="true"
                 android:layout_marginRight="16dp"
                 android:layout_marginLeft="16dp" />
-                />
-
 
             <TextView
                 android:layout_width="wrap_content"
@@ -27,8 +31,7 @@
                 android:layout_alignParentTop="true"
                 android:textSize="20sp"
                 android:textStyle="bold"
-                android:maxLines="2"
-                />
+                android:maxLines="2" />
 
             <TextView
                 android:layout_width="wrap_content"
@@ -45,8 +48,7 @@
                 android:layout_height="wrap_content"
                 android:id="@+id/document_extension"
                 android:layout_toRightOf="@+id/file_photo"
-                android:layout_below="@+id/document_title"
-                />
+                android:layout_below="@+id/document_title" />
 
         </RelativeLayout>
 

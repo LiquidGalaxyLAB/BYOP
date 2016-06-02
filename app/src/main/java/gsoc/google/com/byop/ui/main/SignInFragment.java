@@ -168,14 +168,8 @@ public class SignInFragment extends Fragment implements GoogleApiClient.OnConnec
     }
 
     private void configureBeacon() {
-//        Intent intent = new Intent(getActivity(), PWMainActivity.class);
-//        startActivity(intent);
-
         BeaconConfigFragment beaconConfigFragment = new BeaconConfigFragment();
         fragmentStackManager.loadFragment(beaconConfigFragment, R.id.main_frame);
-//        Intent intent2 = new Intent(getActivity(), ScreenListenerService.class);
-//        getActivity().startService(intent2);
-
     }
 
     @Override

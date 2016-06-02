@@ -12,6 +12,7 @@ public class DriveDocument implements Parcelable {
     private String description;
     private String extension;
     private String resourceId;
+    private String link;
 
 
     public DriveDocument() {
@@ -20,6 +21,7 @@ public class DriveDocument implements Parcelable {
         this.extension = "";
         this.resourceId = "";
         this.description = "";
+        this.link = "";
     }
 
 
@@ -71,6 +73,13 @@ public class DriveDocument implements Parcelable {
         this.extension = extension;
     }
 
+    public String getLink() {
+        return link;
+    }
+
+    public void setLink(String link) {
+        this.link = link;
+    }
 
     public boolean equals(Object o) {
         if (this == o) return true;
