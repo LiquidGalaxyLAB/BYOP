@@ -74,14 +74,6 @@ public class POIUtils {
         this.poisFragment = poisFragment;
     }
 
-    public GoogleApiClient getGoogleApiClient() {
-        return googleApiClient;
-    }
-
-    public void setGoogleApiClient(GoogleApiClient googleApiClient) {
-        this.googleApiClient = googleApiClient;
-    }
-
     public FragmentActivity getActivity() {
         return activity;
     }
@@ -93,20 +85,6 @@ public class POIUtils {
     public void deletePOI() {
         deletePoitask = new DeletePOITask(credential, driveDoc);
         deletePoitask.execute();
-    }
-
-    public void editPOI(String poiName, String poiDesc, String poiLat, String poiLon) {
-
-        POI editedPoi = new POI();
-        editedPoi.setName(poiName);
-        editedPoi.setDescription(poiDesc);
-        Point point = new Point();
-        point.setLatitude(poiLat);
-        point.setLongitude(poiLon);
-        editedPoi.setPoint(point);
-
-        editPoiTask = new EditPOITask(credential, driveDoc, editedPoi);
-        editPoiTask.execute();
     }
 
     private class EditPOITask extends AsyncTask<Void, Void, List<POI>> {
@@ -308,7 +286,7 @@ public class POIUtils {
     private class DeletePOITask extends AsyncTask<Void, Void, List<POI>> {
         private com.google.api.services.drive.Drive mService = null;
         private Exception mLastError = null;
-        private String folderId = "";
+
         private ProgressDialog dialog;
 
         private List<POI> innerPOIList = new ArrayList<POI>();
@@ -338,7 +316,7 @@ public class POIUtils {
                 dialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
                     @Override
                     public void onCancel(DialogInterface dialog) {
-                        //requestContentsTask.cancel(true);
+                        deletePoitask.cancel(true);
                     }
                 });
                 dialog.show();
@@ -469,8 +447,8 @@ public class POIUtils {
                             ((UserRecoverableAuthIOException) mLastError).getIntent(),
                             Constants.REQUEST_AUTHORIZATION);
                 } else {
-                   /* AndroidUtils.showMessage(("The following error occurred:\n"
-                            + mLastError.getMessage()), getActivity());*/
+                    AndroidUtils.showMessage(("The following error occurred:\n"
+                            + mLastError.getMessage()), getActivity());
                 }
             } else {
                 AndroidUtils.showMessage("Request cancelled.", activity);

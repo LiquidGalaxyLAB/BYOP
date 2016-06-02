@@ -130,7 +130,7 @@ public class RenameDocumentFragment extends Fragment {
         } else if (!GooglePlayUtils.isDeviceOnline(this.getActivity())) {
             AndroidUtils.showMessage("No network connection available.", getActivity());
         } else {
-            RenameTask renameTask = new RenameTask(mCredential, documentName, documentDescription, this.fileId);
+            renameTask = new RenameTask(mCredential, documentName, documentDescription, this.fileId);
             renameTask.execute();
         }
     }
