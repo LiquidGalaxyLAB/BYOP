@@ -170,7 +170,8 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
         } else if (!GooglePlayUtils.isDeviceOnline(this.getActivity())) {
             AndroidUtils.showMessage("No network connection available.", getActivity());
         } else {
-            new RequestContentsTask(mCredential).execute();
+            requestContentsTask = new RequestContentsTask(mCredential);
+            requestContentsTask.execute();
         }
     }
 
@@ -502,7 +503,6 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
                                         // to the actual byte stream
                                         DriveContents contents = driveContentsResult.getDriveContents();
                                         try {
-
                                             innerPOIList = checkContents(contents.getInputStream());
                                             isCompleted = true;
                                         } catch (IOException e) {
@@ -559,8 +559,11 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
 
     private List<POI> checkContents(InputStream inputStream) throws IOException, XmlPullParserException {
         BYOPXmlPullParser parser = new BYOPXmlPullParser();
+
         List<POI> poiList = parser.parse(inputStream);
 
         return poiList;
     }
+
+
 }

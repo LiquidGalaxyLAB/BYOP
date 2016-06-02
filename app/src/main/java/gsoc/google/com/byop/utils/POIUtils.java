@@ -214,7 +214,7 @@ public class POIUtils {
                                             contents.commit(googleApiClient, changeSet).setResultCallback(new ResultCallback<com.google.android.gms.common.api.Status>() {
                                                 @Override
                                                 public void onResult(com.google.android.gms.common.api.Status result) {
-                                                    //FIXME: Do something?
+                                                    //Do nothing
                                                 }
                                             });
                                             isCompleted = true;
@@ -244,7 +244,7 @@ public class POIUtils {
                     "        </Point>\n" +
                     "      </Placemark>";
 
-            String xmlString = StringUtils.getStringFromFileInputStream(fileInputStream);
+            String xmlString = StringUtils.getStringFromInputStream(fileInputStream);
 
             String editedPOIStr = "      <Placemark>\n" +
                     "        <name>" + editedPoi.getName() + "</name>\n" +
@@ -409,7 +409,7 @@ public class POIUtils {
                                             contents.commit(googleApiClient, changeSet).setResultCallback(new ResultCallback<com.google.android.gms.common.api.Status>() {
                                                 @Override
                                                 public void onResult(com.google.android.gms.common.api.Status result) {
-                                                    //FIXME: Do something?
+                                                    //Do nothing
                                                 }
                                             });
                                             isCompleted = true;
@@ -438,7 +438,7 @@ public class POIUtils {
                     "        </Point>\n" +
                     "      </Placemark>";
 
-            String xmlString = StringUtils.getStringFromFileInputStream(fileInputStream);
+            String xmlString = StringUtils.getStringFromInputStream(fileInputStream);
 
             String newStr = xmlString.trim().replaceAll(strToDelete.trim() + "\n", "");
 

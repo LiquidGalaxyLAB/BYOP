@@ -48,7 +48,7 @@ public class UriBeacon {
     private static final int DATA_TYPE_SERVICE_DATA = 0x16;
     private static final byte[] URI_SERVICE_16_BIT_UUID_BYTES = {(byte) 0xd8, (byte) 0xfe};
 
-    //TODO: Add comments
+
     public static final ParcelUuid TEST_SERVICE_UUID =
             ParcelUuid.fromString("0000FEAA-0000-1000-8000-00805F9B34FB");
     private static final byte[] TEST_SERVICE_16_BIT_UUID_BYTES = {(byte) 0xaa, (byte) 0xfe};
@@ -180,7 +180,7 @@ public class UriBeacon {
             String uri = decodeUri(serviceData, currentPos);
             return new UriBeacon(flags, txPowerLevel, uri);
         }
-        //TODO: refactor
+
         serviceData = parseTestServiceDataFromBytes(scanRecordBytes);
         if (serviceData != null && serviceData.length >= 2) {
             int currentPos = 0;
@@ -504,7 +504,7 @@ public class UriBeacon {
     }
 
     private static byte[] parseTestServiceDataFromBytes(byte[] scanRecord) {
-        //TODO: Add comments
+
         int currentPos = 0;
         try {
             while (currentPos < scanRecord.length) {
@@ -519,8 +519,7 @@ public class UriBeacon {
                             && scanRecord[currentPos + 3] == TEST_URL_FRAME_TYPE) {
                         // Jump to beginning of frame.
                         currentPos += 4;
-                        // TODO: Add tests
-                        // field length - field type - ID - frame type
+
                         byte[] bytes = new byte[fieldLength - 4];
                         System.arraycopy(scanRecord, currentPos, bytes, 0, fieldLength - 4);
                         return bytes;

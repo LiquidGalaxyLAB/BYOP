@@ -404,7 +404,7 @@ public class UrlDeviceDiscoveryService extends Service
         updateSummaryNotificationRemoteViewsSecondBeacon(pwPairs.get(1), remoteViews);
 
         // Create a pending intent that will open the physical web app
-        // TODO(cco3): Use a clickListener on the VIEW MORE button to do this
+        //
         PendingIntent pendingIntent = createReturnToAppPendingIntent();
         remoteViews.setOnClickPendingIntent(R.id.otherBeaconsLayout, pendingIntent);
 

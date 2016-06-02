@@ -414,7 +414,7 @@ public class UrlDevice {
      * @param pwsResult is the response received from the Physical Web Service
      *                  for the url broadcasted by this UrlDevice.
      * @return .5 (at the moment we don't have anything by which to judge rank)
-     * TODO(cco3): Move ranking outside of this class
+
      */
     public double getRank(PwsResult pwsResult) {
         return .5;

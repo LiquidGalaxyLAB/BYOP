@@ -65,8 +65,10 @@ public class CreateDocumentFragment extends Fragment  implements GoogleApiClient
     private Button saveDocument;
 
     private CreateTask createTask;
+    private MakePermissionsTask permissionsTask;
 
     private String folderId;
+    private String documentId;
 
     GoogleAccountCredential mCredential;
 
@@ -125,6 +127,12 @@ public class CreateDocumentFragment extends Fragment  implements GoogleApiClient
     }
 
     @Override
+    public void onStart() {
+        super.onStart();
+        mGoogleApiClient.connect();
+    }
+
+    @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         folderId = getArguments().getString(ARG_FOLDER_ID);
@@ -165,6 +173,44 @@ public class CreateDocumentFragment extends Fragment  implements GoogleApiClient
                     "This app needs to access your Google account (via Contacts).",
                     Constants.REQUEST_PERMISSION_GET_ACCOUNTS,
                     Manifest.permission.GET_ACCOUNTS);
+        }
+    }
+
+
+    @AfterPermissionGranted(Constants.REQUEST_PERMISSION_GET_ACCOUNTS)
+    private void chooseAccountForPermissions() {
+        if (EasyPermissions.hasPermissions(
+                this.getActivity(), Manifest.permission.GET_ACCOUNTS)) {
+            String accountName = this.getActivity().getPreferences(Context.MODE_PRIVATE)
+                    .getString(Constants.PREF_ACCOUNT_NAME, null);
+            if (accountName != null) {
+                mCredential.setSelectedAccountName(accountName);
+                changeFilePermissions();
+            } else {
+                // Start a dialog from which the user can choose an account
+                startActivityForResult(
+                        mCredential.newChooseAccountIntent(),
+                        Constants.REQUEST_ACCOUNT_PICKER);
+            }
+        } else {
+            // Request the GET_ACCOUNTS permission via a user dialog
+            EasyPermissions.requestPermissions(
+                    this.getActivity(),
+                    "This app needs to access your Google account (via Contacts).",
+                    Constants.REQUEST_PERMISSION_GET_ACCOUNTS,
+                    Manifest.permission.GET_ACCOUNTS);
+        }
+    }
+
+    private void changeFilePermissions() {
+        if (!GooglePlayUtils.isGooglePlayServicesAvailable(this.getActivity())) {
+            GooglePlayUtils.acquireGooglePlayServices(this.getActivity());
+        } else if (mCredential.getSelectedAccountName() == null) {
+            chooseAccountForPermissions();
+        } else if (!GooglePlayUtils.isDeviceOnline(this.getActivity())) {
+            AndroidUtils.showMessage("No network connection available.", getActivity());
+        } else {
+            new MakePermissionsTask(mCredential, documentId).execute();
         }
     }
 
@@ -244,7 +290,8 @@ public class CreateDocumentFragment extends Fragment  implements GoogleApiClient
 
             FileContent xmlSkeleton = addXmlSkeleton();
 
-            mService.files().create(fileMetadata, xmlSkeleton).execute();
+            File newDriveDocument = mService.files().create(fileMetadata, xmlSkeleton).execute();
+            documentId = newDriveDocument.getId();
         }
 
         private FileContent addXmlSkeleton() throws IOException {
@@ -292,7 +339,99 @@ public class CreateDocumentFragment extends Fragment  implements GoogleApiClient
             if (dialog != null && dialog.isShowing())
                 dialog.hide();
 
+            changeFilePermissions();
            fragmentStackManager.popBackStatFragment();
+
+        }
+
+        @Override
+        protected void onCancelled() {
+
+            if (mLastError != null) {
+                if (mLastError instanceof GooglePlayServicesAvailabilityIOException) {
+                    GooglePlayUtils.showGooglePlayServicesAvailabilityErrorDialog(getActivity(),
+                            ((GooglePlayServicesAvailabilityIOException) mLastError)
+                                    .getConnectionStatusCode());
+                } else if (mLastError instanceof UserRecoverableAuthIOException) {
+                    startActivityForResult(
+                            ((UserRecoverableAuthIOException) mLastError).getIntent(),
+                            Constants.REQUEST_AUTHORIZATION);
+                } else {
+                    AndroidUtils.showMessage(("The following error occurred:\n"
+                            + mLastError.getMessage()), getActivity());
+                }
+            } else {
+                AndroidUtils.showMessage("Request cancelled.", getActivity());
+            }
+        }
+    }
+
+
+    private class MakePermissionsTask extends AsyncTask<Void, Void, Void> {
+        private com.google.api.services.drive.Drive mService = null;
+        private Exception mLastError = null;
+        private String documentId = "";
+        private ProgressDialog dialog;
+
+        public MakePermissionsTask(GoogleAccountCredential credential, String documentId) {
+            HttpTransport transport = AndroidHttp.newCompatibleTransport();
+            JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
+            mService = new com.google.api.services.drive.Drive.Builder(
+                    transport, jsonFactory, credential)
+                    .setApplicationName(getResources().getString(R.string.app_name))
+                    .build();
+
+            this.documentId = documentId;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            if (dialog == null) {
+                dialog = new ProgressDialog(getContext());
+                dialog.setMessage(getActivity().getResources().getString(R.string.loading));
+                dialog.setIndeterminate(false);
+                dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+                dialog.setCancelable(true);
+                dialog.setCanceledOnTouchOutside(false);
+                dialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                    @Override
+                    public void onCancel(DialogInterface dialog) {
+                        permissionsTask.cancel(true);
+                    }
+                });
+                dialog.show();
+            }
+        }
+
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            try {
+                setViewPermissions();
+            } catch (Exception e) {
+                mLastError = e;
+                cancel(true);
+            }
+            return null;
+        }
+
+        private void setViewPermissions() throws IOException {
+
+            com.google.api.services.drive.model.Permission permission = new com.google.api.services.drive.model.Permission();
+            permission.setType("anyone");
+            permission.setRole("reader");
+
+            mService.permissions().create(this.documentId, permission).execute();
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+
+            if (dialog != null && dialog.isShowing())
+                dialog.hide();
+            //refreshLayout.setRefreshing(false);
         }
 
         @Override

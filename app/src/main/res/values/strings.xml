@@ -60,7 +60,7 @@
     <string name="permission_required_toast">Location permission is required for this demo.</string>
 
     <!--General-->
-    <string name="folderName">BYOP POIS II</string>
+    <string name="folderName">BYOP POIS Test</string>
     <string name="save">Save</string>
     <string name="cancel">Cancel</string>
     <string name="saving">Saving...</string>
@@ -141,6 +141,8 @@
     <string name="close_body">Do you want to leave?</string>
     <string name="Accept">Accept</string>
     <string name="cancel_dialog">Cancel</string>
+    <string name="creating_folder">Creating Folder</string>
+    <string name="deleting">Deleting</string>
 
 
 </resources>

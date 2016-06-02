@@ -365,7 +365,7 @@ public class EditPOIDataFragment extends Fragment implements GoogleApiClient.Con
                                         FileOutputStream fileOutputStream = new FileOutputStream(parcelFileDescriptor.getFileDescriptor());
 
                                         try {
-                                            fileOutputStream.getChannel().truncate(0);
+                                            fileOutputStream.getChannel().position(0);
                                             Writer writer = new OutputStreamWriter(fileOutputStream);
                                             writer.write(newContents);
                                             writer.close();
@@ -375,7 +375,7 @@ public class EditPOIDataFragment extends Fragment implements GoogleApiClient.Con
                                             contents.commit(mGoogleApiClient, changeSet).setResultCallback(new ResultCallback<com.google.android.gms.common.api.Status>() {
                                                 @Override
                                                 public void onResult(com.google.android.gms.common.api.Status result) {
-                                                    //FIXME: Do something?
+                                                    //Do nothing
                                                 }
                                             });
                                             isCompleted = true;
@@ -402,7 +402,7 @@ public class EditPOIDataFragment extends Fragment implements GoogleApiClient.Con
                     "        </Point>\n" +
                     "      </Placemark>";
 
-            String xmlString = StringUtils.getStringFromFileInputStream(fileInputStream);
+            String xmlString = StringUtils.getStringFromInputStream(fileInputStream);
 
             String editedPOIStr = "      <Placemark>\n" +
                     "        <name>" + editedPoi.getName() + "</name>\n" +

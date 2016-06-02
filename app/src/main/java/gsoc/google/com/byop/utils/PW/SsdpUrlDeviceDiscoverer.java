@@ -43,7 +43,6 @@ public class SsdpUrlDeviceDiscoverer extends UrlDeviceDiscoverer implements Ssdp
             @Override
             public void run() {
                 try {
-                    // TODO(?): set timeout using getSsdp().start(NearbyBeaconsFragment.SCAN_TIME_MILLIS)
                     // to ensure that SSDP scan thread is stopped automatically after timeout.
                     // In this case there is no need to call stop().
                     getSsdp().start(null);

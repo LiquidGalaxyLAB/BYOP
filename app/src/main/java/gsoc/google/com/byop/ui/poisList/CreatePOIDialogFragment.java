@@ -301,7 +301,7 @@ public class CreatePOIDialogFragment extends Fragment implements GoogleApiClient
                                         FileOutputStream fileOutputStream = new FileOutputStream(parcelFileDescriptor.getFileDescriptor());
 
                                         try {
-                                            fileOutputStream.getChannel().truncate(0);
+                                            fileOutputStream.getChannel().position(0);
                                             Writer writer = new OutputStreamWriter(fileOutputStream);
                                             writer.write(newContents);
                                             writer.close();
@@ -311,7 +311,7 @@ public class CreatePOIDialogFragment extends Fragment implements GoogleApiClient
                                             contents.commit(googleApiClient, changeSet).setResultCallback(new ResultCallback<com.google.android.gms.common.api.Status>() {
                                                 @Override
                                                 public void onResult(com.google.android.gms.common.api.Status result) {
-                                                    //FIXME: Do something?
+                                                    //Do nothing
                                                 }
                                             });
                                             isCompleted = true;
@@ -330,7 +330,7 @@ public class CreatePOIDialogFragment extends Fragment implements GoogleApiClient
 
         private String addPoiContents(FileInputStream fileInputStream, String name, String description, double latitude, double longitude) {
 
-            String xmlString = StringUtils.getStringFromFileInputStream(fileInputStream);
+            String xmlString = StringUtils.getStringFromInputStream(fileInputStream);
 
             String newPoiStr = "      <Placemark>\n" +
                     "        <name>" + name + "</name>\n" +
@@ -338,11 +338,10 @@ public class CreatePOIDialogFragment extends Fragment implements GoogleApiClient
                     "        <Point>\n" +
                     "          <coordinates>" + longitude + "," + latitude + ",0</coordinates>\n" +
                     "        </Point>\n" +
-                    "      </Placemark>";
+                    "      </Placemark>\n" +
+                    "</Folder>";
 
-            String newString = xmlString.replaceAll("</Folder>", newPoiStr + "\n</Folder>");
-
-            return newString;
+            return xmlString.replaceAll("</Folder>", newPoiStr);
         }
 
         @Override

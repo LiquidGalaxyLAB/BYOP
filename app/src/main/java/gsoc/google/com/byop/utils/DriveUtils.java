@@ -24,10 +24,10 @@ import java.util.ArrayList;
  */
 public class DriveUtils {
 
-    public static DriveId getFolder(final FragmentActivity folderListFragment, DriveId parentId, final String titl, final GoogleApiClient googleApiClient) {
-        final DriveId[] dId = {null};
+    static boolean isCompleted = false;
+    static DriveId newFolderId = null;
 
-        boolean isCompleted = false;
+    public static DriveId getFolder(final FragmentActivity folderListFragment, DriveId parentId, final String titl, final GoogleApiClient googleApiClient) {
 
         if (parentId != null && titl != null) try {
             ArrayList<Filter> fltrs = new ArrayList<>();
@@ -48,7 +48,7 @@ public class DriveUtils {
                                 if (!m.isTrashed() && m.getTitle().equals(titl)) {
                                     //Folder exists
                                     isFound = true;
-                                    dId[0] = m.getDriveId();
+                                    newFolderId = m.getDriveId();
                                 }
                             }
                         }
@@ -65,7 +65,8 @@ public class DriveUtils {
                                             if (!result.getStatus().isSuccess()) {
                                                 Toast.makeText(folderListFragment, "FAIL", Toast.LENGTH_LONG).show();
                                             } else {
-                                                dId[0] = result.getDriveFolder().getDriveId();
+                                                newFolderId = result.getDriveFolder().getDriveId();
+                                                isCompleted = true;
                                                 Toast.makeText(folderListFragment, "Created a folder: " + result.getDriveFolder().getDriveId(), Toast.LENGTH_LONG).show();
                                             }
                                         }
@@ -74,12 +75,17 @@ public class DriveUtils {
                     }
 
                 }
-
             });
+
+
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return dId[0];
+
+        while (!isCompleted) {
+            //wait
+        }
+        return newFolderId;
     }
 
 }
