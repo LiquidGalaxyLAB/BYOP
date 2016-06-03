@@ -29,6 +29,7 @@ public class Constants {
 
     /**
      * Location
+     *
      **/
     public static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
 
