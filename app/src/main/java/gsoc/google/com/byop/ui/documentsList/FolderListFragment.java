@@ -285,7 +285,8 @@ public class FolderListFragment extends Fragment implements GoogleApiClient.Conn
         } else if (!GooglePlayUtils.isDeviceOnline(this.getActivity())) {
             AndroidUtils.showMessage(getResources().getString(R.string.no_network_connection), getActivity());
         } else {
-            new MakeRequestTask(mCredential, folderId).execute();
+            requestTask = new MakeRequestTask(mCredential, folderId);
+            requestTask.execute();
         }
     }
 

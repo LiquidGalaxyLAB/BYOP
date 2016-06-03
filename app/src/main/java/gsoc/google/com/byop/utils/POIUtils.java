@@ -182,7 +182,7 @@ public class POIUtils {
                                         FileOutputStream fileOutputStream = new FileOutputStream(parcelFileDescriptor.getFileDescriptor());
 
                                         try {
-                                            fileOutputStream.getChannel().truncate(0);
+                                            fileOutputStream.getChannel().position(0);
                                             Writer writer = new OutputStreamWriter(fileOutputStream);
                                             writer.write(newContents);
                                             writer.close();
@@ -375,7 +375,7 @@ public class POIUtils {
                                         FileOutputStream fileOutputStream = new FileOutputStream(parcelFileDescriptor.getFileDescriptor());
 
                                         try {
-                                            fileOutputStream.getChannel().truncate(0);
+                                            fileOutputStream.getChannel().position(0);
                                             Writer writer = new OutputStreamWriter(fileOutputStream);
                                             writer.write(newContents);
                                             writer.close();
