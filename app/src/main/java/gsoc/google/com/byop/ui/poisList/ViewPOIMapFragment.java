@@ -1,6 +1,7 @@
 package gsoc.google.com.byop.ui.poisList;
 
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -54,8 +55,7 @@ public class ViewPOIMapFragment extends Fragment implements OnMapReadyCallback, 
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View v = inflater.inflate(R.layout.poi_map, container, false);
-        return v;
+        return inflater.inflate(R.layout.poi_map, container, false);
     }
 
     @Override
@@ -66,9 +66,7 @@ public class ViewPOIMapFragment extends Fragment implements OnMapReadyCallback, 
         poiName = getArguments().getString(POI_NAME);
         poiDescription = getArguments().getString(POI_DESC);
 
-
         latLon = new LatLng(Double.parseDouble(poiLatitude), Double.parseDouble(poiLongitude));
-
 
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
@@ -123,5 +121,5 @@ public class ViewPOIMapFragment extends Fragment implements OnMapReadyCallback, 
     public void onConnectionSuspended(int i) {/*Do Nothing*/}
 
     @Override
-    public void onConnectionFailed(ConnectionResult connectionResult) {/*Do Nothing*/}
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {/*Do Nothing*/}
 }

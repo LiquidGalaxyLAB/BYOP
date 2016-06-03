@@ -17,7 +17,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.ContextMenu;
@@ -75,21 +74,14 @@ import pub.devrel.easypermissions.EasyPermissions;
  */
 public class FolderListFragment extends Fragment implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, EasyPermissions.PermissionCallbacks {
 
-    private RecyclerView rv = null;
-    private ParallaxRecyclerAdapter<DriveDocument> parallaxRecyclerAdapter;
-    private SwipeRefreshLayout refreshLayout;
-
-    private FloatingActionButton fab;
-
     protected FragmentStackManager fragmentStackManager;
-
-    private GoogleApiClient mGoogleApiClient;
-
     GoogleAccountCredential mCredential;
-
-    private String folderId = "";
     DriveId rootDriveIdFolder;
-
+    private RecyclerView rv = null;
+    private SwipeRefreshLayout refreshLayout;
+    private FloatingActionButton fab;
+    private GoogleApiClient mGoogleApiClient;
+    private String folderId = "";
     private MakeRequestTask requestTask;
     private MakeDeleteTask deleteTask;
     private CreationTask creationTask;
@@ -118,8 +110,6 @@ public class FolderListFragment extends Fragment implements GoogleApiClient.Conn
                 fragmentStackManager.loadFragment(newDocumentFragment, R.id.main_frame);
             }
         });
-
-
     }
 
     @Nullable
@@ -171,7 +161,7 @@ public class FolderListFragment extends Fragment implements GoogleApiClient.Conn
     public void onConnected(Bundle bundle) {
 
         final String folderName = getResources().getString(R.string.folderName);
-        final boolean[] isCompleted = {false};
+
         rootDriveIdFolder = Drive.DriveApi.getRootFolder(mGoogleApiClient).getDriveId();
 
 
@@ -217,9 +207,9 @@ public class FolderListFragment extends Fragment implements GoogleApiClient.Conn
         } else if (mCredential.getSelectedAccountName() == null) {
             chooseAccountForCreation(folderName);
         } else if (!GooglePlayUtils.isDeviceOnline(this.getActivity())) {
-            AndroidUtils.showMessage("No network connection available.", getActivity());
+            AndroidUtils.showMessage(getResources().getString(R.string.no_network_connection), getActivity());
         } else {
-            creationTask = new CreationTask(mCredential, rootDriveIdFolder, folderName);
+            creationTask = new CreationTask(folderName);
             creationTask.execute();
         }
     }
@@ -242,8 +232,7 @@ public class FolderListFragment extends Fragment implements GoogleApiClient.Conn
         } else {
             // Request the GET_ACCOUNTS permission via a user dialog
             EasyPermissions.requestPermissions(
-                    this.getActivity(),
-                    "This app needs to access your Google account (via Contacts).",
+                    this.getActivity(), getResources().getString(R.string.google_account_needed),
                     Constants.REQUEST_PERMISSION_GET_ACCOUNTS,
                     Manifest.permission.GET_ACCOUNTS);
         }
@@ -255,7 +244,7 @@ public class FolderListFragment extends Fragment implements GoogleApiClient.Conn
         } else if (mCredential.getSelectedAccountName() == null) {
             chooseAccountForDeletion(fileResourceId);
         } else if (!GooglePlayUtils.isDeviceOnline(this.getActivity())) {
-            AndroidUtils.showMessage("No network connection available.", getActivity());
+            AndroidUtils.showMessage(getResources().getString(R.string.no_network_connection), getActivity());
         } else {
             deleteTask = new MakeDeleteTask(mCredential, fileResourceId);
             deleteTask.execute();
@@ -281,7 +270,7 @@ public class FolderListFragment extends Fragment implements GoogleApiClient.Conn
             // Request the GET_ACCOUNTS permission via a user dialog
             EasyPermissions.requestPermissions(
                     this.getActivity(),
-                    "This app needs to access your Google account (via Contacts).",
+                    getResources().getString(R.string.google_account_needed),
                     Constants.REQUEST_PERMISSION_GET_ACCOUNTS,
                     Manifest.permission.GET_ACCOUNTS);
         }
@@ -294,12 +283,11 @@ public class FolderListFragment extends Fragment implements GoogleApiClient.Conn
         } else if (mCredential.getSelectedAccountName() == null) {
             chooseAccount();
         } else if (!GooglePlayUtils.isDeviceOnline(this.getActivity())) {
-            AndroidUtils.showMessage("No network connection available.", getActivity());
+            AndroidUtils.showMessage(getResources().getString(R.string.no_network_connection), getActivity());
         } else {
             new MakeRequestTask(mCredential, folderId).execute();
         }
     }
-
 
 
     @AfterPermissionGranted(Constants.REQUEST_PERMISSION_GET_ACCOUNTS)
@@ -321,7 +309,7 @@ public class FolderListFragment extends Fragment implements GoogleApiClient.Conn
             // Request the GET_ACCOUNTS permission via a user dialog
             EasyPermissions.requestPermissions(
                     this.getActivity(),
-                    "This app needs to access your Google account (via Contacts).",
+                    getResources().getString(R.string.google_account_needed),
                     Constants.REQUEST_PERMISSION_GET_ACCOUNTS,
                     Manifest.permission.GET_ACCOUNTS);
         }
@@ -350,7 +338,7 @@ public class FolderListFragment extends Fragment implements GoogleApiClient.Conn
     }
 
     private void fillAdapter(final List<DriveDocument> documents) {
-        parallaxRecyclerAdapter = new ParallaxRecyclerAdapter<DriveDocument>(documents) {
+        ParallaxRecyclerAdapter<DriveDocument> parallaxRecyclerAdapter = new ParallaxRecyclerAdapter<DriveDocument>(documents) {
             @Override
             public void onBindViewHolderImpl(RecyclerView.ViewHolder viewHolder, ParallaxRecyclerAdapter<DriveDocument> parallaxRecyclerAdapter, int i) {
                 DriveDocument driveDoc = parallaxRecyclerAdapter.getData().get(i);
@@ -402,9 +390,8 @@ public class FolderListFragment extends Fragment implements GoogleApiClient.Conn
         switch (requestCode) {
             case Constants.REQUEST_GOOGLE_PLAY_SERVICES:
                 if (resultCode != Constants.RESULT_OK) {
-                    AndroidUtils.showMessage(
-                            "This app requires Google Play Services. Please install " +
-                                    "Google Play Services on your device and relaunch this app.", getActivity());
+                    AndroidUtils.showMessage(getResources().getString(R.string.play_services_needed)
+                            , getActivity());
                 } else {
                     getFilesFromApi();
                 }
@@ -440,8 +427,7 @@ public class FolderListFragment extends Fragment implements GoogleApiClient.Conn
                 requestCode, permissions, grantResults, this);
     }
 
-    private class DriveDocumentHolder extends RecyclerView.ViewHolder implements View.OnCreateContextMenuListener{
-        CardView cv;
+    private class DriveDocumentHolder extends RecyclerView.ViewHolder implements View.OnCreateContextMenuListener {
         TextView documentTitle;
         TextView documentDescription;
         TextView documentExtension;
@@ -459,16 +445,13 @@ public class FolderListFragment extends Fragment implements GoogleApiClient.Conn
             itemView.setOnCreateContextMenuListener(this);
         }
 
-        public void bind(@NonNull String data) {
-            fileResourceId = data;
-        }
 
         @Override
         public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
             menu.setHeaderTitle(getResources().getString(R.string.context_menu_title));
 
             MenuItem deleteItem = menu.add(0, v.getId(), 2, R.string.context_menu_delete);
-            deleteItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener(){
+            deleteItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
                 @Override
                 public boolean onMenuItemClick(MenuItem item) {
 
@@ -506,7 +489,7 @@ public class FolderListFragment extends Fragment implements GoogleApiClient.Conn
 
 
             MenuItem editItem = menu.add(0, v.getId(), 1, R.string.context_menu_edit);
-            editItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener(){
+            editItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
                 @Override
                 public boolean onMenuItemClick(MenuItem item) {
                     RenameDocumentFragment renameDocumentFragment = RenameDocumentFragment.newInstance(fileResourceId, documentTitle.getText().toString(), documentDescription.getText().toString());
@@ -538,7 +521,7 @@ public class FolderListFragment extends Fragment implements GoogleApiClient.Conn
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
-            if(dialog==null) {
+            if (dialog == null) {
                 dialog = new ProgressDialog(getContext());
                 dialog.setMessage(getActivity().getResources().getString(R.string.loading));
                 dialog.setIndeterminate(false);
@@ -568,14 +551,14 @@ public class FolderListFragment extends Fragment implements GoogleApiClient.Conn
         }
 
         private List<DriveDocument> getDataFromApi() throws IOException {
-            List<DriveDocument> documentsList = new ArrayList<DriveDocument>();
+            List<DriveDocument> documentsList = new ArrayList<>();
 
             FileList result = mService.files().list().setQ("\'" + this.folderId + "\' in parents").setFields("files(description,id,name,webViewLink)").execute();
 
             List<File> files = result.getFiles();
             if (files != null) {
                 for (File file : files) {
-                    if(file.getTrashed()==null || !file.getTrashed()) {
+                    if (file.getTrashed() == null || !file.getTrashed()) {
                         DriveDocument document = new DriveDocument();
                         document.setTitle(file.getName());
                         document.setExtension(file.getFileExtension());
@@ -612,11 +595,11 @@ public class FolderListFragment extends Fragment implements GoogleApiClient.Conn
                             ((UserRecoverableAuthIOException) mLastError).getIntent(),
                             Constants.REQUEST_AUTHORIZATION);
                 } else {
-                    AndroidUtils.showMessage(("The following error occurred:\n"
+                    AndroidUtils.showMessage((getResources().getString(R.string.following_error) + "\n"
                             + mLastError.getMessage()), getActivity());
                 }
             } else {
-                AndroidUtils.showMessage("Request cancelled.", getActivity());
+                AndroidUtils.showMessage(getResources().getString(R.string.request_cancelled), getActivity());
             }
         }
     }
@@ -662,18 +645,18 @@ public class FolderListFragment extends Fragment implements GoogleApiClient.Conn
         @Override
         protected Void doInBackground(Void... params) {
             try {
-                 deleteFile();
+                deleteFile();
             } catch (Exception e) {
                 e.printStackTrace();
                 mLastError = e;
                 cancel(true);
-             }
+            }
             return null;
         }
 
         private void deleteFile() throws IOException {
 
-           mService.files().delete(this.resourceId).execute();
+            mService.files().delete(this.resourceId).execute();
 
         }
 
@@ -693,43 +676,33 @@ public class FolderListFragment extends Fragment implements GoogleApiClient.Conn
             if (mLastError != null) {
                 if (mLastError instanceof GooglePlayServicesAvailabilityIOException) {
                     GooglePlayUtils.showGooglePlayServicesAvailabilityErrorDialog(getActivity(), ((GooglePlayServicesAvailabilityIOException) mLastError)
-                                    .getConnectionStatusCode());
+                            .getConnectionStatusCode());
                 } else if (mLastError instanceof UserRecoverableAuthIOException) {
                     startActivityForResult(
                             ((UserRecoverableAuthIOException) mLastError).getIntent(),
                             Constants.REQUEST_AUTHORIZATION);
                 } else {
-                    AndroidUtils.showMessage(("The following error occurred:\n"
+                    AndroidUtils.showMessage((getResources().getString(R.string.following_error) + "\n"
                             + mLastError.getMessage()), getActivity());
                 }
             } else {
-                AndroidUtils.showMessage("Request cancelled.", getActivity());
+                AndroidUtils.showMessage(getResources().getString(R.string.request_cancelled), getActivity());
             }
         }
     }
 
 
     private class CreationTask extends AsyncTask<Void, Void, DriveId> {
-        private com.google.api.services.drive.Drive mService = null;
         private Exception mLastError = null;
-        private String resourceId = "";
         private String folderName = "";
-        private DriveId rootDriveIdFolder;
         private DriveId newDriveFolderId;
         private boolean isCompleted = false;
 
         private ProgressDialog dialog;
 
-        public CreationTask(GoogleAccountCredential credential, DriveId rootDriveIdFolder, String folderName) {
-            HttpTransport transport = AndroidHttp.newCompatibleTransport();
-            JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
-            mService = new com.google.api.services.drive.Drive.Builder(
-                    transport, jsonFactory, credential)
-                    .setApplicationName(getResources().getString(R.string.app_name))
-                    .build();
+        public CreationTask(String folderName) {
 
             this.folderName = folderName;
-            this.rootDriveIdFolder = rootDriveIdFolder;
         }
 
         @Override
@@ -818,11 +791,11 @@ public class FolderListFragment extends Fragment implements GoogleApiClient.Conn
                             ((UserRecoverableAuthIOException) mLastError).getIntent(),
                             Constants.REQUEST_AUTHORIZATION);
                 } else {
-                    AndroidUtils.showMessage(("The following error occurred:\n"
+                    AndroidUtils.showMessage((getResources().getString(R.string.following_error) + "\n"
                             + mLastError.getMessage()), getActivity());
                 }
             } else {
-                AndroidUtils.showMessage("Request cancelled.", getActivity());
+                AndroidUtils.showMessage(getResources().getString(R.string.request_cancelled), getActivity());
             }
         }
     }

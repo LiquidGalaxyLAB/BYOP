@@ -80,7 +80,6 @@ public class EditPOIDataFragment extends Fragment implements GoogleApiClient.Con
     private EditText poi_latitude_input;
     private EditText poi_longitude_input;
     private EditPOITask editPoiTask;
-    private Button saveChanges;
 
     private GoogleApiClient mGoogleApiClient;
 
@@ -116,8 +115,7 @@ public class EditPOIDataFragment extends Fragment implements GoogleApiClient.Con
             case Constants.REQUEST_GOOGLE_PLAY_SERVICES:
                 if (resultCode != Constants.RESULT_OK) {
                     AndroidUtils.showMessage(
-                            "This app requires Google Play Services. Please install " +
-                                    "Google Play Services on your device and relaunch this app.", getActivity());
+                            getResources().getString(R.string.play_services_needed), getActivity());
                 } else {
                     editPoiThroughApi();
                 }
@@ -177,7 +175,7 @@ public class EditPOIDataFragment extends Fragment implements GoogleApiClient.Con
         poi_longitude_input.setText(String.valueOf(newPoiLongitude));
 
 
-        saveChanges = (Button) rootView.findViewById(R.id.btn_edit_poi);
+        Button saveChanges = (Button) rootView.findViewById(R.id.btn_edit_poi);
 
         mGoogleApiClient = new GoogleApiClient.Builder(getActivity())
                 .addApi(Drive.API)
@@ -214,7 +212,7 @@ public class EditPOIDataFragment extends Fragment implements GoogleApiClient.Con
         } else if (mCredential.getSelectedAccountName() == null) {
             chooseAccountForEdition();
         } else if (!GooglePlayUtils.isDeviceOnline(getActivity())) {
-            AndroidUtils.showMessage("No network connection available.", getActivity());
+            AndroidUtils.showMessage(getResources().getString(R.string.no_network_connection), getActivity());
         } else {
             POI editedPoi = new POI();
             editedPoi.setName(poi_name_input.getText().toString());
@@ -248,7 +246,7 @@ public class EditPOIDataFragment extends Fragment implements GoogleApiClient.Con
             // Request the GET_ACCOUNTS permission via a user dialog
             EasyPermissions.requestPermissions(
                     getActivity(),
-                    "This app needs to access your Google account (via Contacts).",
+                    getResources().getString(R.string.google_account_needed),
                     Constants.REQUEST_PERMISSION_GET_ACCOUNTS,
                     Manifest.permission.GET_ACCOUNTS);
         }
@@ -374,7 +372,7 @@ public class EditPOIDataFragment extends Fragment implements GoogleApiClient.Con
 
                                             contents.commit(mGoogleApiClient, changeSet).setResultCallback(new ResultCallback<com.google.android.gms.common.api.Status>() {
                                                 @Override
-                                                public void onResult(com.google.android.gms.common.api.Status result) {
+                                                public void onResult(@NonNull com.google.android.gms.common.api.Status result) {
                                                     //Do nothing
                                                 }
                                             });
@@ -412,9 +410,7 @@ public class EditPOIDataFragment extends Fragment implements GoogleApiClient.Con
                     "        </Point>\n" +
                     "      </Placemark>";
 
-            String newStr = xmlString.trim().replaceAll(originalPOIStr.trim(), editedPOIStr.trim());
-
-            return newStr;
+            return xmlString.trim().replaceAll(originalPOIStr.trim(), editedPOIStr.trim());
         }
 
 
@@ -445,11 +441,11 @@ public class EditPOIDataFragment extends Fragment implements GoogleApiClient.Con
                             ((UserRecoverableAuthIOException) mLastError).getIntent(),
                             Constants.REQUEST_AUTHORIZATION);
                 } else {
-                    AndroidUtils.showMessage(("The following error occurred:\n"
+                    AndroidUtils.showMessage((getResources().getString(R.string.following_error) + "\n"
                             + mLastError.getMessage()), getActivity());
                 }
             } else {
-                AndroidUtils.showMessage("Request cancelled.", getActivity());
+                AndroidUtils.showMessage(getResources().getString(R.string.request_cancelled), getActivity());
             }
         }
 

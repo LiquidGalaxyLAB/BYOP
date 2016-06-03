@@ -65,8 +65,7 @@ public class EditPOIMapFragment extends Fragment implements GoogleMap.OnMarkerDr
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View v = inflater.inflate(R.layout.poi_map, container, false);
-        return v;
+        return inflater.inflate(R.layout.poi_map, container, false);
     }
 
     @Override

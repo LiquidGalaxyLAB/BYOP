@@ -34,15 +34,11 @@ public class SignInFragment extends Fragment implements GoogleApiClient.OnConnec
 
     private static final String TAG = "SignInActivity";
     private static final int RC_SIGN_IN = 9001;
-
+    protected FragmentStackManager fragmentStackManager;
     private GoogleApiClient mGoogleApiClient;
     private TextView mStatusTextView;
     private ProgressDialog mProgressDialog;
-
     private View view;
-
-    protected FragmentStackManager fragmentStackManager;
-
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -50,6 +46,7 @@ public class SignInFragment extends Fragment implements GoogleApiClient.OnConnec
 
         view = inflater.inflate(R.layout.activity_sign_in, container, false);
 
+        getActivity().setTitle(getActivity().getResources().getString(R.string.app_name));
 
         fragmentStackManager = FragmentStackManager.getInstance(getActivity());
 
@@ -168,7 +165,7 @@ public class SignInFragment extends Fragment implements GoogleApiClient.OnConnec
     }
 
     private void configureBeacon() {
-        BeaconConfigFragment beaconConfigFragment = new BeaconConfigFragment();
+        BeaconConfigFragment beaconConfigFragment = BeaconConfigFragment.newInstance();
         fragmentStackManager.loadFragment(beaconConfigFragment, R.id.main_frame);
     }
 

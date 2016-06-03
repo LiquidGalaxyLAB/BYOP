@@ -50,28 +50,18 @@ import pub.devrel.easypermissions.EasyPermissions;
 /**
  * Created by lgwork on 25/05/16.
  */
-public class CreateDocumentFragment extends Fragment  implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener{
-
-    protected FragmentStackManager fragmentStackManager;
+public class CreateDocumentFragment extends Fragment implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
     public static final String ARG_FOLDER_ID = "folderId";
-
+    protected FragmentStackManager fragmentStackManager;
+    GoogleAccountCredential mCredential;
     private EditText new_document_name_input;
     private TextInputLayout new_document_name;
-
     private EditText new_document_description_input;
-
-
-    private Button saveDocument;
-
     private CreateTask createTask;
     private MakePermissionsTask permissionsTask;
-
     private String folderId;
     private String documentId;
-
-    GoogleAccountCredential mCredential;
-
     /**
      * Google API client.
      */
@@ -91,7 +81,7 @@ public class CreateDocumentFragment extends Fragment  implements GoogleApiClient
         View rootView = inflater.inflate(R.layout.add_new_document, container, false);
         fragmentStackManager = FragmentStackManager.getInstance(getActivity());
 
-        saveDocument = (Button) rootView.findViewById(R.id.btn_add_document);
+        Button saveDocument = (Button) rootView.findViewById(R.id.btn_add_document);
 
         new_document_name_input = (EditText) rootView.findViewById(R.id.new_document_name_input);
         new_document_name = (TextInputLayout) rootView.findViewById(R.id.new_document_name);
@@ -105,7 +95,7 @@ public class CreateDocumentFragment extends Fragment  implements GoogleApiClient
 
                 if (new_document_name_input.getText().toString().length() == 0) {
                     new_document_name.setError(res.getString(R.string.empty_name_error));
-                }else{
+                } else {
                     new_document_name.setErrorEnabled(false);
                     createFileThroughApi(new_document_name_input, new_document_description_input);
                 }
@@ -144,7 +134,7 @@ public class CreateDocumentFragment extends Fragment  implements GoogleApiClient
         } else if (mCredential.getSelectedAccountName() == null) {
             chooseAccountForCreation(documentName);
         } else if (!GooglePlayUtils.isDeviceOnline(this.getActivity())) {
-            AndroidUtils.showMessage("No network connection available.", getActivity());
+            AndroidUtils.showMessage(getResources().getString(R.string.no_network_connection), getActivity());
         } else {
             createTask = new CreateTask(mCredential, documentName, documentDescription, this.folderId);
             createTask.execute();
@@ -152,7 +142,7 @@ public class CreateDocumentFragment extends Fragment  implements GoogleApiClient
     }
 
     @AfterPermissionGranted(Constants.REQUEST_PERMISSION_GET_ACCOUNTS)
-    private void chooseAccountForCreation(EditText documentName){
+    private void chooseAccountForCreation(EditText documentName) {
         if (EasyPermissions.hasPermissions(
                 this.getActivity(), Manifest.permission.GET_ACCOUNTS)) {
             String accountName = this.getActivity().getPreferences(Context.MODE_PRIVATE)
@@ -169,8 +159,7 @@ public class CreateDocumentFragment extends Fragment  implements GoogleApiClient
         } else {
             // Request the GET_ACCOUNTS permission via a user dialog
             EasyPermissions.requestPermissions(
-                    this.getActivity(),
-                    "This app needs to access your Google account (via Contacts).",
+                    this.getActivity(), getResources().getString(R.string.google_account_needed),
                     Constants.REQUEST_PERMISSION_GET_ACCOUNTS,
                     Manifest.permission.GET_ACCOUNTS);
         }
@@ -195,8 +184,7 @@ public class CreateDocumentFragment extends Fragment  implements GoogleApiClient
         } else {
             // Request the GET_ACCOUNTS permission via a user dialog
             EasyPermissions.requestPermissions(
-                    this.getActivity(),
-                    "This app needs to access your Google account (via Contacts).",
+                    this.getActivity(), getResources().getString(R.string.google_account_needed),
                     Constants.REQUEST_PERMISSION_GET_ACCOUNTS,
                     Manifest.permission.GET_ACCOUNTS);
         }
@@ -208,9 +196,10 @@ public class CreateDocumentFragment extends Fragment  implements GoogleApiClient
         } else if (mCredential.getSelectedAccountName() == null) {
             chooseAccountForPermissions();
         } else if (!GooglePlayUtils.isDeviceOnline(this.getActivity())) {
-            AndroidUtils.showMessage("No network connection available.", getActivity());
+            AndroidUtils.showMessage(getResources().getString(R.string.no_network_connection), getActivity());
         } else {
-            new MakePermissionsTask(mCredential, documentId).execute();
+            permissionsTask = new MakePermissionsTask(mCredential, documentId);
+            permissionsTask.execute();
         }
     }
 
@@ -251,7 +240,7 @@ public class CreateDocumentFragment extends Fragment  implements GoogleApiClient
             super.onPreExecute();
             if (dialog == null) {
                 dialog = new ProgressDialog(getContext());
-                dialog.setMessage(getActivity().getResources().getString(R.string.loading));
+                dialog.setMessage(getActivity().getResources().getString(R.string.saving));
                 dialog.setIndeterminate(false);
                 dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
                 dialog.setCancelable(true);
@@ -280,10 +269,10 @@ public class CreateDocumentFragment extends Fragment  implements GoogleApiClient
 
         private void createFile() throws IOException {
             File fileMetadata = new File();
-            fileMetadata.setName(this.documentName+".xml");
+            fileMetadata.setName(this.documentName + ".xml");
             fileMetadata.setDescription(this.documentDescription);
 
-            List<String> parents = new ArrayList<String>();
+            List<String> parents = new ArrayList<>();
             parents.add(this.folderId);
             fileMetadata.setParents(parents);
             fileMetadata.setMimeType("text/xml");
@@ -298,10 +287,6 @@ public class CreateDocumentFragment extends Fragment  implements GoogleApiClient
             //We add the xml format
             String contentStr = getKMLSkeleton();
 
-            File newFile = new File();
-            newFile.setName(this.documentName+".xml");
-            newFile.setMimeType("text/xml");
-
             java.io.File outputDir = getContext().getCacheDir(); // context being the Activity pointer
             java.io.File outputFile = java.io.File.createTempFile("prefix", "extension", outputDir);
 
@@ -309,13 +294,11 @@ public class CreateDocumentFragment extends Fragment  implements GoogleApiClient
             bw.write(contentStr);
             bw.close();
 
-            FileContent mediaContent = new FileContent("text/xml", outputFile);
-
-            return mediaContent;
+            return new FileContent("text/xml", outputFile);
         }
 
         private String getKMLSkeleton() {
-            String str = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+            return "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
                     "<kml xmlns=\"http://www.opengis.net/kml/2.2\">\n" +
                     "  <Document>\n" +
                     "    <name></name>\n" +
@@ -325,22 +308,20 @@ public class CreateDocumentFragment extends Fragment  implements GoogleApiClient
                     "  </Folder>\n" +
                     "</Document>\n" +
                     "</kml>";
-
-            return str;
         }
 
         @Override
         protected void onPostExecute(Void aVoid) {
             View view = getActivity().getCurrentFocus();
             if (view != null) {
-                InputMethodManager imm = (InputMethodManager)getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+                InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
                 imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
             }
             if (dialog != null && dialog.isShowing())
                 dialog.hide();
 
             changeFilePermissions();
-           fragmentStackManager.popBackStatFragment();
+            fragmentStackManager.popBackStatFragment();
 
         }
 
@@ -357,11 +338,11 @@ public class CreateDocumentFragment extends Fragment  implements GoogleApiClient
                             ((UserRecoverableAuthIOException) mLastError).getIntent(),
                             Constants.REQUEST_AUTHORIZATION);
                 } else {
-                    AndroidUtils.showMessage(("The following error occurred:\n"
+                    AndroidUtils.showMessage((getResources().getString(R.string.following_error) + "\n"
                             + mLastError.getMessage()), getActivity());
                 }
             } else {
-                AndroidUtils.showMessage("Request cancelled.", getActivity());
+                AndroidUtils.showMessage(getResources().getString(R.string.request_cancelled), getActivity());
             }
         }
     }
@@ -447,11 +428,11 @@ public class CreateDocumentFragment extends Fragment  implements GoogleApiClient
                             ((UserRecoverableAuthIOException) mLastError).getIntent(),
                             Constants.REQUEST_AUTHORIZATION);
                 } else {
-                    AndroidUtils.showMessage(("The following error occurred:\n"
+                    AndroidUtils.showMessage((getResources().getString(R.string.following_error) + "\n"
                             + mLastError.getMessage()), getActivity());
                 }
             } else {
-                AndroidUtils.showMessage("Request cancelled.", getActivity());
+                AndroidUtils.showMessage(getResources().getString(R.string.request_cancelled), getActivity());
             }
         }
     }

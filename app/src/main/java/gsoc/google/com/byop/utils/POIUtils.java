@@ -232,9 +232,7 @@ public class POIUtils {
                     "        </Point>\n" +
                     "      </Placemark>";
 
-            String newStr = xmlString.trim().replaceAll(originalPOIStr.trim(), editedPOIStr.trim());
-
-            return newStr;
+            return xmlString.trim().replaceAll(originalPOIStr.trim(), editedPOIStr.trim());
         }
 
 
@@ -265,7 +263,7 @@ public class POIUtils {
                             + mLastError.getMessage()), getActivity());*/
                 }
             } else {
-                AndroidUtils.showMessage("Request cancelled.", activity);
+                AndroidUtils.showMessage(getActivity().getResources().getString(R.string.request_cancelled), activity);
             }
         }
 
@@ -447,11 +445,11 @@ public class POIUtils {
                             ((UserRecoverableAuthIOException) mLastError).getIntent(),
                             Constants.REQUEST_AUTHORIZATION);
                 } else {
-                    AndroidUtils.showMessage(("The following error occurred:\n"
+                    AndroidUtils.showMessage((getActivity().getResources().getString(R.string.following_error) + ":\n"
                             + mLastError.getMessage()), getActivity());
                 }
             } else {
-                AndroidUtils.showMessage("Request cancelled.", activity);
+                AndroidUtils.showMessage(getActivity().getResources().getString(R.string.request_cancelled), activity);
             }
         }
 

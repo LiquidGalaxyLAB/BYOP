@@ -26,7 +26,9 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(myToolbar);
 
         ActionBar ab = getSupportActionBar();
-        ab.setDisplayHomeAsUpEnabled(true);
+        if (ab != null) {
+            ab.setDisplayHomeAsUpEnabled(true);
+        }
 
         fragmentStackManager = FragmentStackManager.getInstance(this);
 

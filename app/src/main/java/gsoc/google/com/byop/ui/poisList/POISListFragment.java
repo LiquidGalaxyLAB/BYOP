@@ -104,7 +104,7 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
         super.onActivityCreated(savedInstanceState);
 
         document = getArguments().getParcelable(ARG_DOCUMENT);
-        getActivity().setTitle(getActivity().getResources().getString(R.string.app_name) + " " + getResources().getString(R.string.poisList) + ": " + document.getTitle());
+        getActivity().setTitle(getResources().getString(R.string.poisList) + " " + document.getTitle());
 
         setHasOptionsMenu(true);
 
@@ -168,7 +168,7 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
         } else if (mCredential.getSelectedAccountName() == null) {
             chooseAccount();
         } else if (!GooglePlayUtils.isDeviceOnline(this.getActivity())) {
-            AndroidUtils.showMessage("No network connection available.", getActivity());
+            AndroidUtils.showMessage(getResources().getString(R.string.no_network_connection), getActivity());
         } else {
             requestContentsTask = new RequestContentsTask(mCredential);
             requestContentsTask.execute();
@@ -195,7 +195,7 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
             // Request the GET_ACCOUNTS permission via a user dialog
             EasyPermissions.requestPermissions(
                     this.getActivity(),
-                    "This app needs to access your Google account (via Contacts).",
+                    getResources().getString(R.string.google_account_needed),
                     Constants.REQUEST_PERMISSION_GET_ACCOUNTS,
                     Manifest.permission.GET_ACCOUNTS);
         }
@@ -228,7 +228,7 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
     public void onConnectionSuspended(int i) {/*Do Nothing*/}
 
     @Override
-    public void onConnectionFailed(ConnectionResult connectionResult) {
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
         if (connectionResult.hasResolution()) {
             try {
                 connectionResult.startResolutionForResult(this.getActivity(), ConnectionResult.SERVICE_INVALID);
@@ -255,8 +255,7 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
             case Constants.REQUEST_GOOGLE_PLAY_SERVICES:
                 if (resultCode != Constants.RESULT_OK) {
                     AndroidUtils.showMessage(
-                            "This app requires Google Play Services. Please install " +
-                                    "Google Play Services on your device and relaunch this app.", getActivity());
+                            getResources().getString(R.string.play_services_needed), getActivity());
                 } else {
                     getFileContensFromAPI();
                 }
@@ -286,9 +285,7 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           @NonNull String[] permissions,
-                                           @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         EasyPermissions.onRequestPermissionsResult(
                 requestCode, permissions, grantResults, this);
@@ -435,7 +432,7 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
         private Exception mLastError = null;
         private ProgressDialog dialog;
 
-        private List<POI> innerPOIList = new ArrayList<POI>();
+        private List<POI> innerPOIList = new ArrayList<>();
         private boolean isCompleted = false;
 
         public RequestContentsTask(GoogleAccountCredential credential) {
@@ -514,7 +511,7 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
                                     }
                                 });
                     } else {
-                        AndroidUtils.showMessage("Something went wrong:" + driveIdResult.getStatus(), getActivity());
+                        AndroidUtils.showMessage(getResources().getString(R.string.something_wrong) + driveIdResult.getStatus(), getActivity());
                         fragmentStackManager.popBackStatFragment();
                         return;
                     }
@@ -548,11 +545,11 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
                             ((UserRecoverableAuthIOException) mLastError).getIntent(),
                             Constants.REQUEST_AUTHORIZATION);
                 } else {
-                    AndroidUtils.showMessage(("The following error occurred:\n"
+                    AndroidUtils.showMessage((getResources().getString(R.string.following_error) + "\n"
                             + mLastError.getMessage()), getActivity());
                 }
             } else {
-                AndroidUtils.showMessage("Request cancelled.", getActivity());
+                AndroidUtils.showMessage(getResources().getString(R.string.request_cancelled), getActivity());
             }
         }
     }
@@ -564,6 +561,5 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
 
         return poiList;
     }
-
 
 }

@@ -40,7 +40,7 @@ import pub.devrel.easypermissions.EasyPermissions;
  * Created by lgwork on 25/05/16.
  */
 public class RenameDocumentFragment extends Fragment {
-    private static String TAG = RenameDocumentFragment.class.toString();
+
     protected FragmentStackManager fragmentStackManager;
 
     public static final String ARG_FILE_ID = "fileId";
@@ -51,15 +51,12 @@ public class RenameDocumentFragment extends Fragment {
     private TextInputLayout document_name;
 
     private EditText document_description_input;
-    private TextInputLayout document_description;
 
-    private Button saveDocument;
 
     private RenameTask renameTask;
 
     private String fileId;
     private String actualName;
-    private String actualDescription;
 
     GoogleAccountCredential mCredential;
 
@@ -79,13 +76,12 @@ public class RenameDocumentFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.rename_document, container, false);
         fragmentStackManager = FragmentStackManager.getInstance(getActivity());
 
-        saveDocument = (Button) rootView.findViewById(R.id.btn_rename_document);
+        Button saveDocument = (Button) rootView.findViewById(R.id.btn_rename_document);
 
         document_name_input = (EditText) rootView.findViewById(R.id.rename_document_name_input);
         document_name = (TextInputLayout) rootView.findViewById(R.id.rename_document_name);
 
         document_description_input = (EditText) rootView.findViewById(R.id.rename_document_description_input);
-        document_description = (TextInputLayout) rootView.findViewById(R.id.rename_document_description);
 
         saveDocument.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -115,7 +111,7 @@ public class RenameDocumentFragment extends Fragment {
         super.onActivityCreated(savedInstanceState);
         fileId = getArguments().getString(ARG_FILE_ID);
         actualName = getArguments().getString(ARG_NAME);
-        actualDescription = getArguments().getString(ARG_DESC);
+        String actualDescription = getArguments().getString(ARG_DESC);
 
         document_name_input.setText(actualName);
         document_description_input.setText(actualDescription);
@@ -128,7 +124,7 @@ public class RenameDocumentFragment extends Fragment {
         } else if (mCredential.getSelectedAccountName() == null) {
             chooseAccountForEdition(documentName);
         } else if (!GooglePlayUtils.isDeviceOnline(this.getActivity())) {
-            AndroidUtils.showMessage("No network connection available.", getActivity());
+            AndroidUtils.showMessage(getResources().getString(R.string.no_network_connection), getActivity());
         } else {
             renameTask = new RenameTask(mCredential, documentName, documentDescription, this.fileId);
             renameTask.execute();
@@ -154,7 +150,7 @@ public class RenameDocumentFragment extends Fragment {
             // Request the GET_ACCOUNTS permission via a user dialog
             EasyPermissions.requestPermissions(
                     this.getActivity(),
-                    "This app needs to access your Google account (via Contacts).",
+                    getResources().getString(R.string.google_account_needed),
                     Constants.REQUEST_PERMISSION_GET_ACCOUNTS,
                     Manifest.permission.GET_ACCOUNTS);
         }
@@ -185,11 +181,7 @@ public class RenameDocumentFragment extends Fragment {
             this.fileId = fileId;
         }
 
-        /**
-         * Background task to call Drive API.
-         *
-         * @param params no parameters needed for this task.
-         */
+
         @Override
         protected Void doInBackground(Void... params) {
             try {
@@ -202,13 +194,7 @@ public class RenameDocumentFragment extends Fragment {
             return null;
         }
 
-        /**
-         * Fetch a list of up to 10 file names and IDs.
-         *
-         * @return List of Strings describing files, or an empty list if no files
-         * found.
-         * @throws IOException
-         */
+
         private void createFile() throws IOException {
             File fileMetadata = new File();
             fileMetadata.setName(this.documentName);
@@ -241,11 +227,11 @@ public class RenameDocumentFragment extends Fragment {
                             ((UserRecoverableAuthIOException) mLastError).getIntent(),
                             Constants.REQUEST_AUTHORIZATION);
                 } else {
-                    AndroidUtils.showMessage(("The following error occurred:\n"
+                    AndroidUtils.showMessage((getResources().getString(R.string.following_error) + ":\n"
                             + mLastError.getMessage()), getActivity());
                 }
             } else {
-                AndroidUtils.showMessage("Request cancelled.", getActivity());
+                AndroidUtils.showMessage(getResources().getString(R.string.request_cancelled), getActivity());
             }
         }
     }

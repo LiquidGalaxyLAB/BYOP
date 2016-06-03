@@ -60,15 +60,12 @@ import pub.devrel.easypermissions.EasyPermissions;
  */
 public class CreatePOIDialogFragment extends Fragment implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
-    protected FragmentStackManager fragmentStackManager;
-
     public static final String ARG_LATITUDE = "latitude";
     public static final String ARG_LONGITUDE = "longitude";
     public static final String ARG_DOCUMENT = "document";
-
-    private GoogleApiClient googleApiClient;
+    protected FragmentStackManager fragmentStackManager;
     GoogleAccountCredential mCredential;
-
+    private GoogleApiClient googleApiClient;
     private DriveDocument document;
     private double latitude;
     private double longitude;
@@ -77,12 +74,9 @@ public class CreatePOIDialogFragment extends Fragment implements GoogleApiClient
 
     private EditText poi_name_input;
     private EditText poi_description_input;
-    private TextView poi_latitude_input;
     private TextView poi_longitude_input;
 
     private CreateTask createTask;
-
-    private Button saveChanges;
 
     public static CreatePOIDialogFragment newInstance(double latitude, double longitude, DriveDocument document) {
         CreatePOIDialogFragment createPOIDialogFragment = new CreatePOIDialogFragment();
@@ -110,15 +104,15 @@ public class CreatePOIDialogFragment extends Fragment implements GoogleApiClient
 
         poi_name_input = (EditText) rootView.findViewById(R.id.create_poi_name_input);
         poi_description_input = (EditText) rootView.findViewById(R.id.create_poi_desc_input);
-        poi_latitude_input = (TextView) rootView.findViewById(R.id.create_poi_latitude_input);
+        TextView poi_latitude_input = (TextView) rootView.findViewById(R.id.create_poi_latitude_input);
         poi_longitude_input = (TextView) rootView.findViewById(R.id.create_poi_longitude_input);
 
 
-        poi_latitude_input.setText("Latitude:" + String.valueOf(latitude));
-        poi_longitude_input.setText("Longitude:" + String.valueOf(longitude));
+        poi_latitude_input.setText(getResources().getString(R.string.latitude) + String.valueOf(latitude));
+        poi_longitude_input.setText(getResources().getString(R.string.longitude) + String.valueOf(longitude));
 
 
-        saveChanges = (Button) rootView.findViewById(R.id.btn_create_poi);
+        Button saveChanges = (Button) rootView.findViewById(R.id.btn_create_poi);
 
         saveChanges.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -179,7 +173,7 @@ public class CreatePOIDialogFragment extends Fragment implements GoogleApiClient
         } else if (mCredential.getSelectedAccountName() == null) {
             chooseAccountForCreation(name, description, latitude, longitude, document);
         } else if (!GooglePlayUtils.isDeviceOnline(this.getActivity())) {
-            AndroidUtils.showMessage("No network connection available.", getActivity());
+            AndroidUtils.showMessage(getResources().getString(R.string.no_network_connection), getActivity());
         } else {
             createTask = new CreateTask(mCredential, name, description, latitude, longitude, document);
             createTask.execute();
@@ -205,7 +199,7 @@ public class CreatePOIDialogFragment extends Fragment implements GoogleApiClient
             // Request the GET_ACCOUNTS permission via a user dialog
             EasyPermissions.requestPermissions(
                     this.getActivity(),
-                    "This app needs to access your Google account (via Contacts).",
+                    getResources().getString(R.string.google_account_needed),
                     Constants.REQUEST_PERMISSION_GET_ACCOUNTS,
                     Manifest.permission.GET_ACCOUNTS);
         }
@@ -370,11 +364,11 @@ public class CreatePOIDialogFragment extends Fragment implements GoogleApiClient
                             ((UserRecoverableAuthIOException) mLastError).getIntent(),
                             Constants.REQUEST_AUTHORIZATION);
                 } else {
-                    AndroidUtils.showMessage(("The following error occurred:\n"
+                    AndroidUtils.showMessage((getResources().getString(R.string.following_error) + "\n"
                             + mLastError.getMessage()), getActivity());
                 }
             } else {
-                AndroidUtils.showMessage("Request cancelled.", getActivity());
+                AndroidUtils.showMessage(getResources().getString(R.string.request_cancelled), getActivity());
             }
         }
     }

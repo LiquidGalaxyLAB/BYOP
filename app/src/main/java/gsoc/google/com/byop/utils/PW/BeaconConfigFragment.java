@@ -108,7 +108,11 @@ public class BeaconConfigFragment extends Fragment implements TextView.OnEditorA
     }
 
     public static BeaconConfigFragment newInstance() {
-        return new BeaconConfigFragment();
+        BeaconConfigFragment beaconConfigFragment = new BeaconConfigFragment();
+        Bundle bundle = new Bundle();
+        bundle.putString(ARG_FILE_LINK, "");
+        beaconConfigFragment.setArguments(bundle);
+        return beaconConfigFragment;
     }
 
     public static BeaconConfigFragment newInstance(String link) {
@@ -165,7 +169,7 @@ public class BeaconConfigFragment extends Fragment implements TextView.OnEditorA
             }
         });
 
-        fileLink = getArguments().getString(ARG_FILE_LINK);
+        fileLink = getArguments() != null ? getArguments().getString(ARG_FILE_LINK) : "";
 
         return view;
     }
