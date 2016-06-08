@@ -19,6 +19,7 @@ public class Constants {
      */
     public static final int RESULT_FIRST_USER = 1;
 
+    public static final int RC_SIGN_IN = 9001;
 
     public static final int REQUEST_ACCOUNT_PICKER = 1000;
     public static final int REQUEST_AUTHORIZATION = 1001;
