@@ -2,6 +2,7 @@ package gsoc.google.com.byop.ui.main;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
@@ -9,7 +10,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 
+import com.google.android.gms.common.ConnectionResult;
+
 import gsoc.google.com.byop.R;
+import gsoc.google.com.byop.ui.documentsList.FolderListFragment;
 import gsoc.google.com.byop.utils.FragmentStackManager;
 
 
@@ -17,6 +21,15 @@ public class MainActivity extends AppCompatActivity {
 
     private FragmentStackManager fragmentStackManager;
 
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(requestCode == ConnectionResult.SERVICE_INVALID){
+            FolderListFragment folderListFragment = new FolderListFragment();
+            fragmentStackManager.loadFragment(folderListFragment, R.id.main_frame);
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
