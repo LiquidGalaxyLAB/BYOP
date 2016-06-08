@@ -87,6 +87,19 @@ public class FolderListFragment extends Fragment implements GoogleApiClient.Conn
     private CreationTask creationTask;
 
 
+    public static final String ARG_ACCOUNT = "account";
+    private String accountEmail;
+
+
+    public static FolderListFragment newInstance(String email) {
+        FolderListFragment folderListFragment = new FolderListFragment();
+        Bundle bundle = new Bundle();
+        bundle.putString(ARG_ACCOUNT, email);
+        folderListFragment.setArguments(bundle);
+        return folderListFragment;
+    }
+
+
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
@@ -136,6 +149,10 @@ public class FolderListFragment extends Fragment implements GoogleApiClient.Conn
         // Initialize credentials and service object.
         mCredential = GoogleAccountCredential.usingOAuth2(getContext(), Arrays.asList(Constants.SCOPES))
                 .setBackOff(new ExponentialBackOff());
+
+        accountEmail = getArguments().getString(ARG_ACCOUNT);
+
+        mCredential.setSelectedAccountName(accountEmail);
 
         return rootView;
     }
@@ -427,6 +444,7 @@ public class FolderListFragment extends Fragment implements GoogleApiClient.Conn
         EasyPermissions.onRequestPermissionsResult(
                 requestCode, permissions, grantResults, this);
     }
+
 
     private class DriveDocumentHolder extends RecyclerView.ViewHolder implements View.OnCreateContextMenuListener {
         TextView documentTitle;

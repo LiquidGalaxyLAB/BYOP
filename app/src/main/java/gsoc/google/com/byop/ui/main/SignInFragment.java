@@ -40,6 +40,8 @@ public class SignInFragment extends Fragment implements GoogleApiClient.OnConnec
     private ProgressDialog mProgressDialog;
     private View view;
 
+    GoogleSignInAccount acct;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -121,7 +123,7 @@ public class SignInFragment extends Fragment implements GoogleApiClient.OnConnec
         Log.d(TAG, "handleSignInResult:" + result.isSuccess());
         if (result.isSuccess()) {
             // Signed in successfully, show authenticated UI.
-            GoogleSignInAccount acct = result.getSignInAccount();
+            acct = result.getSignInAccount();
             mStatusTextView.setText(getString(R.string.signed_in_fmt, acct.getDisplayName()));
             updateUI(true);
         } else {
@@ -159,7 +161,7 @@ public class SignInFragment extends Fragment implements GoogleApiClient.OnConnec
 
     private void loadDocumentsList() {
 
-        FolderListFragment folderListFragment = new FolderListFragment();
+        FolderListFragment folderListFragment = FolderListFragment.newInstance(acct.getEmail());
         fragmentStackManager.loadFragment(folderListFragment, R.id.main_frame);
 
     }
