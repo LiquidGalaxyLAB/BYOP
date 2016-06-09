@@ -89,7 +89,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        AndroidUtils.clearApplicationData(getApplication());
     }
 
     @Override
@@ -102,6 +101,7 @@ public class MainActivity extends AppCompatActivity {
                         dialog.dismiss();
                         AndroidUtils.clearApplicationData(getApplication());
                         finish();
+                        System.exit(0);
                     }
                 }, new DialogInterface.OnClickListener() {
                     @Override
