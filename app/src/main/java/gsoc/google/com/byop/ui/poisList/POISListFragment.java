@@ -442,8 +442,6 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
                     transport, jsonFactory, credential)
                     .setApplicationName(getResources().getString(R.string.app_name))
                     .build();
-
-
         }
 
         @Override

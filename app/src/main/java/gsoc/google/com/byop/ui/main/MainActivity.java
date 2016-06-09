@@ -14,22 +14,13 @@ import com.google.android.gms.common.ConnectionResult;
 
 import gsoc.google.com.byop.R;
 import gsoc.google.com.byop.ui.documentsList.FolderListFragment;
+import gsoc.google.com.byop.utils.AndroidUtils;
 import gsoc.google.com.byop.utils.FragmentStackManager;
 
 
 public class MainActivity extends AppCompatActivity {
 
     private FragmentStackManager fragmentStackManager;
-
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if(requestCode == ConnectionResult.SERVICE_INVALID){
-            FolderListFragment folderListFragment = new FolderListFragment();
-            fragmentStackManager.loadFragment(folderListFragment, R.id.main_frame);
-        }
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,6 +38,16 @@ public class MainActivity extends AppCompatActivity {
 
         SignInFragment fragment = new SignInFragment();
         fragmentStackManager.loadFragment(fragment, R.id.main_frame);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == ConnectionResult.SERVICE_INVALID) {
+            fragmentStackManager.popBackStatFragment();
+            FolderListFragment folderListFragment = FolderListFragment.newInstance("");
+            fragmentStackManager.loadFragment(folderListFragment, R.id.main_frame);
+        }
     }
 
     @Override
@@ -69,6 +70,28 @@ public class MainActivity extends AppCompatActivity {
         return closeDialog;
     }
 
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        AndroidUtils.clearApplicationData(getApplication());
+    }
+
     @Override
     public void onBackPressed() {
         try {
@@ -77,6 +100,7 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         dialog.dismiss();
+                        AndroidUtils.clearApplicationData(getApplication());
                         finish();
                     }
                 }, new DialogInterface.OnClickListener() {

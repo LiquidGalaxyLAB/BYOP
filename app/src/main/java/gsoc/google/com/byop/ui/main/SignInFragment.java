@@ -1,7 +1,9 @@
 package gsoc.google.com.byop.ui.main;
 
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -23,6 +25,7 @@ import com.google.android.gms.common.api.Status;
 
 import gsoc.google.com.byop.R;
 import gsoc.google.com.byop.ui.documentsList.FolderListFragment;
+import gsoc.google.com.byop.utils.Constants;
 import gsoc.google.com.byop.utils.FragmentStackManager;
 import gsoc.google.com.byop.utils.PW.BeaconConfigFragment;
 
@@ -40,7 +43,34 @@ public class SignInFragment extends Fragment implements GoogleApiClient.OnConnec
     private ProgressDialog mProgressDialog;
     private View view;
 
+    OptionalPendingResult<GoogleSignInResult> opr;
+
     GoogleSignInAccount acct;
+
+
+    public static SignInFragment newInstance() {
+
+        SignInFragment signInFragment = new SignInFragment();
+
+        return signInFragment;
+    }
+
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        opr.cancel();
+        if (mProgressDialog != null) {
+            mProgressDialog.dismiss();
+        }
+        mGoogleApiClient.disconnect();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+    }
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -50,7 +80,7 @@ public class SignInFragment extends Fragment implements GoogleApiClient.OnConnec
 
         getActivity().setTitle(getActivity().getResources().getString(R.string.app_name));
 
-        fragmentStackManager = FragmentStackManager.getInstance(getActivity());
+        fragmentStackManager = FragmentStackManager.getInstance(getContext());
 
         // Views
         mStatusTextView = (TextView) view.findViewById(R.id.status);
@@ -84,8 +114,9 @@ public class SignInFragment extends Fragment implements GoogleApiClient.OnConnec
     @Override
     public void onStart() {
         super.onStart();
+        mGoogleApiClient.connect();
 
-        OptionalPendingResult<GoogleSignInResult> opr = Auth.GoogleSignInApi.silentSignIn(mGoogleApiClient);
+        opr = Auth.GoogleSignInApi.silentSignIn(mGoogleApiClient);
         if (opr.isDone()) {
             // If the user's cached credentials are valid, the OptionalPendingResult will be "done"
             // and the GoogleSignInResult will be available instantly.
@@ -115,7 +146,14 @@ public class SignInFragment extends Fragment implements GoogleApiClient.OnConnec
         if (requestCode == RC_SIGN_IN) {
             GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
             handleSignInResult(result);
-        }
+        }/*else if(requestCode == ConnectionResult.SERVICE_INVALID){
+
+            String accountName = getActivity().getPreferences(Context.MODE_PRIVATE).getString(Constants.PREF_ACCOUNT_NAME,"");
+
+            FolderListFragment folderListFragment = FolderListFragment.newInstance(accountName);
+//            fragmentStackManager.resetBackStack(folderListFragment);
+            fragmentStackManager.loadFragment(folderListFragment, R.id.main_frame);
+        }*/
     }
 
 
@@ -126,6 +164,13 @@ public class SignInFragment extends Fragment implements GoogleApiClient.OnConnec
             acct = result.getSignInAccount();
             mStatusTextView.setText(getString(R.string.signed_in_fmt, acct.getDisplayName()));
             updateUI(true);
+
+            SharedPreferences settings =
+                    this.getActivity().getPreferences(Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor = settings.edit();
+            editor.putString(Constants.PREF_ACCOUNT_NAME, acct.getEmail());
+            editor.apply();
+
         } else {
             // Signed out, show unauthenticated UI.
             updateUI(false);
@@ -157,6 +202,14 @@ public class SignInFragment extends Fragment implements GoogleApiClient.OnConnec
                         updateUI(false);
                     }
                 });
+
+        //Delete shared Preferences
+        SharedPreferences settings = this.getActivity().getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = settings.edit();
+        editor.clear();
+        editor.commit();
+
+//        AndroidUtils.clearApplicationData(getActivity().getApplication());
     }
 
     private void loadDocumentsList() {
