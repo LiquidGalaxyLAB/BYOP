@@ -155,6 +155,10 @@
     <string name="request_cancelled">Request cancelled.</string>
     <string name="play_services_needed">This app requires Google Play Services. Please install Google Play Services on your device and relaunch this app.</string>
     <string name="something_wrong">Something went wrong:</string>
+    <string name="editing">Editing</string>
+    <string name="editing_poi">Editing Poi</string>
+    <string name="viewing_poi">Viewing Poi</string>
+    <string name="new_poi">New Poi</string>
 
 
 </resources>

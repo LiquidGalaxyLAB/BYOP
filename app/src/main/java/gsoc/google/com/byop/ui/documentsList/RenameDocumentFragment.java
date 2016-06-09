@@ -1,6 +1,5 @@
 package gsoc.google.com.byop.ui.documentsList;
 
-import android.Manifest;
 import android.content.Context;
 import android.content.res.Resources;
 import android.os.AsyncTask;
@@ -33,8 +32,6 @@ import gsoc.google.com.byop.utils.AndroidUtils;
 import gsoc.google.com.byop.utils.Constants;
 import gsoc.google.com.byop.utils.FragmentStackManager;
 import gsoc.google.com.byop.utils.GooglePlayUtils;
-import pub.devrel.easypermissions.AfterPermissionGranted;
-import pub.devrel.easypermissions.EasyPermissions;
 
 /**
  * Created by lgwork on 25/05/16.
@@ -43,6 +40,7 @@ public class RenameDocumentFragment extends Fragment {
 
     protected FragmentStackManager fragmentStackManager;
 
+    public static final String ARG_EMAIL = "email";
     public static final String ARG_FILE_ID = "fileId";
     public static final String ARG_NAME = "name";
     public static final String ARG_DESC = "description";
@@ -57,15 +55,18 @@ public class RenameDocumentFragment extends Fragment {
 
     private String fileId;
     private String actualName;
+    private String accountEmail;
+
 
     GoogleAccountCredential mCredential;
 
-    public static RenameDocumentFragment newInstance(String fileId, String actualName, String actualDescription) {
+    public static RenameDocumentFragment newInstance(String fileId, String actualName, String actualDescription, String accEmail) {
         RenameDocumentFragment renameDocument = new RenameDocumentFragment();
         Bundle bundle = new Bundle();
         bundle.putString(ARG_FILE_ID, fileId);
         bundle.putString(ARG_NAME, actualName);
         bundle.putString(ARG_DESC, actualDescription);
+        bundle.putString(ARG_EMAIL, accEmail);
         renameDocument.setArguments(bundle);
         return renameDocument;
     }
@@ -90,18 +91,21 @@ public class RenameDocumentFragment extends Fragment {
 
                 if (document_name_input.getText().toString().length() == 0) {
                     document_name.setError(res.getString(R.string.empty_name_error));
-                }else{
+                } else {
                     document_name.setErrorEnabled(false);
-                    renameFileThroughApi(document_name_input, document_description_input);
+                    renameTask = new RenameTask(mCredential, document_name_input, document_description_input, fileId);
+                    renameTask.execute();
                 }
-
-
             }
         });
+
+        accountEmail = getArguments().getString(ARG_EMAIL);
 
         // Initialize credentials and service object.
         mCredential = GoogleAccountCredential.usingOAuth2(getContext(), Arrays.asList(Constants.SCOPES))
                 .setBackOff(new ExponentialBackOff());
+
+        mCredential.setSelectedAccountName(accountEmail);
 
         return rootView;
     }
@@ -116,49 +120,6 @@ public class RenameDocumentFragment extends Fragment {
         document_name_input.setText(actualName);
         document_description_input.setText(actualDescription);
     }
-
-
-    private void renameFileThroughApi(EditText documentName, EditText documentDescription) {
-        if (!GooglePlayUtils.isGooglePlayServicesAvailable(this.getActivity())) {
-            GooglePlayUtils.acquireGooglePlayServices(this.getActivity());
-        } else if (mCredential.getSelectedAccountName() == null) {
-            chooseAccountForEdition(documentName);
-        } else if (!GooglePlayUtils.isDeviceOnline(this.getActivity())) {
-            AndroidUtils.showMessage(getResources().getString(R.string.no_network_connection), getActivity());
-        } else {
-            renameTask = new RenameTask(mCredential, documentName, documentDescription, this.fileId);
-            renameTask.execute();
-        }
-    }
-
-    @AfterPermissionGranted(Constants.REQUEST_PERMISSION_GET_ACCOUNTS)
-    private void chooseAccountForEdition(EditText documentName){
-        if (EasyPermissions.hasPermissions(
-                this.getActivity(), Manifest.permission.GET_ACCOUNTS)) {
-            String accountName = this.getActivity().getPreferences(Context.MODE_PRIVATE)
-                    .getString(Constants.PREF_ACCOUNT_NAME, null);
-            if (accountName != null) {
-                mCredential.setSelectedAccountName(accountName);
-                renameFileThroughApi(documentName, document_description_input);
-            } else {
-                // Start a dialog from which the user can choose an account
-                startActivityForResult(
-                        mCredential.newChooseAccountIntent(),
-                        Constants.REQUEST_ACCOUNT_PICKER);
-            }
-        } else {
-            // Request the GET_ACCOUNTS permission via a user dialog
-            EasyPermissions.requestPermissions(
-                    this.getActivity(),
-                    getResources().getString(R.string.google_account_needed),
-                    Constants.REQUEST_PERMISSION_GET_ACCOUNTS,
-                    Manifest.permission.GET_ACCOUNTS);
-        }
-    }
-
-
-
-
 
     private class RenameTask extends AsyncTask<Void, Void, Void> {
         private com.google.api.services.drive.Drive mService = null;
@@ -200,17 +161,17 @@ public class RenameDocumentFragment extends Fragment {
             fileMetadata.setName(this.documentName);
             fileMetadata.setDescription(this.documentDescription);
 
-            mService.files().update(this.fileId,fileMetadata).execute();
+            mService.files().update(this.fileId, fileMetadata).execute();
         }
 
         @Override
         protected void onPostExecute(Void aVoid) {
             View view = getActivity().getCurrentFocus();
             if (view != null) {
-                InputMethodManager imm = (InputMethodManager)getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+                InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
                 imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
             }
-           fragmentStackManager.popBackStatFragment();
+            fragmentStackManager.popBackStatFragment();
         }
 
 

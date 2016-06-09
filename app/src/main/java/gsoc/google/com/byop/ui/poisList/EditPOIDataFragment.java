@@ -129,7 +129,7 @@ public class EditPOIDataFragment extends Fragment implements GoogleApiClient.Con
                         SharedPreferences settings =
                                 this.getActivity().getPreferences(Context.MODE_PRIVATE);
                         SharedPreferences.Editor editor = settings.edit();
-                        editor.putString(Constants.PREF_ACCOUNT_NAME, accountName);
+                        editor.putString(Constants.PREF_ACCOUNT_EMAIL, accountName);
                         editor.apply();
                         mCredential.setSelectedAccountName(accountName);
                         editPoiThroughApi();
@@ -232,7 +232,7 @@ public class EditPOIDataFragment extends Fragment implements GoogleApiClient.Con
         if (EasyPermissions.hasPermissions(
                 getActivity(), Manifest.permission.GET_ACCOUNTS)) {
             String accountName = getActivity().getPreferences(Context.MODE_PRIVATE)
-                    .getString(Constants.PREF_ACCOUNT_NAME, null);
+                    .getString(Constants.PREF_ACCOUNT_EMAIL, null);
             if (accountName != null) {
                 mCredential.setSelectedAccountName(accountName);
                 editPoiThroughApi();
@@ -425,6 +425,7 @@ public class EditPOIDataFragment extends Fragment implements GoogleApiClient.Con
             if (dialog != null && dialog.isShowing())
                 dialog.hide();
 
+            fragmentStackManager.popBackStatFragment();
             fragmentStackManager.popBackStatFragment();
         }
 

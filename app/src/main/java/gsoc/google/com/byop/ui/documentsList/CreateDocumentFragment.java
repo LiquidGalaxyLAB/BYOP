@@ -1,6 +1,5 @@
 package gsoc.google.com.byop.ui.documentsList;
 
-import android.Manifest;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -20,7 +19,6 @@ import android.widget.EditText;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.drive.Drive;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GooglePlayServicesAvailabilityIOException;
@@ -44,8 +42,6 @@ import gsoc.google.com.byop.utils.AndroidUtils;
 import gsoc.google.com.byop.utils.Constants;
 import gsoc.google.com.byop.utils.FragmentStackManager;
 import gsoc.google.com.byop.utils.GooglePlayUtils;
-import pub.devrel.easypermissions.AfterPermissionGranted;
-import pub.devrel.easypermissions.EasyPermissions;
 
 /**
  * Created by lgwork on 25/05/16.
@@ -53,6 +49,7 @@ import pub.devrel.easypermissions.EasyPermissions;
 public class CreateDocumentFragment extends Fragment implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
     public static final String ARG_FOLDER_ID = "folderId";
+    public static final String ARG_EMAIL = "email";
     protected FragmentStackManager fragmentStackManager;
     GoogleAccountCredential mCredential;
     private EditText new_document_name_input;
@@ -61,16 +58,14 @@ public class CreateDocumentFragment extends Fragment implements GoogleApiClient.
     private CreateTask createTask;
     private MakePermissionsTask permissionsTask;
     private String folderId;
+    private String accountEmail;
     private String documentId;
-    /**
-     * Google API client.
-     */
-    private GoogleApiClient mGoogleApiClient;
 
-    public static CreateDocumentFragment newInstance(String folderId) {
+    public static CreateDocumentFragment newInstance(String folderId, String accountEmail) {
         CreateDocumentFragment createDocument = new CreateDocumentFragment();
         Bundle bundle = new Bundle();
         bundle.putString(ARG_FOLDER_ID, folderId);
+        bundle.putString(ARG_EMAIL, accountEmail);
         createDocument.setArguments(bundle);
         return createDocument;
     }
@@ -97,21 +92,19 @@ public class CreateDocumentFragment extends Fragment implements GoogleApiClient.
                     new_document_name.setError(res.getString(R.string.empty_name_error));
                 } else {
                     new_document_name.setErrorEnabled(false);
-                    createFileThroughApi(new_document_name_input, new_document_description_input);
+                    createTask = new CreateTask(mCredential, new_document_name_input, new_document_description_input, folderId);
+                    createTask.execute();
                 }
             }
         });
 
-        mGoogleApiClient = new GoogleApiClient.Builder(this.getActivity())
-                .addApi(Drive.API)
-                .addScope(Drive.SCOPE_FILE)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .build();
+        accountEmail = getArguments().getString(ARG_EMAIL);
 
         // Initialize credentials and service object.
         mCredential = GoogleAccountCredential.usingOAuth2(getContext(), Arrays.asList(Constants.SCOPES))
                 .setBackOff(new ExponentialBackOff());
+
+        mCredential.setSelectedAccountName(accountEmail);
 
         return rootView;
     }
@@ -119,7 +112,6 @@ public class CreateDocumentFragment extends Fragment implements GoogleApiClient.
     @Override
     public void onStart() {
         super.onStart();
-        mGoogleApiClient.connect();
     }
 
     @Override
@@ -128,80 +120,6 @@ public class CreateDocumentFragment extends Fragment implements GoogleApiClient.
         folderId = getArguments().getString(ARG_FOLDER_ID);
     }
 
-    private void createFileThroughApi(EditText documentName, EditText documentDescription) {
-        if (!GooglePlayUtils.isGooglePlayServicesAvailable(this.getActivity())) {
-            GooglePlayUtils.acquireGooglePlayServices(this.getActivity());
-        } else if (mCredential.getSelectedAccountName() == null) {
-            chooseAccountForCreation(documentName);
-        } else if (!GooglePlayUtils.isDeviceOnline(this.getActivity())) {
-            AndroidUtils.showMessage(getResources().getString(R.string.no_network_connection), getActivity());
-        } else {
-            createTask = new CreateTask(mCredential, documentName, documentDescription, this.folderId);
-            createTask.execute();
-        }
-    }
-
-    @AfterPermissionGranted(Constants.REQUEST_PERMISSION_GET_ACCOUNTS)
-    private void chooseAccountForCreation(EditText documentName) {
-        if (EasyPermissions.hasPermissions(
-                this.getActivity(), Manifest.permission.GET_ACCOUNTS)) {
-            String accountName = this.getActivity().getPreferences(Context.MODE_PRIVATE)
-                    .getString(Constants.PREF_ACCOUNT_NAME, null);
-            if (accountName != null) {
-                mCredential.setSelectedAccountName(accountName);
-                createFileThroughApi(documentName, new_document_description_input);
-            } else {
-                // Start a dialog from which the user can choose an account
-                startActivityForResult(
-                        mCredential.newChooseAccountIntent(),
-                        Constants.REQUEST_ACCOUNT_PICKER);
-            }
-        } else {
-            // Request the GET_ACCOUNTS permission via a user dialog
-            EasyPermissions.requestPermissions(
-                    this.getActivity(), getResources().getString(R.string.google_account_needed),
-                    Constants.REQUEST_PERMISSION_GET_ACCOUNTS,
-                    Manifest.permission.GET_ACCOUNTS);
-        }
-    }
-
-
-    @AfterPermissionGranted(Constants.REQUEST_PERMISSION_GET_ACCOUNTS)
-    private void chooseAccountForPermissions() {
-        if (EasyPermissions.hasPermissions(
-                this.getActivity(), Manifest.permission.GET_ACCOUNTS)) {
-            String accountName = this.getActivity().getPreferences(Context.MODE_PRIVATE)
-                    .getString(Constants.PREF_ACCOUNT_NAME, null);
-            if (accountName != null) {
-                mCredential.setSelectedAccountName(accountName);
-                changeFilePermissions();
-            } else {
-                // Start a dialog from which the user can choose an account
-                startActivityForResult(
-                        mCredential.newChooseAccountIntent(),
-                        Constants.REQUEST_ACCOUNT_PICKER);
-            }
-        } else {
-            // Request the GET_ACCOUNTS permission via a user dialog
-            EasyPermissions.requestPermissions(
-                    this.getActivity(), getResources().getString(R.string.google_account_needed),
-                    Constants.REQUEST_PERMISSION_GET_ACCOUNTS,
-                    Manifest.permission.GET_ACCOUNTS);
-        }
-    }
-
-    private void changeFilePermissions() {
-        if (!GooglePlayUtils.isGooglePlayServicesAvailable(this.getActivity())) {
-            GooglePlayUtils.acquireGooglePlayServices(this.getActivity());
-        } else if (mCredential.getSelectedAccountName() == null) {
-            chooseAccountForPermissions();
-        } else if (!GooglePlayUtils.isDeviceOnline(this.getActivity())) {
-            AndroidUtils.showMessage(getResources().getString(R.string.no_network_connection), getActivity());
-        } else {
-            permissionsTask = new MakePermissionsTask(mCredential, documentId);
-            permissionsTask.execute();
-        }
-    }
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {/*Do Nothing*/}
@@ -320,7 +238,9 @@ public class CreateDocumentFragment extends Fragment implements GoogleApiClient.
             if (dialog != null && dialog.isShowing())
                 dialog.hide();
 
-            changeFilePermissions();
+            permissionsTask = new MakePermissionsTask(mCredential, documentId);
+            permissionsTask.execute();
+
             fragmentStackManager.popBackStatFragment();
 
         }

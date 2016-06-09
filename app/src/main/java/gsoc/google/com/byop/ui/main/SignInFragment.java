@@ -165,10 +165,14 @@ public class SignInFragment extends Fragment implements GoogleApiClient.OnConnec
             mStatusTextView.setText(getString(R.string.signed_in_fmt, acct.getDisplayName()));
             updateUI(true);
 
+            String id_token = acct.getIdToken();
+
+
             SharedPreferences settings =
                     this.getActivity().getPreferences(Context.MODE_PRIVATE);
             SharedPreferences.Editor editor = settings.edit();
-            editor.putString(Constants.PREF_ACCOUNT_NAME, acct.getEmail());
+            editor.putString(Constants.PREF_ACCOUNT_EMAIL, acct.getEmail());
+            editor.putString("GG_LOGED", id_token);
             editor.apply();
 
         } else {

@@ -25,7 +25,9 @@ public class Constants {
     public static final int REQUEST_AUTHORIZATION = 1001;
     public static final int REQUEST_GOOGLE_PLAY_SERVICES = 1002;
     public static final int REQUEST_PERMISSION_GET_ACCOUNTS = 1003;
-    public static final String PREF_ACCOUNT_NAME = "accountName";
+    //  public static final String PREF_ACCOUNT_NAME = "accountName";
+    public static final String PREF_ACCOUNT_EMAIL = "accountEmail";
+
 
 
     /**
@@ -35,4 +37,5 @@ public class Constants {
     public static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
 
     public static final String[] SCOPES = {DriveScopes.DRIVE};
+    public static final String DRIVE_SCOPE = "https://www.googleapis.com/auth/drive";
 }

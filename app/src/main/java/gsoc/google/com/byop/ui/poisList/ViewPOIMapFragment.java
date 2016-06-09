@@ -66,6 +66,8 @@ public class ViewPOIMapFragment extends Fragment implements OnMapReadyCallback, 
         poiName = getArguments().getString(POI_NAME);
         poiDescription = getArguments().getString(POI_DESC);
 
+        getActivity().setTitle(getResources().getString(R.string.viewing_poi) + " " + poiName);
+
         latLon = new LatLng(Double.parseDouble(poiLatitude), Double.parseDouble(poiLongitude));
 
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);

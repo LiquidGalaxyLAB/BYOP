@@ -45,11 +45,12 @@ public class CreatePOIMapFragment extends Fragment implements OnMapReadyCallback
     private static String TAG = CreatePOIMapFragment.class.toString();
 
     public static final String ARG_DOCUMENT = "document";
-
+    public static final String ARG_EMAIL = "email";
 
     private GoogleMap googleMap;
     private GoogleApiClient googleApiClient;
     private DriveDocument document;
+    private String email;
 
     private LocationRequest locationRequest;
 
@@ -59,11 +60,12 @@ public class CreatePOIMapFragment extends Fragment implements OnMapReadyCallback
     private static int UPDATE_INTERVAL = 10000; // 10 sec
     private static int FATEST_INTERVAL = 5000; // 5 sec
 
-    public static CreatePOIMapFragment newInstance(DriveDocument document) {
+    public static CreatePOIMapFragment newInstance(DriveDocument document, String accountEmail) {
         CreatePOIMapFragment createPOIMapFragment = new CreatePOIMapFragment();
 
         Bundle bundle = new Bundle();
         bundle.putParcelable(ARG_DOCUMENT, document);
+        bundle.putString(ARG_EMAIL, accountEmail);
 
         createPOIMapFragment.setArguments(bundle);
 
@@ -81,7 +83,9 @@ public class CreatePOIMapFragment extends Fragment implements OnMapReadyCallback
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         document = getArguments().getParcelable(ARG_DOCUMENT);
+        email = getArguments().getString(ARG_EMAIL);
 
+        getActivity().setTitle(getResources().getString(R.string.new_poi) + " in " + document.getTitle());
 
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
@@ -152,13 +156,6 @@ public class CreatePOIMapFragment extends Fragment implements OnMapReadyCallback
         //  locationRequest.setSmallestDisplacement(DISPLACEMENT);
 
         if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            //  //Do nothing
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
             return;
         }
         LocationServices.FusedLocationApi.requestLocationUpdates(googleApiClient, locationRequest, this);
@@ -171,14 +168,10 @@ public class CreatePOIMapFragment extends Fragment implements OnMapReadyCallback
     }
 
     @Override
-    public void onConnectionSuspended(int i) {
-
-    }
+    public void onConnectionSuspended(int i) {/*Do Nothing*/}
 
     @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-
-    }
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {/*Do Nothing*/}
 
     @Override
     public void onMapLongClick(LatLng latLng) {
@@ -188,7 +181,7 @@ public class CreatePOIMapFragment extends Fragment implements OnMapReadyCallback
 
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, googleMap.getCameraPosition().zoom));
 
-        CreatePOIDialogFragment createPoiDialog = CreatePOIDialogFragment.newInstance(latLng.latitude, latLng.longitude, document);
+        CreatePOIDialogFragment createPoiDialog = CreatePOIDialogFragment.newInstance(latLng.latitude, latLng.longitude, document, email);
         fragmentStackManager.loadFragment(createPoiDialog, R.id.map);
 
     }

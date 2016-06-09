@@ -1,6 +1,5 @@
 package gsoc.google.com.byop.ui.poisList;
 
-import android.Manifest;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -52,8 +51,6 @@ import gsoc.google.com.byop.utils.Constants;
 import gsoc.google.com.byop.utils.FragmentStackManager;
 import gsoc.google.com.byop.utils.GooglePlayUtils;
 import gsoc.google.com.byop.utils.StringUtils;
-import pub.devrel.easypermissions.AfterPermissionGranted;
-import pub.devrel.easypermissions.EasyPermissions;
 
 /**
  * Created by lgwork on 31/05/16.
@@ -63,12 +60,15 @@ public class CreatePOIDialogFragment extends Fragment implements GoogleApiClient
     public static final String ARG_LATITUDE = "latitude";
     public static final String ARG_LONGITUDE = "longitude";
     public static final String ARG_DOCUMENT = "document";
+    public static final String ARG_EMAIL = "email";
     protected FragmentStackManager fragmentStackManager;
     GoogleAccountCredential mCredential;
     private GoogleApiClient googleApiClient;
     private DriveDocument document;
     private double latitude;
     private double longitude;
+
+    private String accountEmail;
 
     private TextInputLayout new_poi_name;
 
@@ -78,12 +78,13 @@ public class CreatePOIDialogFragment extends Fragment implements GoogleApiClient
 
     private CreateTask createTask;
 
-    public static CreatePOIDialogFragment newInstance(double latitude, double longitude, DriveDocument document) {
+    public static CreatePOIDialogFragment newInstance(double latitude, double longitude, DriveDocument document, String accountEmail) {
         CreatePOIDialogFragment createPOIDialogFragment = new CreatePOIDialogFragment();
         Bundle bundle = new Bundle();
         bundle.putParcelable(ARG_DOCUMENT, document);
         bundle.putDouble(ARG_LATITUDE, latitude);
         bundle.putDouble(ARG_LONGITUDE, longitude);
+        bundle.putString(ARG_EMAIL, accountEmail);
 
         createPOIDialogFragment.setArguments(bundle);
         return createPOIDialogFragment;
@@ -99,6 +100,7 @@ public class CreatePOIDialogFragment extends Fragment implements GoogleApiClient
         document = getArguments().getParcelable(ARG_DOCUMENT);
         latitude = getArguments().getDouble(ARG_LATITUDE);
         longitude = getArguments().getDouble(ARG_LONGITUDE);
+        accountEmail = getArguments().getString(ARG_EMAIL);
 
         new_poi_name = (TextInputLayout) rootView.findViewById(R.id.create_poi_name);
 
@@ -123,7 +125,8 @@ public class CreatePOIDialogFragment extends Fragment implements GoogleApiClient
                     new_poi_name.setError(res.getString(R.string.empty_name_error));
                 } else {
                     new_poi_name.setErrorEnabled(false);
-                    createPOIThroughApi(poi_name_input.getText().toString(), poi_description_input.getText().toString(), latitude, longitude, document);
+                    createTask = new CreateTask(mCredential, poi_name_input.getText().toString(), poi_description_input.getText().toString(), latitude, longitude, document);
+                    createTask.execute();
                 }
             }
         });
@@ -137,6 +140,8 @@ public class CreatePOIDialogFragment extends Fragment implements GoogleApiClient
 
         mCredential = GoogleAccountCredential.usingOAuth2(getContext(), Arrays.asList(Constants.SCOPES))
                 .setBackOff(new ExponentialBackOff());
+
+        mCredential.setSelectedAccountName(accountEmail);
 
         return rootView;
     }
@@ -167,43 +172,6 @@ public class CreatePOIDialogFragment extends Fragment implements GoogleApiClient
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {/*Do Nothing*/}
 
-    private void createPOIThroughApi(String name, String description, double latitude, double longitude, DriveDocument document) {
-        if (!GooglePlayUtils.isGooglePlayServicesAvailable(this.getActivity())) {
-            GooglePlayUtils.acquireGooglePlayServices(this.getActivity());
-        } else if (mCredential.getSelectedAccountName() == null) {
-            chooseAccountForCreation(name, description, latitude, longitude, document);
-        } else if (!GooglePlayUtils.isDeviceOnline(this.getActivity())) {
-            AndroidUtils.showMessage(getResources().getString(R.string.no_network_connection), getActivity());
-        } else {
-            createTask = new CreateTask(mCredential, name, description, latitude, longitude, document);
-            createTask.execute();
-        }
-    }
-
-    @AfterPermissionGranted(Constants.REQUEST_PERMISSION_GET_ACCOUNTS)
-    private void chooseAccountForCreation(String name, String description, double latitude, double longitude, DriveDocument document) {
-        if (EasyPermissions.hasPermissions(
-                this.getActivity(), Manifest.permission.GET_ACCOUNTS)) {
-            String accountName = this.getActivity().getPreferences(Context.MODE_PRIVATE)
-                    .getString(Constants.PREF_ACCOUNT_NAME, null);
-            if (accountName != null) {
-                mCredential.setSelectedAccountName(accountName);
-                createPOIThroughApi(name, description, latitude, longitude, document);
-            } else {
-                // Start a dialog from which the user can choose an account
-                startActivityForResult(
-                        mCredential.newChooseAccountIntent(),
-                        Constants.REQUEST_ACCOUNT_PICKER);
-            }
-        } else {
-            // Request the GET_ACCOUNTS permission via a user dialog
-            EasyPermissions.requestPermissions(
-                    this.getActivity(),
-                    getResources().getString(R.string.google_account_needed),
-                    Constants.REQUEST_PERMISSION_GET_ACCOUNTS,
-                    Manifest.permission.GET_ACCOUNTS);
-        }
-    }
 
     private class CreateTask extends AsyncTask<Void, Void, Void> {
         private com.google.api.services.drive.Drive mService = null;

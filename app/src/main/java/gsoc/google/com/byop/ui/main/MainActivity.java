@@ -1,5 +1,6 @@
 package gsoc.google.com.byop.ui.main;
 
+import android.app.ActivityManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -19,6 +20,7 @@ import gsoc.google.com.byop.utils.FragmentStackManager;
 
 
 public class MainActivity extends AppCompatActivity {
+
 
     private FragmentStackManager fragmentStackManager;
 
@@ -79,6 +81,15 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
+        ActivityManager am = (ActivityManager) this.getSystemService(ACTIVITY_SERVICE);
+        // The first in the list of RunningTasks is always the foreground task.
+        ActivityManager.RunningTaskInfo foregroundTaskInfo = am.getRunningTasks(1).get(0);
+        if (!foregroundTaskInfo.topActivity.getPackageName().equals(this.getPackageName()) && !foregroundTaskInfo.topActivity.getPackageName().equals("com.google.android.gms")) {
+            // The app is exiting no other activity of your app is brought to front
+            //AndroidUtils.clearApplicationData(getApplication());
+            finish();
+            System.exit(0);
+        }
     }
 
     @Override
@@ -89,6 +100,15 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
+        ActivityManager am = (ActivityManager) this.getSystemService(ACTIVITY_SERVICE);
+        // The first in the list of RunningTasks is always the foreground task.
+        ActivityManager.RunningTaskInfo foregroundTaskInfo = am.getRunningTasks(1).get(0);
+        if (!foregroundTaskInfo.topActivity.getPackageName().equals(this.getPackageName()) && !foregroundTaskInfo.topActivity.getPackageName().equals("com.google.android.gms")) {
+            // The app is exiting no other activity of your app is brought to front
+            // AndroidUtils.clearApplicationData(getApplication());
+            finish();
+            System.exit(0);
+        }
     }
 
     @Override

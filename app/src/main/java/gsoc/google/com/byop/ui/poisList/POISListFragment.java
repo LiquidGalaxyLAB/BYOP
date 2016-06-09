@@ -1,13 +1,8 @@
 package gsoc.google.com.byop.ui.poisList;
 
-import android.Manifest;
-import android.accounts.AccountManager;
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.IntentSender;
-import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -63,13 +58,11 @@ import gsoc.google.com.byop.utils.Constants;
 import gsoc.google.com.byop.utils.FragmentStackManager;
 import gsoc.google.com.byop.utils.GooglePlayUtils;
 import gsoc.google.com.byop.utils.POIUtils;
-import pub.devrel.easypermissions.AfterPermissionGranted;
-import pub.devrel.easypermissions.EasyPermissions;
 
 /**
  * Created by lgwork on 26/05/16.
  */
-public class POISListFragment extends Fragment implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, EasyPermissions.PermissionCallbacks {
+public class POISListFragment extends Fragment implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
     protected FragmentStackManager fragmentStackManager;
 
     private RecyclerView rv = null;
@@ -79,7 +72,9 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
     private FloatingActionButton fab;
 
     public static final String ARG_DOCUMENT = "document";
+    public static final String ARG_EMAIL = "email";
     private DriveDocument document;
+    private String accountEmail;
 
     private POIUtils poiUtils;
 
@@ -90,10 +85,11 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
     GoogleAccountCredential mCredential;
 
 
-    public static POISListFragment newInstance(DriveDocument document) {
+    public static POISListFragment newInstance(DriveDocument document, String accountEmail) {
         poisFragment = new POISListFragment();
         Bundle bundle = new Bundle();
         bundle.putParcelable(ARG_DOCUMENT, document);
+        bundle.putString(ARG_EMAIL, accountEmail);
 
         poisFragment.setArguments(bundle);
         return poisFragment;
@@ -104,6 +100,7 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
         super.onActivityCreated(savedInstanceState);
 
         document = getArguments().getParcelable(ARG_DOCUMENT);
+
         getActivity().setTitle(getResources().getString(R.string.poisList) + " " + document.getTitle());
 
         setHasOptionsMenu(true);
@@ -122,7 +119,7 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                CreatePOIMapFragment createPOIMapFragment = CreatePOIMapFragment.newInstance(document);
+                CreatePOIMapFragment createPOIMapFragment = CreatePOIMapFragment.newInstance(document, accountEmail);
                 fragmentStackManager.loadFragment(createPOIMapFragment, R.id.main_frame);
             }
         });
@@ -152,6 +149,8 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
         mCredential = GoogleAccountCredential.usingOAuth2(getContext(), Arrays.asList(Constants.SCOPES))
                 .setBackOff(new ExponentialBackOff());
 
+        accountEmail = getArguments().getString(ARG_EMAIL);
+        mCredential.setSelectedAccountName(accountEmail);
 
         return rootView;
     }
@@ -160,45 +159,6 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
         requestContentsTask = new RequestContentsTask(mCredential);
         requestContentsTask.execute();
 
-    }
-
-    private void getFileContensFromAPI() {
-        if (!GooglePlayUtils.isGooglePlayServicesAvailable(this.getActivity())) {
-            GooglePlayUtils.acquireGooglePlayServices(this.getActivity());
-        } else if (mCredential.getSelectedAccountName() == null) {
-            chooseAccount();
-        } else if (!GooglePlayUtils.isDeviceOnline(this.getActivity())) {
-            AndroidUtils.showMessage(getResources().getString(R.string.no_network_connection), getActivity());
-        } else {
-            requestContentsTask = new RequestContentsTask(mCredential);
-            requestContentsTask.execute();
-        }
-    }
-
-
-    @AfterPermissionGranted(Constants.REQUEST_PERMISSION_GET_ACCOUNTS)
-    private void chooseAccount() {
-        if (EasyPermissions.hasPermissions(
-                this.getActivity(), Manifest.permission.GET_ACCOUNTS)) {
-            String accountName = this.getActivity().getPreferences(Context.MODE_PRIVATE)
-                    .getString(Constants.PREF_ACCOUNT_NAME, null);
-            if (accountName != null) {
-                mCredential.setSelectedAccountName(accountName);
-                getFileContensFromAPI();
-            } else {
-                // Start a dialog from which the user can choose an account
-                startActivityForResult(
-                        mCredential.newChooseAccountIntent(),
-                        Constants.REQUEST_ACCOUNT_PICKER);
-            }
-        } else {
-            // Request the GET_ACCOUNTS permission via a user dialog
-            EasyPermissions.requestPermissions(
-                    this.getActivity(),
-                    getResources().getString(R.string.google_account_needed),
-                    Constants.REQUEST_PERMISSION_GET_ACCOUNTS,
-                    Manifest.permission.GET_ACCOUNTS);
-        }
     }
 
     @Override
@@ -220,7 +180,8 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
 
     @Override
     public void onConnected(Bundle bundle) {
-        getFileContensFromAPI();
+        requestContentsTask = new RequestContentsTask(mCredential);
+        requestContentsTask.execute();
     }
 
 
@@ -241,55 +202,62 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
     }
 
 
-    @Override
-    public void onPermissionsGranted(int requestCode, List<String> perms) {/*Do Nothing*/}
+//    @Override
+//    public void onPermissionsGranted(int requestCode, List<String> perms) {/*Do Nothing*/}
+//
+//    @Override
+//    public void onPermissionsDenied(int requestCode, List<String> perms) {/*Do Nothing*/}
 
-    @Override
-    public void onPermissionsDenied(int requestCode, List<String> perms) {/*Do Nothing*/}
+//    @Override
+//    public void onActivityResult(
+//            int requestCode, int resultCode, Intent data) {
+//        super.onActivityResult(requestCode, resultCode, data);
+//        switch (requestCode) {
+//            case Constants.REQUEST_GOOGLE_PLAY_SERVICES:
+//                if (resultCode != Constants.RESULT_OK) {
+//                    AndroidUtils.showMessage(
+//                            getResources().getString(R.string.play_services_needed), getActivity());
+//                } else {
+//                    getFileContensFromAPI();
+//                }
+//                break;
+//            case Constants.REQUEST_ACCOUNT_PICKER:
+//                if (resultCode == Constants.RESULT_OK && data != null &&
+//                        data.getExtras() != null) {
+//                    String accountName =
+//                            data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
+//                    if (accountName != null) {
+//                        SharedPreferences settings =
+//                                this.getActivity().getPreferences(Context.MODE_PRIVATE);
+//                        SharedPreferences.Editor editor = settings.edit();
+//                        editor.putString(Constants.PREF_ACCOUNT_NAME, accountName);
+//                        editor.apply();
+//                        mCredential.setSelectedAccountName(accountName);
+//                        getFileContensFromAPI();
+//                    }
+//                }
+//                break;
+//            case Constants.REQUEST_AUTHORIZATION:
+//                if (resultCode == Constants.RESULT_OK) {
+//                    getFileContensFromAPI();
+//                }
+//                break;
+//            case ConnectionResult.SERVICE_INVALID:
+//                fragmentStackManager.popBackStatFragment();
+//                POISListFragment poisListFragment = POISListFragment.newInstance(document);
+//                fragmentStackManager.loadFragment(poisListFragment, R.id.main_frame);
+//                break;
+//        }
+//    }
 
-    @Override
-    public void onActivityResult(
-            int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        switch (requestCode) {
-            case Constants.REQUEST_GOOGLE_PLAY_SERVICES:
-                if (resultCode != Constants.RESULT_OK) {
-                    AndroidUtils.showMessage(
-                            getResources().getString(R.string.play_services_needed), getActivity());
-                } else {
-                    getFileContensFromAPI();
-                }
-                break;
-            case Constants.REQUEST_ACCOUNT_PICKER:
-                if (resultCode == Constants.RESULT_OK && data != null &&
-                        data.getExtras() != null) {
-                    String accountName =
-                            data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
-                    if (accountName != null) {
-                        SharedPreferences settings =
-                                this.getActivity().getPreferences(Context.MODE_PRIVATE);
-                        SharedPreferences.Editor editor = settings.edit();
-                        editor.putString(Constants.PREF_ACCOUNT_NAME, accountName);
-                        editor.apply();
-                        mCredential.setSelectedAccountName(accountName);
-                        getFileContensFromAPI();
-                    }
-                }
-                break;
-            case Constants.REQUEST_AUTHORIZATION:
-                if (resultCode == Constants.RESULT_OK) {
-                    getFileContensFromAPI();
-                }
-                break;
-        }
-    }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        EasyPermissions.onRequestPermissionsResult(
-                requestCode, permissions, grantResults, this);
-    }
+//    @Override
+//    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+//        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+//        EasyPermissions.onRequestPermissionsResult(
+//                requestCode, permissions, grantResults, this);
+//    }
+//
 
 
     private class POIHolder extends RecyclerView.ViewHolder implements View.OnCreateContextMenuListener {
@@ -319,7 +287,7 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
             menu.setHeaderTitle(getResources().getString(R.string.context_menu_title));
 
             MenuItem deleteItem = menu.add(0, v.getId(), 2, R.string.context_menu_delete);
-            deleteItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener(){
+            deleteItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
                 @Override
                 public boolean onMenuItemClick(MenuItem item) {
 
@@ -351,7 +319,7 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
 
 
             MenuItem editItem = menu.add(0, v.getId(), 1, R.string.context_menu_edit);
-            editItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener(){
+            editItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
                 @Override
                 public boolean onMenuItemClick(MenuItem item) {
                     //Edit POI
@@ -525,8 +493,8 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
             super.onPostExecute(output);
             if (output != null)
                 fillAdapter(output);
-                if (dialog != null && dialog.isShowing())
-                    dialog.hide();
+            if (dialog != null && dialog.isShowing())
+                dialog.hide();
             refreshLayout.setRefreshing(false);
         }
 

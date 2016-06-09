@@ -1,6 +1,6 @@
 package gsoc.google.com.byop.ui.documentsList;
 
-import android.Manifest;
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -24,7 +24,10 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.google.android.gms.auth.GooglePlayServicesAvailabilityException;
+import com.google.android.gms.auth.UserRecoverableAuthException;
 import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GooglePlayServicesAvailabilityIOException;
@@ -50,13 +53,13 @@ import gsoc.google.com.byop.utils.Constants;
 import gsoc.google.com.byop.utils.FragmentStackManager;
 import gsoc.google.com.byop.utils.GooglePlayUtils;
 import gsoc.google.com.byop.utils.PW.BeaconConfigFragment;
-import pub.devrel.easypermissions.AfterPermissionGranted;
-import pub.devrel.easypermissions.EasyPermissions;
 
 /**
  * Created by lgwork on 23/05/16.
  */
 public class FolderListFragment extends Fragment {
+
+    static final int REQUEST_CODE_RECOVER_FROM_PLAY_SERVICES_ERROR = 1001;
 
     protected FragmentStackManager fragmentStackManager;
     GoogleAccountCredential mCredential;
@@ -71,15 +74,14 @@ public class FolderListFragment extends Fragment {
 
     private String byopFolderId = "";
 
-    public static final String ARG_ACCOUNT = "account";
     private String accountEmail;
-
+    String googleAccountToken;
 
     public static FolderListFragment newInstance(String email) {
         FolderListFragment newfolderListFragment = new FolderListFragment();
 
         Bundle bundle = new Bundle();
-        bundle.putString(ARG_ACCOUNT, email);
+        bundle.putString(Constants.PREF_ACCOUNT_EMAIL, email);
         newfolderListFragment.setArguments(bundle);
         return newfolderListFragment;
     }
@@ -104,15 +106,21 @@ public class FolderListFragment extends Fragment {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                CreateDocumentFragment newDocumentFragment = CreateDocumentFragment.newInstance(byopFolderId);
+                CreateDocumentFragment newDocumentFragment = CreateDocumentFragment.newInstance(byopFolderId, accountEmail);
                 fragmentStackManager.loadFragment(newDocumentFragment, R.id.main_frame);
             }
         });
 
         final String folderName = getResources().getString(R.string.folderName);
 
-        checkFolderTask = new CheckFolderTask(mCredential, folderName);
-        checkFolderTask.execute();
+        if (byopFolderId == null || byopFolderId.equals("")) {
+            checkFolderTask = new CheckFolderTask(mCredential, folderName);
+            checkFolderTask.execute();
+        } else {
+            requestTask = new MakeRequestTask(mCredential, byopFolderId);
+            requestTask.execute();
+        }
+
     }
 
     @Nullable
@@ -136,22 +144,57 @@ public class FolderListFragment extends Fragment {
         SharedPreferences settings =
                 this.getActivity().getPreferences(Context.MODE_PRIVATE);
 
-        accountEmail = settings.getString(Constants.PREF_ACCOUNT_NAME, "");
+        accountEmail = getArguments().getString(Constants.PREF_ACCOUNT_EMAIL);
+
+        googleAccountToken = settings.getString("GG_LOGED", "");
 
         mCredential.setSelectedAccountName(accountEmail);
 
+
         return rootView;
     }
+
+    private void handleException(final Exception e) {
+        getActivity().runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (e instanceof GooglePlayServicesAvailabilityException) {
+                    // The Google Play services APK is old, disabled, or not present.
+                    // Show a dialog created by Google Play services that allows
+                    // the user to update the APK
+                    int statusCode = ((GooglePlayServicesAvailabilityException) e)
+                            .getConnectionStatusCode();
+                    Dialog dialog = GooglePlayServicesUtil.getErrorDialog(statusCode,
+                            getActivity(),
+                            REQUEST_CODE_RECOVER_FROM_PLAY_SERVICES_ERROR);
+                    dialog.show();
+                } else if (e instanceof UserRecoverableAuthException) {
+                    // Unable to authenticate, such as when the user has not yet granted
+                    // the app access to the account, but the user can fix this.
+                    // Forward the user to an activity in Google Play services.
+                    Intent intent = ((UserRecoverableAuthException) e).getIntent();
+                    startActivityForResult(intent,
+                            REQUEST_CODE_RECOVER_FROM_PLAY_SERVICES_ERROR);
+                } else if (e instanceof UserRecoverableAuthIOException) {
+                    Intent intent = ((UserRecoverableAuthIOException) e).getIntent();
+                    getActivity().startActivityForResult(intent, Constants.REQUEST_AUTHORIZATION);
+                    //getActivity().recreate();
+                }
+            }
+        });
+    }
+
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == ConnectionResult.SERVICE_INVALID) {
             fragmentStackManager.popBackStatFragment();
-            FolderListFragment folderListFragment = FolderListFragment.newInstance("");
+            FolderListFragment folderListFragment = FolderListFragment.newInstance(accountEmail);
             fragmentStackManager.loadFragment(folderListFragment, R.id.main_frame);
         }
     }
+
 
     @Override
     public void onStart() {
@@ -167,44 +210,6 @@ public class FolderListFragment extends Fragment {
         }
         if (checkFolderTask != null) {
             checkFolderTask.cancel(true);
-        }
-    }
-
-    private void deleteFilesThroughApi(String fileResourceId) {
-        if (!GooglePlayUtils.isGooglePlayServicesAvailable(this.getActivity())) {
-            GooglePlayUtils.acquireGooglePlayServices(this.getActivity());
-        } else if (mCredential.getSelectedAccountName() == null) {
-            chooseAccountForDeletion(fileResourceId);
-        } else if (!GooglePlayUtils.isDeviceOnline(this.getActivity())) {
-            AndroidUtils.showMessage(getResources().getString(R.string.no_network_connection), getActivity());
-        } else {
-            deleteTask = new MakeDeleteTask(mCredential, fileResourceId);
-            deleteTask.execute();
-        }
-    }
-
-    @AfterPermissionGranted(Constants.REQUEST_PERMISSION_GET_ACCOUNTS)
-    private void chooseAccountForDeletion(String fileResourceId) {
-        if (EasyPermissions.hasPermissions(
-                this.getActivity(), Manifest.permission.GET_ACCOUNTS)) {
-            String accountName = this.getActivity().getPreferences(Context.MODE_PRIVATE)
-                    .getString(Constants.PREF_ACCOUNT_NAME, null);
-            if (accountName != null) {
-                mCredential.setSelectedAccountName(accountName);
-                deleteFilesThroughApi(fileResourceId);
-            } else {
-                // Start a dialog from which the user can choose an account
-                startActivityForResult(
-                        mCredential.newChooseAccountIntent(),
-                        Constants.REQUEST_ACCOUNT_PICKER);
-            }
-        } else {
-            // Request the GET_ACCOUNTS permission via a user dialog
-            EasyPermissions.requestPermissions(
-                    this.getActivity(),
-                    getResources().getString(R.string.google_account_needed),
-                    Constants.REQUEST_PERMISSION_GET_ACCOUNTS,
-                    Manifest.permission.GET_ACCOUNTS);
         }
     }
 
@@ -249,7 +254,7 @@ public class FolderListFragment extends Fragment {
             @Override
             public void onClick(View view, int i) {
                 DriveDocument document = documents.get(i);
-                POISListFragment poisListFragment = POISListFragment.newInstance(document);
+                POISListFragment poisListFragment = POISListFragment.newInstance(document, accountEmail);
                 fragmentStackManager.loadFragment(poisListFragment, R.id.main_frame);
             }
         });
@@ -289,7 +294,9 @@ public class FolderListFragment extends Fragment {
 
                     alert.setPositiveButton(getResources().getString(R.string.yes), new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int whichButton) {
-                            deleteFilesThroughApi(fileResourceId);
+                            //deleteFilesThroughApi(fileResourceId);
+                            deleteTask = new MakeDeleteTask(mCredential, fileResourceId);
+                            deleteTask.execute();
                         }
                     });
 
@@ -321,7 +328,8 @@ public class FolderListFragment extends Fragment {
             editItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
                 @Override
                 public boolean onMenuItemClick(MenuItem item) {
-                    RenameDocumentFragment renameDocumentFragment = RenameDocumentFragment.newInstance(fileResourceId, documentTitle.getText().toString(), documentDescription.getText().toString());
+                    RenameDocumentFragment renameDocumentFragment = RenameDocumentFragment.newInstance(fileResourceId, documentTitle.getText().toString(),
+                            documentDescription.getText().toString(), accountEmail);
                     fragmentStackManager.loadFragment(renameDocumentFragment, R.id.main_frame);
                     return true;
                 }
@@ -416,10 +424,10 @@ public class FolderListFragment extends Fragment {
                             ((GooglePlayServicesAvailabilityIOException) mLastError)
                                     .getConnectionStatusCode());
                 } else if (mLastError instanceof UserRecoverableAuthIOException) {
-                    startActivityForResult(
-                            ((UserRecoverableAuthIOException) mLastError).getIntent(),
-                            Constants.REQUEST_AUTHORIZATION);
-
+//                    startActivityForResult(
+//                            ((UserRecoverableAuthIOException) mLastError).getIntent(),
+//                            Constants.REQUEST_AUTHORIZATION);
+                    handleException(mLastError);
                 } else {
                     AndroidUtils.showMessage((getResources().getString(R.string.following_error) + "\n"
                             + mLastError.getMessage()), getActivity());
@@ -475,14 +483,15 @@ public class FolderListFragment extends Fragment {
             } catch (Exception e) {
                 mLastError = e;
                 cancel(true);
-                return null;
             }
+            return null;
         }
+
 
         private List<DriveDocument> getDataFromApi() throws IOException {
             List<DriveDocument> documentsList = new ArrayList<>();
 
-            FileList result = mService.files().list().setQ("\'" + this.folderId + "\' in parents").setFields("files(description,id,name,webViewLink)").execute();
+            FileList result = mService.files().list().setQ("\'" + this.folderId + "\' in parents and trashed=false").setFields("files(description,id,name,webViewLink)").execute();
 
             List<File> files = result.getFiles();
             if (files != null) {
@@ -525,9 +534,10 @@ public class FolderListFragment extends Fragment {
                             ((GooglePlayServicesAvailabilityIOException) mLastError)
                                     .getConnectionStatusCode());
                 } else if (mLastError instanceof UserRecoverableAuthIOException) {
-                    startActivityForResult(
-                            ((UserRecoverableAuthIOException) mLastError).getIntent(),
-                            Constants.REQUEST_AUTHORIZATION);
+//                    startActivityForResult(
+//                            ((UserRecoverableAuthIOException) mLastError).getIntent(),
+//                            Constants.REQUEST_AUTHORIZATION);
+                    handleException(mLastError);
 
                 } else {
                     AndroidUtils.showMessage((getResources().getString(R.string.following_error) + "\n"
@@ -538,6 +548,7 @@ public class FolderListFragment extends Fragment {
             }
         }
     }
+
 
     private class MakeDeleteTask extends AsyncTask<Void, Void, Void> {
         private com.google.api.services.drive.Drive mService = null;
@@ -588,6 +599,7 @@ public class FolderListFragment extends Fragment {
             }
             return null;
         }
+
 
         private void deleteFile() throws IOException {
 

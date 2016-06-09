@@ -72,11 +72,15 @@ public class EditPOIMapFragment extends Fragment implements GoogleMap.OnMarkerDr
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
+        poiName = getArguments().getString(POI_NAME);
+
+        getActivity().setTitle(getResources().getString(R.string.editing_poi) + " " + poiName);
+
         fragmentStackManager = FragmentStackManager.getInstance(getActivity());
 
         poiLatitude = getArguments().getString(POI_LOCATION_LAT);
         poiLongitude = getArguments().getString(POI_LOCATION_LON);
-        poiName = getArguments().getString(POI_NAME);
+
         poiDescription = getArguments().getString(POI_DESC);
 
         latLon = new LatLng(Double.parseDouble(poiLatitude), Double.parseDouble(poiLongitude));
