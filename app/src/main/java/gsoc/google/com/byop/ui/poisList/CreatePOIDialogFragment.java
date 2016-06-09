@@ -3,6 +3,7 @@ package gsoc.google.com.byop.ui.poisList;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -60,7 +61,7 @@ public class CreatePOIDialogFragment extends Fragment implements GoogleApiClient
     public static final String ARG_LATITUDE = "latitude";
     public static final String ARG_LONGITUDE = "longitude";
     public static final String ARG_DOCUMENT = "document";
-    public static final String ARG_EMAIL = "email";
+
     protected FragmentStackManager fragmentStackManager;
     GoogleAccountCredential mCredential;
     private GoogleApiClient googleApiClient;
@@ -78,13 +79,12 @@ public class CreatePOIDialogFragment extends Fragment implements GoogleApiClient
 
     private CreateTask createTask;
 
-    public static CreatePOIDialogFragment newInstance(double latitude, double longitude, DriveDocument document, String accountEmail) {
+    public static CreatePOIDialogFragment newInstance(double latitude, double longitude, DriveDocument document) {
         CreatePOIDialogFragment createPOIDialogFragment = new CreatePOIDialogFragment();
         Bundle bundle = new Bundle();
         bundle.putParcelable(ARG_DOCUMENT, document);
         bundle.putDouble(ARG_LATITUDE, latitude);
         bundle.putDouble(ARG_LONGITUDE, longitude);
-        bundle.putString(ARG_EMAIL, accountEmail);
 
         createPOIDialogFragment.setArguments(bundle);
         return createPOIDialogFragment;
@@ -100,7 +100,7 @@ public class CreatePOIDialogFragment extends Fragment implements GoogleApiClient
         document = getArguments().getParcelable(ARG_DOCUMENT);
         latitude = getArguments().getDouble(ARG_LATITUDE);
         longitude = getArguments().getDouble(ARG_LONGITUDE);
-        accountEmail = getArguments().getString(ARG_EMAIL);
+
 
         new_poi_name = (TextInputLayout) rootView.findViewById(R.id.create_poi_name);
 
@@ -137,6 +137,10 @@ public class CreatePOIDialogFragment extends Fragment implements GoogleApiClient
                 .addApi(Drive.API)
                 .addScope(Drive.SCOPE_FILE)
                 .build();
+
+        SharedPreferences settings = this.getActivity().getPreferences(Context.MODE_PRIVATE);
+
+        accountEmail = settings.getString(Constants.PREF_ACCOUNT_EMAIL, "");
 
         mCredential = GoogleAccountCredential.usingOAuth2(getContext(), Arrays.asList(Constants.SCOPES))
                 .setBackOff(new ExponentialBackOff());

@@ -47,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == ConnectionResult.SERVICE_INVALID) {
             fragmentStackManager.popBackStatFragment();
-            FolderListFragment folderListFragment = FolderListFragment.newInstance("");
+            FolderListFragment folderListFragment = FolderListFragment.newInstance();
             fragmentStackManager.loadFragment(folderListFragment, R.id.main_frame);
         }
     }

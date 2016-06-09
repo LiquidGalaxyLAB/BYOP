@@ -75,14 +75,9 @@ public class FolderListFragment extends Fragment {
     private String byopFolderId = "";
 
     private String accountEmail;
-    String googleAccountToken;
 
-    public static FolderListFragment newInstance(String email) {
+    public static FolderListFragment newInstance() {
         FolderListFragment newfolderListFragment = new FolderListFragment();
-
-        Bundle bundle = new Bundle();
-        bundle.putString(Constants.PREF_ACCOUNT_EMAIL, email);
-        newfolderListFragment.setArguments(bundle);
         return newfolderListFragment;
     }
 
@@ -106,7 +101,7 @@ public class FolderListFragment extends Fragment {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                CreateDocumentFragment newDocumentFragment = CreateDocumentFragment.newInstance(byopFolderId, accountEmail);
+                CreateDocumentFragment newDocumentFragment = CreateDocumentFragment.newInstance(byopFolderId);
                 fragmentStackManager.loadFragment(newDocumentFragment, R.id.main_frame);
             }
         });
@@ -141,12 +136,11 @@ public class FolderListFragment extends Fragment {
         mCredential = GoogleAccountCredential.usingOAuth2(getContext(), Arrays.asList(Constants.SCOPES))
                 .setBackOff(new ExponentialBackOff());
 
-        SharedPreferences settings =
-                this.getActivity().getPreferences(Context.MODE_PRIVATE);
 
-        accountEmail = getArguments().getString(Constants.PREF_ACCOUNT_EMAIL);
+        SharedPreferences settings = this.getActivity().getPreferences(Context.MODE_PRIVATE);
 
-        googleAccountToken = settings.getString("GG_LOGED", "");
+        accountEmail = settings.getString(Constants.PREF_ACCOUNT_EMAIL, "");
+
 
         mCredential.setSelectedAccountName(accountEmail);
 
@@ -177,8 +171,7 @@ public class FolderListFragment extends Fragment {
                             REQUEST_CODE_RECOVER_FROM_PLAY_SERVICES_ERROR);
                 } else if (e instanceof UserRecoverableAuthIOException) {
                     Intent intent = ((UserRecoverableAuthIOException) e).getIntent();
-                    getActivity().startActivityForResult(intent, Constants.REQUEST_AUTHORIZATION);
-                    //getActivity().recreate();
+                    //FIXME: startActivityForResult(intent, Constants.REQUEST_AUTHORIZATION);
                 }
             }
         });
@@ -190,7 +183,7 @@ public class FolderListFragment extends Fragment {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == ConnectionResult.SERVICE_INVALID) {
             fragmentStackManager.popBackStatFragment();
-            FolderListFragment folderListFragment = FolderListFragment.newInstance(accountEmail);
+            FolderListFragment folderListFragment = FolderListFragment.newInstance();
             fragmentStackManager.loadFragment(folderListFragment, R.id.main_frame);
         }
     }
@@ -254,7 +247,7 @@ public class FolderListFragment extends Fragment {
             @Override
             public void onClick(View view, int i) {
                 DriveDocument document = documents.get(i);
-                POISListFragment poisListFragment = POISListFragment.newInstance(document, accountEmail);
+                POISListFragment poisListFragment = POISListFragment.newInstance(document);
                 fragmentStackManager.loadFragment(poisListFragment, R.id.main_frame);
             }
         });
@@ -329,7 +322,7 @@ public class FolderListFragment extends Fragment {
                 @Override
                 public boolean onMenuItemClick(MenuItem item) {
                     RenameDocumentFragment renameDocumentFragment = RenameDocumentFragment.newInstance(fileResourceId, documentTitle.getText().toString(),
-                            documentDescription.getText().toString(), accountEmail);
+                            documentDescription.getText().toString());
                     fragmentStackManager.loadFragment(renameDocumentFragment, R.id.main_frame);
                     return true;
                 }
@@ -424,10 +417,10 @@ public class FolderListFragment extends Fragment {
                             ((GooglePlayServicesAvailabilityIOException) mLastError)
                                     .getConnectionStatusCode());
                 } else if (mLastError instanceof UserRecoverableAuthIOException) {
-//                    startActivityForResult(
-//                            ((UserRecoverableAuthIOException) mLastError).getIntent(),
-//                            Constants.REQUEST_AUTHORIZATION);
-                    handleException(mLastError);
+                    getActivity().startActivityForResult(
+                            ((UserRecoverableAuthIOException) mLastError).getIntent(),
+                            Constants.REQUEST_AUTHORIZATION);
+                    //FIXME  handleException(mLastError);
                 } else {
                     AndroidUtils.showMessage((getResources().getString(R.string.following_error) + "\n"
                             + mLastError.getMessage()), getActivity());
@@ -534,10 +527,10 @@ public class FolderListFragment extends Fragment {
                             ((GooglePlayServicesAvailabilityIOException) mLastError)
                                     .getConnectionStatusCode());
                 } else if (mLastError instanceof UserRecoverableAuthIOException) {
-//                    startActivityForResult(
-//                            ((UserRecoverableAuthIOException) mLastError).getIntent(),
-//                            Constants.REQUEST_AUTHORIZATION);
-                    handleException(mLastError);
+                    getParentFragment().startActivityForResult(
+                            ((UserRecoverableAuthIOException) mLastError).getIntent(),
+                            Constants.REQUEST_AUTHORIZATION);
+                    //FIXME handleException(mLastError);
 
                 } else {
                     AndroidUtils.showMessage((getResources().getString(R.string.following_error) + "\n"

@@ -80,7 +80,7 @@ public class SignInFragment extends Fragment implements GoogleApiClient.OnConnec
 
         getActivity().setTitle(getActivity().getResources().getString(R.string.app_name));
 
-        fragmentStackManager = FragmentStackManager.getInstance(getContext());
+        fragmentStackManager = FragmentStackManager.getInstance(getActivity());
 
         // Views
         mStatusTextView = (TextView) view.findViewById(R.id.status);
@@ -146,14 +146,7 @@ public class SignInFragment extends Fragment implements GoogleApiClient.OnConnec
         if (requestCode == RC_SIGN_IN) {
             GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
             handleSignInResult(result);
-        }/*else if(requestCode == ConnectionResult.SERVICE_INVALID){
-
-            String accountName = getActivity().getPreferences(Context.MODE_PRIVATE).getString(Constants.PREF_ACCOUNT_NAME,"");
-
-            FolderListFragment folderListFragment = FolderListFragment.newInstance(accountName);
-//            fragmentStackManager.resetBackStack(folderListFragment);
-            fragmentStackManager.loadFragment(folderListFragment, R.id.main_frame);
-        }*/
+        }
     }
 
 
@@ -218,7 +211,7 @@ public class SignInFragment extends Fragment implements GoogleApiClient.OnConnec
 
     private void loadDocumentsList() {
 
-        FolderListFragment folderListFragment = FolderListFragment.newInstance(acct.getEmail());
+        FolderListFragment folderListFragment = FolderListFragment.newInstance();
         fragmentStackManager.loadFragment(folderListFragment, R.id.main_frame);
 
     }

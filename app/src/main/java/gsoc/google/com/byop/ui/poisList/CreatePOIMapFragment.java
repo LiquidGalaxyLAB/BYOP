@@ -1,6 +1,8 @@
 package gsoc.google.com.byop.ui.poisList;
 
 import android.Manifest;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
@@ -45,12 +47,11 @@ public class CreatePOIMapFragment extends Fragment implements OnMapReadyCallback
     private static String TAG = CreatePOIMapFragment.class.toString();
 
     public static final String ARG_DOCUMENT = "document";
-    public static final String ARG_EMAIL = "email";
 
     private GoogleMap googleMap;
     private GoogleApiClient googleApiClient;
     private DriveDocument document;
-    private String email;
+    private String accountEmail;
 
     private LocationRequest locationRequest;
 
@@ -60,12 +61,11 @@ public class CreatePOIMapFragment extends Fragment implements OnMapReadyCallback
     private static int UPDATE_INTERVAL = 10000; // 10 sec
     private static int FATEST_INTERVAL = 5000; // 5 sec
 
-    public static CreatePOIMapFragment newInstance(DriveDocument document, String accountEmail) {
+    public static CreatePOIMapFragment newInstance(DriveDocument document) {
         CreatePOIMapFragment createPOIMapFragment = new CreatePOIMapFragment();
 
         Bundle bundle = new Bundle();
         bundle.putParcelable(ARG_DOCUMENT, document);
-        bundle.putString(ARG_EMAIL, accountEmail);
 
         createPOIMapFragment.setArguments(bundle);
 
@@ -83,7 +83,9 @@ public class CreatePOIMapFragment extends Fragment implements OnMapReadyCallback
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         document = getArguments().getParcelable(ARG_DOCUMENT);
-        email = getArguments().getString(ARG_EMAIL);
+        SharedPreferences settings = this.getActivity().getPreferences(Context.MODE_PRIVATE);
+
+        accountEmail = settings.getString(Constants.PREF_ACCOUNT_EMAIL, "");
 
         getActivity().setTitle(getResources().getString(R.string.new_poi) + " in " + document.getTitle());
 
@@ -181,7 +183,7 @@ public class CreatePOIMapFragment extends Fragment implements OnMapReadyCallback
 
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, googleMap.getCameraPosition().zoom));
 
-        CreatePOIDialogFragment createPoiDialog = CreatePOIDialogFragment.newInstance(latLng.latitude, latLng.longitude, document, email);
+        CreatePOIDialogFragment createPoiDialog = CreatePOIDialogFragment.newInstance(latLng.latitude, latLng.longitude, document);
         fragmentStackManager.loadFragment(createPoiDialog, R.id.map);
 
     }

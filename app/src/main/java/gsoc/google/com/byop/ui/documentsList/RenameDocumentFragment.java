@@ -1,6 +1,7 @@
 package gsoc.google.com.byop.ui.documentsList;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -40,7 +41,6 @@ public class RenameDocumentFragment extends Fragment {
 
     protected FragmentStackManager fragmentStackManager;
 
-    public static final String ARG_EMAIL = "email";
     public static final String ARG_FILE_ID = "fileId";
     public static final String ARG_NAME = "name";
     public static final String ARG_DESC = "description";
@@ -60,13 +60,12 @@ public class RenameDocumentFragment extends Fragment {
 
     GoogleAccountCredential mCredential;
 
-    public static RenameDocumentFragment newInstance(String fileId, String actualName, String actualDescription, String accEmail) {
+    public static RenameDocumentFragment newInstance(String fileId, String actualName, String actualDescription) {
         RenameDocumentFragment renameDocument = new RenameDocumentFragment();
         Bundle bundle = new Bundle();
         bundle.putString(ARG_FILE_ID, fileId);
         bundle.putString(ARG_NAME, actualName);
         bundle.putString(ARG_DESC, actualDescription);
-        bundle.putString(ARG_EMAIL, accEmail);
         renameDocument.setArguments(bundle);
         return renameDocument;
     }
@@ -99,7 +98,9 @@ public class RenameDocumentFragment extends Fragment {
             }
         });
 
-        accountEmail = getArguments().getString(ARG_EMAIL);
+        SharedPreferences settings = this.getActivity().getPreferences(Context.MODE_PRIVATE);
+
+        accountEmail = settings.getString(Constants.PREF_ACCOUNT_EMAIL, "");
 
         // Initialize credentials and service object.
         mCredential = GoogleAccountCredential.usingOAuth2(getContext(), Arrays.asList(Constants.SCOPES))

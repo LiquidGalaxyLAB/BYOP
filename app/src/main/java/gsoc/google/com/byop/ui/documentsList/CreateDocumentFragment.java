@@ -3,6 +3,7 @@ package gsoc.google.com.byop.ui.documentsList;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -49,7 +50,6 @@ import gsoc.google.com.byop.utils.GooglePlayUtils;
 public class CreateDocumentFragment extends Fragment implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
     public static final String ARG_FOLDER_ID = "folderId";
-    public static final String ARG_EMAIL = "email";
     protected FragmentStackManager fragmentStackManager;
     GoogleAccountCredential mCredential;
     private EditText new_document_name_input;
@@ -61,11 +61,10 @@ public class CreateDocumentFragment extends Fragment implements GoogleApiClient.
     private String accountEmail;
     private String documentId;
 
-    public static CreateDocumentFragment newInstance(String folderId, String accountEmail) {
+    public static CreateDocumentFragment newInstance(String folderId) {
         CreateDocumentFragment createDocument = new CreateDocumentFragment();
         Bundle bundle = new Bundle();
         bundle.putString(ARG_FOLDER_ID, folderId);
-        bundle.putString(ARG_EMAIL, accountEmail);
         createDocument.setArguments(bundle);
         return createDocument;
     }
@@ -98,7 +97,9 @@ public class CreateDocumentFragment extends Fragment implements GoogleApiClient.
             }
         });
 
-        accountEmail = getArguments().getString(ARG_EMAIL);
+        SharedPreferences settings = this.getActivity().getPreferences(Context.MODE_PRIVATE);
+
+        accountEmail = settings.getString(Constants.PREF_ACCOUNT_EMAIL, "");
 
         // Initialize credentials and service object.
         mCredential = GoogleAccountCredential.usingOAuth2(getContext(), Arrays.asList(Constants.SCOPES))

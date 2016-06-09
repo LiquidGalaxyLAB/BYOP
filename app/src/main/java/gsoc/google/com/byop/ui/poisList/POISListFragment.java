@@ -1,8 +1,10 @@
 package gsoc.google.com.byop.ui.poisList;
 
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.IntentSender;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -72,7 +74,6 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
     private FloatingActionButton fab;
 
     public static final String ARG_DOCUMENT = "document";
-    public static final String ARG_EMAIL = "email";
     private DriveDocument document;
     private String accountEmail;
 
@@ -85,11 +86,10 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
     GoogleAccountCredential mCredential;
 
 
-    public static POISListFragment newInstance(DriveDocument document, String accountEmail) {
+    public static POISListFragment newInstance(DriveDocument document) {
         poisFragment = new POISListFragment();
         Bundle bundle = new Bundle();
         bundle.putParcelable(ARG_DOCUMENT, document);
-        bundle.putString(ARG_EMAIL, accountEmail);
 
         poisFragment.setArguments(bundle);
         return poisFragment;
@@ -119,7 +119,7 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                CreatePOIMapFragment createPOIMapFragment = CreatePOIMapFragment.newInstance(document, accountEmail);
+                CreatePOIMapFragment createPOIMapFragment = CreatePOIMapFragment.newInstance(document);
                 fragmentStackManager.loadFragment(createPOIMapFragment, R.id.main_frame);
             }
         });
@@ -149,7 +149,10 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
         mCredential = GoogleAccountCredential.usingOAuth2(getContext(), Arrays.asList(Constants.SCOPES))
                 .setBackOff(new ExponentialBackOff());
 
-        accountEmail = getArguments().getString(ARG_EMAIL);
+        SharedPreferences settings = this.getActivity().getPreferences(Context.MODE_PRIVATE);
+
+        accountEmail = settings.getString(Constants.PREF_ACCOUNT_EMAIL, "");
+
         mCredential.setSelectedAccountName(accountEmail);
 
         return rootView;
@@ -200,65 +203,6 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
             GooglePlayServicesUtil.getErrorDialog(connectionResult.getErrorCode(), this.getActivity(), 0).show();
         }
     }
-
-
-//    @Override
-//    public void onPermissionsGranted(int requestCode, List<String> perms) {/*Do Nothing*/}
-//
-//    @Override
-//    public void onPermissionsDenied(int requestCode, List<String> perms) {/*Do Nothing*/}
-
-//    @Override
-//    public void onActivityResult(
-//            int requestCode, int resultCode, Intent data) {
-//        super.onActivityResult(requestCode, resultCode, data);
-//        switch (requestCode) {
-//            case Constants.REQUEST_GOOGLE_PLAY_SERVICES:
-//                if (resultCode != Constants.RESULT_OK) {
-//                    AndroidUtils.showMessage(
-//                            getResources().getString(R.string.play_services_needed), getActivity());
-//                } else {
-//                    getFileContensFromAPI();
-//                }
-//                break;
-//            case Constants.REQUEST_ACCOUNT_PICKER:
-//                if (resultCode == Constants.RESULT_OK && data != null &&
-//                        data.getExtras() != null) {
-//                    String accountName =
-//                            data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME);
-//                    if (accountName != null) {
-//                        SharedPreferences settings =
-//                                this.getActivity().getPreferences(Context.MODE_PRIVATE);
-//                        SharedPreferences.Editor editor = settings.edit();
-//                        editor.putString(Constants.PREF_ACCOUNT_NAME, accountName);
-//                        editor.apply();
-//                        mCredential.setSelectedAccountName(accountName);
-//                        getFileContensFromAPI();
-//                    }
-//                }
-//                break;
-//            case Constants.REQUEST_AUTHORIZATION:
-//                if (resultCode == Constants.RESULT_OK) {
-//                    getFileContensFromAPI();
-//                }
-//                break;
-//            case ConnectionResult.SERVICE_INVALID:
-//                fragmentStackManager.popBackStatFragment();
-//                POISListFragment poisListFragment = POISListFragment.newInstance(document);
-//                fragmentStackManager.loadFragment(poisListFragment, R.id.main_frame);
-//                break;
-//        }
-//    }
-
-
-//    @Override
-//    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-//        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-//        EasyPermissions.onRequestPermissionsResult(
-//                requestCode, permissions, grantResults, this);
-//    }
-//
-
 
     private class POIHolder extends RecyclerView.ViewHolder implements View.OnCreateContextMenuListener {
         TextView poiName;
