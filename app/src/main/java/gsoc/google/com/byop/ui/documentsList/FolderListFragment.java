@@ -148,35 +148,6 @@ public class FolderListFragment extends Fragment {
         return rootView;
     }
 
-    private void handleException(final Exception e) {
-        getActivity().runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                if (e instanceof GooglePlayServicesAvailabilityException) {
-                    // The Google Play services APK is old, disabled, or not present.
-                    // Show a dialog created by Google Play services that allows
-                    // the user to update the APK
-                    int statusCode = ((GooglePlayServicesAvailabilityException) e)
-                            .getConnectionStatusCode();
-                    Dialog dialog = GooglePlayServicesUtil.getErrorDialog(statusCode,
-                            getActivity(),
-                            REQUEST_CODE_RECOVER_FROM_PLAY_SERVICES_ERROR);
-                    dialog.show();
-                } else if (e instanceof UserRecoverableAuthException) {
-                    // Unable to authenticate, such as when the user has not yet granted
-                    // the app access to the account, but the user can fix this.
-                    // Forward the user to an activity in Google Play services.
-                    Intent intent = ((UserRecoverableAuthException) e).getIntent();
-                    startActivityForResult(intent,
-                            REQUEST_CODE_RECOVER_FROM_PLAY_SERVICES_ERROR);
-                } else if (e instanceof UserRecoverableAuthIOException) {
-                    Intent intent = ((UserRecoverableAuthIOException) e).getIntent();
-                    //FIXME: startActivityForResult(intent, Constants.REQUEST_AUTHORIZATION);
-                }
-            }
-        });
-    }
-
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -185,7 +156,12 @@ public class FolderListFragment extends Fragment {
             fragmentStackManager.popBackStatFragment();
             FolderListFragment folderListFragment = FolderListFragment.newInstance();
             fragmentStackManager.loadFragment(folderListFragment, R.id.main_frame);
+        }else if(requestCode==Constants.REQUEST_AUTHORIZATION){
+            fragmentStackManager.popBackStatFragment();
+            FolderListFragment folderListFragment = FolderListFragment.newInstance();
+            fragmentStackManager.loadFragment(folderListFragment, R.id.main_frame);
         }
+
     }
 
 
@@ -417,16 +393,18 @@ public class FolderListFragment extends Fragment {
                             ((GooglePlayServicesAvailabilityIOException) mLastError)
                                     .getConnectionStatusCode());
                 } else if (mLastError instanceof UserRecoverableAuthIOException) {
-                    getActivity().startActivityForResult(
+                    startActivityForResult(
                             ((UserRecoverableAuthIOException) mLastError).getIntent(),
                             Constants.REQUEST_AUTHORIZATION);
+                    dialog.dismiss();
+
                     //FIXME  handleException(mLastError);
                 } else {
                     AndroidUtils.showMessage((getResources().getString(R.string.following_error) + "\n"
                             + mLastError.getMessage()), getActivity());
                 }
             } else {
-                AndroidUtils.showMessage(getResources().getString(R.string.request_cancelled), getActivity());
+               // AndroidUtils.showMessage(getResources().getString(R.string.request_cancelled), getActivity());
             }
         }
     }
@@ -527,17 +505,11 @@ public class FolderListFragment extends Fragment {
                             ((GooglePlayServicesAvailabilityIOException) mLastError)
                                     .getConnectionStatusCode());
                 } else if (mLastError instanceof UserRecoverableAuthIOException) {
-                    getParentFragment().startActivityForResult(
+                    startActivityForResult(
                             ((UserRecoverableAuthIOException) mLastError).getIntent(),
                             Constants.REQUEST_AUTHORIZATION);
+                    dialog.dismiss();
 
-                    if (dialog != null && dialog.isShowing())
-                        dialog.hide();
-                    try {
-                        getDataFromApi();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
                     //FIXME handleException(mLastError);
 
                 } else {
@@ -545,7 +517,7 @@ public class FolderListFragment extends Fragment {
                             + mLastError.getMessage()), getActivity());
                 }
             } else {
-                AndroidUtils.showMessage(getResources().getString(R.string.request_cancelled), getActivity());
+               // AndroidUtils.showMessage(getResources().getString(R.string.request_cancelled), getActivity());
             }
         }
     }
@@ -634,7 +606,7 @@ public class FolderListFragment extends Fragment {
                             + mLastError.getMessage()), getActivity());
                 }
             } else {
-                AndroidUtils.showMessage(getResources().getString(R.string.request_cancelled), getActivity());
+              //  AndroidUtils.showMessage(getResources().getString(R.string.request_cancelled), getActivity());
             }
         }
     }
@@ -724,19 +696,12 @@ public class FolderListFragment extends Fragment {
                     startActivityForResult(
                             ((UserRecoverableAuthIOException) mLastError).getIntent(),
                             Constants.REQUEST_AUTHORIZATION);
-                    try {
-                        if (dialog != null && dialog.isShowing())
-                            dialog.hide();
-                        createFolder();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
                 } else {
                     AndroidUtils.showMessage((getResources().getString(R.string.following_error) + "\n"
                             + mLastError.getMessage()), getActivity());
                 }
             } else {
-                AndroidUtils.showMessage(getResources().getString(R.string.request_cancelled), getActivity());
+             //   AndroidUtils.showMessage(getResources().getString(R.string.request_cancelled), getActivity());
             }
         }
     }
