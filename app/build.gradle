@@ -1,6 +1,5 @@
 apply plugin: 'com.android.application'
 
-apply plugin: 'com.google.gms.google-services'
 
 repositories {
     mavenCentral()
@@ -37,14 +36,14 @@ dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     compile(name: 'uribeacon-library-release', ext: 'aar')
     testCompile 'junit:junit:4.12'
-    compile 'com.google.android.gms:play-services-identity:9.0.0'
-    compile 'com.google.android.gms:play-services-auth:9.0.0'
-    compile 'com.google.android.gms:play-services-drive:9.0.0'
-    compile 'com.google.android.gms:play-services:9.0.0'
+    compile 'com.google.android.gms:play-services-identity:9.0.2'
+    compile 'com.google.android.gms:play-services-auth:9.0.2'
+    compile 'com.google.android.gms:play-services-drive:9.0.2'
+    compile 'com.google.android.gms:play-services:9.0.2'
     compile 'com.android.support:appcompat-v7:23.4.0'
     compile 'com.android.support:design:23.4.0'
-    compile 'com.android.support:recyclerview-v7:23.1.1'
-    compile 'com.android.support:cardview-v7:23.1.1'
+    compile 'com.android.support:recyclerview-v7:23.4.0'
+    compile 'com.android.support:cardview-v7:23.4.0'
     compile 'com.github.kanytu:android-parallax-recyclerview:v1.7'
     compile 'pub.devrel:easypermissions:0.1.5'
     compile('com.google.api-client:google-api-client-android:1.22.0') {

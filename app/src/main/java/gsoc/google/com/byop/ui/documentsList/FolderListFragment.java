@@ -530,6 +530,14 @@ public class FolderListFragment extends Fragment {
                     getParentFragment().startActivityForResult(
                             ((UserRecoverableAuthIOException) mLastError).getIntent(),
                             Constants.REQUEST_AUTHORIZATION);
+
+                    if (dialog != null && dialog.isShowing())
+                        dialog.hide();
+                    try {
+                        getDataFromApi();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                     //FIXME handleException(mLastError);
 
                 } else {
@@ -716,6 +724,13 @@ public class FolderListFragment extends Fragment {
                     startActivityForResult(
                             ((UserRecoverableAuthIOException) mLastError).getIntent(),
                             Constants.REQUEST_AUTHORIZATION);
+                    try {
+                        if (dialog != null && dialog.isShowing())
+                            dialog.hide();
+                        createFolder();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 } else {
                     AndroidUtils.showMessage((getResources().getString(R.string.following_error) + "\n"
                             + mLastError.getMessage()), getActivity());

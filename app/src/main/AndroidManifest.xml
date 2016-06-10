@@ -74,17 +74,16 @@
                 android:name="com.google.android.gms.version"
                 android:value="@integer/google_play_services_version" />
 
+
+            <!-- Google Maps Fragment API Key Data -->
+            <meta-data
+                android:name="com.google.android.maps.v2.API_KEY"
+                android:value="AIzaSyD0_q4GQQxSUYoww1-QZuVJIgYV6JQhoqo" />
+
+
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-
-            <intent-filter>
-                <action android:name="com.google.android.apps.drive.DRIVE_OPEN" />
-
-                <data android:mimeType="application/vnd.google-apps.drive-sdk.1234567890" />
-                <data android:mimeType="*/*" />
-                <data android:pathPattern=".*\\.gpx" />
             </intent-filter>
 
         </activity>
