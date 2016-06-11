@@ -1,6 +1,5 @@
 package gsoc.google.com.byop.ui.documentsList;
 
-import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -24,10 +23,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.google.android.gms.auth.GooglePlayServicesAvailabilityException;
-import com.google.android.gms.auth.UserRecoverableAuthException;
 import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GooglePlayServicesAvailabilityIOException;
@@ -108,10 +104,11 @@ public class FolderListFragment extends Fragment {
 
         final String folderName = getResources().getString(R.string.folderName);
 
+        //FIXME
         if (byopFolderId == null || byopFolderId.equals("")) {
             checkFolderTask = new CheckFolderTask(mCredential, folderName);
             checkFolderTask.execute();
-        } else {
+        } else if(requestTask==null){
             requestTask = new MakeRequestTask(mCredential, byopFolderId);
             requestTask.execute();
         }
@@ -156,12 +153,11 @@ public class FolderListFragment extends Fragment {
             fragmentStackManager.popBackStatFragment();
             FolderListFragment folderListFragment = FolderListFragment.newInstance();
             fragmentStackManager.loadFragment(folderListFragment, R.id.main_frame);
-        }else if(requestCode==Constants.REQUEST_AUTHORIZATION){
+        } else if (requestCode == Constants.REQUEST_AUTHORIZATION) {
             fragmentStackManager.popBackStatFragment();
             FolderListFragment folderListFragment = FolderListFragment.newInstance();
             fragmentStackManager.loadFragment(folderListFragment, R.id.main_frame);
         }
-
     }
 
 
@@ -404,7 +400,7 @@ public class FolderListFragment extends Fragment {
                             + mLastError.getMessage()), getActivity());
                 }
             } else {
-               // AndroidUtils.showMessage(getResources().getString(R.string.request_cancelled), getActivity());
+                // AndroidUtils.showMessage(getResources().getString(R.string.request_cancelled), getActivity());
             }
         }
     }
@@ -510,14 +506,12 @@ public class FolderListFragment extends Fragment {
                             Constants.REQUEST_AUTHORIZATION);
                     dialog.dismiss();
 
-                    //FIXME handleException(mLastError);
-
                 } else {
                     AndroidUtils.showMessage((getResources().getString(R.string.following_error) + "\n"
                             + mLastError.getMessage()), getActivity());
                 }
             } else {
-               // AndroidUtils.showMessage(getResources().getString(R.string.request_cancelled), getActivity());
+                // AndroidUtils.showMessage(getResources().getString(R.string.request_cancelled), getActivity());
             }
         }
     }
@@ -606,7 +600,7 @@ public class FolderListFragment extends Fragment {
                             + mLastError.getMessage()), getActivity());
                 }
             } else {
-              //  AndroidUtils.showMessage(getResources().getString(R.string.request_cancelled), getActivity());
+                //  AndroidUtils.showMessage(getResources().getString(R.string.request_cancelled), getActivity());
             }
         }
     }
@@ -701,7 +695,7 @@ public class FolderListFragment extends Fragment {
                             + mLastError.getMessage()), getActivity());
                 }
             } else {
-             //   AndroidUtils.showMessage(getResources().getString(R.string.request_cancelled), getActivity());
+                //   AndroidUtils.showMessage(getResources().getString(R.string.request_cancelled), getActivity());
             }
         }
     }

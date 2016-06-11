@@ -11,11 +11,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 
-import com.google.android.gms.common.ConnectionResult;
-
 import gsoc.google.com.byop.R;
-import gsoc.google.com.byop.ui.documentsList.FolderListFragment;
+import gsoc.google.com.byop.ui.poisList.POISListFragment;
 import gsoc.google.com.byop.utils.AndroidUtils;
+import gsoc.google.com.byop.utils.Constants;
 import gsoc.google.com.byop.utils.FragmentStackManager;
 
 
@@ -45,10 +44,10 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == ConnectionResult.SERVICE_INVALID) {
+        if (requestCode == Constants.SERVICE_INVALID_POIS_LIST) {
             fragmentStackManager.popBackStatFragment();
-            FolderListFragment folderListFragment = FolderListFragment.newInstance();
-            fragmentStackManager.loadFragment(folderListFragment, R.id.main_frame);
+            POISListFragment poisListFragment = POISListFragment.getInstance();
+            fragmentStackManager.loadFragment(poisListFragment, R.id.main_frame);
         }
     }
 

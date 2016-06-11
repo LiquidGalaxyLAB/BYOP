@@ -3,6 +3,7 @@ package gsoc.google.com.byop.ui.poisList;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.IntentSender;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
@@ -85,6 +86,15 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
 
     GoogleAccountCredential mCredential;
 
+    public static POISListFragment getInstance() {
+        if (poisFragment != null) {
+            poisFragment = POISListFragment.newInstance(poisFragment.document);
+            return poisFragment;
+        } else {
+            poisFragment = new POISListFragment();
+            return poisFragment;
+        }
+    }
 
     public static POISListFragment newInstance(DriveDocument document) {
         poisFragment = new POISListFragment();
@@ -99,13 +109,19 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        document = getArguments().getParcelable(ARG_DOCUMENT);
+        if (savedInstanceState != null && savedInstanceState.getParcelable("document") != null) {
+            document = savedInstanceState.getParcelable(ARG_DOCUMENT);
+        } else if (document == null) {
+            document = getArguments().getParcelable(ARG_DOCUMENT);
+        } else {
+            requestContentsTask = new RequestContentsTask(mCredential);
+        }
 
         getActivity().setTitle(getResources().getString(R.string.poisList) + " " + document.getTitle());
 
         setHasOptionsMenu(true);
 
-        fragmentStackManager = FragmentStackManager.getInstance(getActivity());
+        fragmentStackManager = FragmentStackManager.getInstance(getContext());
 
         refreshLayout.setOnRefreshListener(
                 new SwipeRefreshLayout.OnRefreshListener() {
@@ -123,6 +139,10 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
                 fragmentStackManager.loadFragment(createPOIMapFragment, R.id.main_frame);
             }
         });
+
+        if (requestContentsTask != null) {
+            requestContentsTask.execute();
+        }
     }
 
     @Nullable
@@ -146,7 +166,7 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
                 .build();
 
         // Initialize credentials and service object.
-        mCredential = GoogleAccountCredential.usingOAuth2(getContext(), Arrays.asList(Constants.SCOPES))
+        mCredential = GoogleAccountCredential.usingOAuth2(this.getActivity(), Arrays.asList(Constants.SCOPES))
                 .setBackOff(new ExponentialBackOff());
 
         SharedPreferences settings = this.getActivity().getPreferences(Context.MODE_PRIVATE);
@@ -176,6 +196,12 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
         mGoogleApiClient.disconnect();
     }
 
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        outState.putParcelable("document", document);
+        super.onSaveInstanceState(outState);
+    }
+
 
     public GoogleApiClient getGoogleApiClient() {
         return mGoogleApiClient;
@@ -187,7 +213,6 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
         requestContentsTask.execute();
     }
 
-
     @Override
     public void onConnectionSuspended(int i) {/*Do Nothing*/}
 
@@ -195,7 +220,7 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
         if (connectionResult.hasResolution()) {
             try {
-                connectionResult.startResolutionForResult(this.getActivity(), ConnectionResult.SERVICE_INVALID);
+                connectionResult.startResolutionForResult(getActivity(), Constants.SERVICE_INVALID_POIS_LIST);
             } catch (IntentSender.SendIntentException e) {
                 // Unable to resolve, message user appropriately
             }
@@ -291,6 +316,21 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
         }
     }
 
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == Constants.REQUEST_AUTHORIZATION) {
+            fragmentStackManager.popBackStatFragment();
+            POISListFragment poisListFragment = POISListFragment.newInstance(document);
+            fragmentStackManager.loadFragment(poisListFragment, R.id.main_frame);
+        } else if (requestCode == ConnectionResult.SERVICE_INVALID) {
+            fragmentStackManager.popBackStatFragment();
+            POISListFragment poisListFragment = POISListFragment.newInstance(document);
+            fragmentStackManager.loadFragment(poisListFragment, R.id.main_frame);
+        }
+
+    }
+
     public void fillAdapter(final List<POI> poisList) {
         parallaxRecyclerAdapter = new ParallaxRecyclerAdapter<POI>(poisList) {
             @Override
@@ -370,6 +410,7 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
                     @Override
                     public void onCancel(DialogInterface dialog) {
                         requestContentsTask.cancel(true);
+                        dialog.dismiss();
                     }
                 });
                 dialog.show();
@@ -384,8 +425,11 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
             } catch (Exception e) {
                 mLastError = e;
                 cancel(true);
-                return null;
+                if(dialog!=null){
+                    dialog.dismiss();
+                }
             }
+            return null;
         }
 
         private List<POI> getFileContentsFromApi() throws IOException {
@@ -422,7 +466,7 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
                                 });
                     } else {
                         AndroidUtils.showMessage(getResources().getString(R.string.something_wrong) + driveIdResult.getStatus(), getActivity());
-                        fragmentStackManager.popBackStatFragment();
+                        dialog.dismiss();
                         return;
                     }
                 }
@@ -437,8 +481,10 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
             super.onPostExecute(output);
             if (output != null)
                 fillAdapter(output);
-            if (dialog != null && dialog.isShowing())
+            if (dialog != null) {
                 dialog.hide();
+                dialog.dismiss();
+            }
             refreshLayout.setRefreshing(false);
         }
 
@@ -451,6 +497,7 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
                             ((GooglePlayServicesAvailabilityIOException) mLastError)
                                     .getConnectionStatusCode());
                 } else if (mLastError instanceof UserRecoverableAuthIOException) {
+                    dialog.dismiss();
                     startActivityForResult(
                             ((UserRecoverableAuthIOException) mLastError).getIntent(),
                             Constants.REQUEST_AUTHORIZATION);
