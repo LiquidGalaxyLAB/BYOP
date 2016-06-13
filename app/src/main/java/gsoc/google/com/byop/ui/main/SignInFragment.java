@@ -26,6 +26,7 @@ import com.google.android.gms.common.api.Status;
 
 import gsoc.google.com.byop.R;
 import gsoc.google.com.byop.ui.documentsList.FolderListFragment;
+import gsoc.google.com.byop.utils.AndroidUtils;
 import gsoc.google.com.byop.utils.BluetoothUtils;
 import gsoc.google.com.byop.utils.Constants;
 import gsoc.google.com.byop.utils.FragmentStackManager;
@@ -212,7 +213,7 @@ public class SignInFragment extends Fragment implements GoogleApiClient.OnConnec
         editor.clear();
         editor.commit();
 
-//        AndroidUtils.clearApplicationData(getActivity().getApplication());
+        AndroidUtils.clearApplicationData(getActivity().getApplication());
     }
 
     private void loadDocumentsList() {

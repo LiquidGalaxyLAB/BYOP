@@ -57,7 +57,6 @@ import gsoc.google.com.byop.utils.PW.BeaconConfigFragment;
  */
 public class FolderListFragment extends Fragment {
 
-    static final int REQUEST_CODE_RECOVER_FROM_PLAY_SERVICES_ERROR = 1001;
 
     protected FragmentStackManager fragmentStackManager;
     GoogleAccountCredential mCredential;
@@ -79,7 +78,6 @@ public class FolderListFragment extends Fragment {
         FolderListFragment newfolderListFragment = new FolderListFragment();
         return newfolderListFragment;
     }
-
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
@@ -107,11 +105,14 @@ public class FolderListFragment extends Fragment {
 
         folderName = getResources().getString(R.string.folderName);
 
-        //FIXME
+
         if (byopFolderId == null || byopFolderId.equals("")) {
             checkFolderTask = new CheckFolderTask(mCredential, folderName);
             checkFolderTask.execute();
-        } else/* if(requestTask==null)*/ {
+        } else if (requestTask == null) {
+            requestTask = new MakeRequestTask(mCredential, byopFolderId);
+            requestTask.execute();
+        } else {
             requestTask = new MakeRequestTask(mCredential, byopFolderId);
             requestTask.execute();
         }
@@ -370,7 +371,6 @@ public class FolderListFragment extends Fragment {
             if (files != null && files.size() == 1) {
                 byopFolderId = files.get(0).getId();
             }
-            return;
         }
 
         @Override

@@ -55,9 +55,6 @@ dependencies {
     compile 'com.mcxiaoke.volley:library-aar:1.0.1'
 
     compile 'com.android.support:multidex:1.0.1'
-
-    //    compile project(':uribeacon-library-release')
-
 }
 
 

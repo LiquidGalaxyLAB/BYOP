@@ -45,9 +45,9 @@
     <string name="play_services_error_fmt">Google Play Services Error: %i</string>
 
     <!-- Button labels -->
-    <string name="goToPOIS">Go to POIS</string>
+    <string name="goToPOIS">POIS Management</string>
     <string name="sign_out">Sign Out</string>
-    <string name="disconnect">Disconnect</string>
+    <string name="disconnect">Disconnect and revoke</string>
 
     <!-- Content Description for images -->
     <string name="desc_lg_icon">Liquid Logo</string>

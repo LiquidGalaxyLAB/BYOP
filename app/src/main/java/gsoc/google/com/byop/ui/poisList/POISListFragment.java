@@ -145,6 +145,7 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
         }
     }
 
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -220,12 +221,12 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
         if (connectionResult.hasResolution()) {
             try {
-                connectionResult.startResolutionForResult(getActivity(), Constants.SERVICE_INVALID_POIS_LIST);
+                connectionResult.startResolutionForResult(this.getActivity(), Constants.SERVICE_INVALID_POIS_LIST);
             } catch (IntentSender.SendIntentException e) {
                 // Unable to resolve, message user appropriately
             }
         } else {
-            GooglePlayServicesUtil.getErrorDialog(connectionResult.getErrorCode(), this.getActivity(), 0).show();
+            GooglePlayServicesUtil.getErrorDialog(connectionResult.getErrorCode(), getActivity(), 0).show();
         }
     }
 
@@ -319,16 +320,14 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == Constants.REQUEST_AUTHORIZATION) {
+        if (requestCode == Constants.REQUEST_AUTHORIZATION_POIS_LIST) {
             fragmentStackManager.popBackStatFragment();
             POISListFragment poisListFragment = POISListFragment.newInstance(document);
             fragmentStackManager.loadFragment(poisListFragment, R.id.main_frame);
-        } else if (requestCode == ConnectionResult.SERVICE_INVALID) {
-            fragmentStackManager.popBackStatFragment();
-            POISListFragment poisListFragment = POISListFragment.newInstance(document);
-            fragmentStackManager.loadFragment(poisListFragment, R.id.main_frame);
+        } else if (requestCode == Constants.SERVICE_INVALID_POIS_LIST) {
+            requestContentsTask = new RequestContentsTask(mCredential);
+            requestContentsTask.execute();
         }
-
     }
 
     public void fillAdapter(final List<POI> poisList) {
@@ -500,7 +499,7 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
                     dialog.dismiss();
                     startActivityForResult(
                             ((UserRecoverableAuthIOException) mLastError).getIntent(),
-                            Constants.REQUEST_AUTHORIZATION);
+                            Constants.REQUEST_AUTHORIZATION_POIS_LIST);
                 } else {
                     AndroidUtils.showMessage((getResources().getString(R.string.following_error) + "\n"
                             + mLastError.getMessage()), getActivity());

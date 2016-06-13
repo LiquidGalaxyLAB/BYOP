@@ -4,24 +4,32 @@ import android.app.ActivityManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentSender;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesUtil;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.drive.Drive;
+
 import gsoc.google.com.byop.R;
-import gsoc.google.com.byop.ui.poisList.POISListFragment;
 import gsoc.google.com.byop.utils.AndroidUtils;
 import gsoc.google.com.byop.utils.Constants;
 import gsoc.google.com.byop.utils.FragmentStackManager;
 
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
 
     private FragmentStackManager fragmentStackManager;
+    private GoogleApiClient mGoogleApiClient;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,20 +43,29 @@ public class MainActivity extends AppCompatActivity {
             ab.setDisplayHomeAsUpEnabled(true);
         }
 
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .addApi(Drive.API)
+                .addScope(Drive.SCOPE_FILE)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .build();
+
         fragmentStackManager = FragmentStackManager.getInstance(this);
 
         SignInFragment fragment = new SignInFragment();
         fragmentStackManager.loadFragment(fragment, R.id.main_frame);
+
+
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == Constants.SERVICE_INVALID_POIS_LIST) {
-            fragmentStackManager.popBackStatFragment();
-            POISListFragment poisListFragment = POISListFragment.getInstance();
-            fragmentStackManager.loadFragment(poisListFragment, R.id.main_frame);
-        }
+//        if (requestCode == Constants.SERVICE_INVALID_POIS_LIST) {
+//            fragmentStackManager.popBackStatFragment();
+//            POISListFragment poisListFragment = POISListFragment.getInstance();
+//            fragmentStackManager.loadFragment(poisListFragment, R.id.main_frame);
+//        }
     }
 
     @Override
@@ -78,8 +95,28 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onStart() {
+        super.onStart();
+        mGoogleApiClient.connect();
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+        if (connectionResult.hasResolution()) {
+            try {
+                connectionResult.startResolutionForResult(this, Constants.SERVICE_INVALID_POIS_LIST);
+            } catch (IntentSender.SendIntentException e) {
+                // Unable to resolve, message user appropriately
+            }
+        } else {
+            GooglePlayServicesUtil.getErrorDialog(connectionResult.getErrorCode(), this, 0).show();
+        }
+    }
+
+    @Override
     protected void onStop() {
         super.onStop();
+        mGoogleApiClient.disconnect();
         ActivityManager am = (ActivityManager) this.getSystemService(ACTIVITY_SERVICE);
         // The first in the list of RunningTasks is always the foreground task.
         ActivityManager.RunningTaskInfo foregroundTaskInfo = am.getRunningTasks(1).get(0);
@@ -133,4 +170,15 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
     }
+
+    @Override
+    public void onConnected(@Nullable Bundle bundle) {
+
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+
+    }
+
 }
