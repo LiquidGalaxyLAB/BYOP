@@ -38,5 +38,7 @@ public class Constants {
     public static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
 
 
+    public static final int REQUEST_ENABLE_BT = 0;
+
 
 }

@@ -1,6 +1,7 @@
 package gsoc.google.com.byop.ui.documentsList;
 
 import android.app.ProgressDialog;
+import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -45,6 +46,7 @@ import gsoc.google.com.byop.R;
 import gsoc.google.com.byop.model.DriveDocument;
 import gsoc.google.com.byop.ui.poisList.POISListFragment;
 import gsoc.google.com.byop.utils.AndroidUtils;
+import gsoc.google.com.byop.utils.BluetoothUtils;
 import gsoc.google.com.byop.utils.Constants;
 import gsoc.google.com.byop.utils.FragmentStackManager;
 import gsoc.google.com.byop.utils.GooglePlayUtils;
@@ -69,6 +71,7 @@ public class FolderListFragment extends Fragment {
     private CheckFolderTask checkFolderTask;
 
     private String byopFolderId = "";
+    private String folderName;
 
     private String accountEmail;
 
@@ -102,13 +105,13 @@ public class FolderListFragment extends Fragment {
             }
         });
 
-        final String folderName = getResources().getString(R.string.folderName);
+        folderName = getResources().getString(R.string.folderName);
 
         //FIXME
         if (byopFolderId == null || byopFolderId.equals("")) {
             checkFolderTask = new CheckFolderTask(mCredential, folderName);
             checkFolderTask.execute();
-        } else if(requestTask==null){
+        } else/* if(requestTask==null)*/ {
             requestTask = new MakeRequestTask(mCredential, byopFolderId);
             requestTask.execute();
         }
@@ -164,6 +167,11 @@ public class FolderListFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
     }
 
     @Override
@@ -281,6 +289,10 @@ public class FolderListFragment extends Fragment {
             shareitem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
                 @Override
                 public boolean onMenuItemClick(MenuItem item) {
+
+                    BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+                    BluetoothUtils.ensureBluetoothIsEnabled(getActivity(), bluetoothAdapter);
+
                     BeaconConfigFragment beaconConfigFragment = BeaconConfigFragment.newInstance(fileLink);
                     fragmentStackManager.loadFragment(beaconConfigFragment, R.id.main_frame);
 
@@ -393,8 +405,6 @@ public class FolderListFragment extends Fragment {
                             ((UserRecoverableAuthIOException) mLastError).getIntent(),
                             Constants.REQUEST_AUTHORIZATION);
                     dialog.dismiss();
-
-                    //FIXME  handleException(mLastError);
                 } else {
                     AndroidUtils.showMessage((getResources().getString(R.string.following_error) + "\n"
                             + mLastError.getMessage()), getActivity());

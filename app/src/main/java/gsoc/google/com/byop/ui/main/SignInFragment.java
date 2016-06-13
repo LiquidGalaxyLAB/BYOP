@@ -1,6 +1,7 @@
 package gsoc.google.com.byop.ui.main;
 
 import android.app.ProgressDialog;
+import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -25,6 +26,7 @@ import com.google.android.gms.common.api.Status;
 
 import gsoc.google.com.byop.R;
 import gsoc.google.com.byop.ui.documentsList.FolderListFragment;
+import gsoc.google.com.byop.utils.BluetoothUtils;
 import gsoc.google.com.byop.utils.Constants;
 import gsoc.google.com.byop.utils.FragmentStackManager;
 import gsoc.google.com.byop.utils.PW.BeaconConfigFragment;
@@ -107,6 +109,10 @@ public class SignInFragment extends Fragment implements GoogleApiClient.OnConnec
         SignInButton signInButton = (SignInButton) view.findViewById(R.id.sign_in_button);
         signInButton.setSize(SignInButton.SIZE_STANDARD);
         signInButton.setScopes(gso.getScopeArray());
+
+        if (!BluetoothUtils.deviceHasBluetooth()) {
+            view.findViewById(R.id.configureBeacon).setVisibility(View.INVISIBLE);
+        }
 
         return view;
     }
@@ -217,6 +223,10 @@ public class SignInFragment extends Fragment implements GoogleApiClient.OnConnec
     }
 
     private void configureBeacon() {
+        BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        BluetoothUtils.ensureBluetoothIsEnabled(getActivity(), bluetoothAdapter);
+
+
         BeaconConfigFragment beaconConfigFragment = BeaconConfigFragment.newInstance();
         fragmentStackManager.loadFragment(beaconConfigFragment, R.id.main_frame);
     }
@@ -253,12 +263,14 @@ public class SignInFragment extends Fragment implements GoogleApiClient.OnConnec
 
         } else {
             mStatusTextView.setText(R.string.signed_out);
-
             view.findViewById(R.id.sign_in_button).setVisibility(View.VISIBLE);
             view.findViewById(R.id.sign_out_and_disconnect).setVisibility(View.GONE);
             view.findViewById(R.id.subLogoButtons).setVisibility(View.GONE);
         }
+
+
     }
+
 
     @Override
     public void onClick(View v) {
