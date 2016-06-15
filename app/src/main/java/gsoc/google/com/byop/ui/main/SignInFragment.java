@@ -1,14 +1,17 @@
 package gsoc.google.com.byop.ui.main;
 
 import android.app.ProgressDialog;
-import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
@@ -27,10 +30,8 @@ import com.google.android.gms.common.api.Status;
 import gsoc.google.com.byop.R;
 import gsoc.google.com.byop.ui.documentsList.FolderListFragment;
 import gsoc.google.com.byop.utils.AndroidUtils;
-import gsoc.google.com.byop.utils.BluetoothUtils;
 import gsoc.google.com.byop.utils.Constants;
 import gsoc.google.com.byop.utils.FragmentStackManager;
-import gsoc.google.com.byop.utils.PW.BeaconConfigFragment;
 
 /**
  * A login screen
@@ -46,6 +47,8 @@ public class SignInFragment extends Fragment implements GoogleApiClient.OnConnec
     private ProgressDialog mProgressDialog;
     private View view;
 
+    ActionBar toolbar;
+
     OptionalPendingResult<GoogleSignInResult> opr;
 
     GoogleSignInAccount acct;
@@ -58,6 +61,51 @@ public class SignInFragment extends Fragment implements GoogleApiClient.OnConnec
         return signInFragment;
     }
 
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        view = inflater.inflate(R.layout.activity_sign_in, container, false);
+
+        getActivity().setTitle(getActivity().getResources().getString(R.string.app_name));
+
+        fragmentStackManager = FragmentStackManager.getInstance(getActivity());
+
+        // Views
+        mStatusTextView = (TextView) view.findViewById(R.id.status);
+
+        // Button listeners
+        view.findViewById(R.id.sign_in_button).setOnClickListener(this);
+//        view.findViewById(R.id.sign_out_button).setOnClickListener(this);
+//        view.findViewById(R.id.disconnect_button).setOnClickListener(this);
+        view.findViewById(R.id.proceedToDocumentList).setOnClickListener(this);
+
+        toolbar = ((AppCompatActivity) getActivity()).getSupportActionBar();
+
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestEmail()
+                .build();
+
+        if (mGoogleApiClient == null) {
+            mGoogleApiClient = new GoogleApiClient.Builder(getActivity())
+                    .enableAutoManage(getActivity() /* FragmentActivity */, this /* OnConnectionFailedListener */)
+                    .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
+                    .build();
+        }
+
+        SignInButton signInButton = (SignInButton) view.findViewById(R.id.sign_in_button);
+        signInButton.setSize(SignInButton.SIZE_STANDARD);
+        signInButton.setScopes(gso.getScopeArray());
+
+
+        return view;
+    }
 
     @Override
     public void onStop() {
@@ -75,48 +123,7 @@ public class SignInFragment extends Fragment implements GoogleApiClient.OnConnec
     }
 
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
 
-        view = inflater.inflate(R.layout.activity_sign_in, container, false);
-
-        getActivity().setTitle(getActivity().getResources().getString(R.string.app_name));
-
-        fragmentStackManager = FragmentStackManager.getInstance(getActivity());
-
-        // Views
-        mStatusTextView = (TextView) view.findViewById(R.id.status);
-
-        // Button listeners
-        view.findViewById(R.id.sign_in_button).setOnClickListener(this);
-        view.findViewById(R.id.sign_out_button).setOnClickListener(this);
-        view.findViewById(R.id.disconnect_button).setOnClickListener(this);
-        view.findViewById(R.id.proceedToDocumentList).setOnClickListener(this);
-        view.findViewById(R.id.configureBeacon).setOnClickListener(this);
-
-
-        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestEmail()
-                .build();
-
-        if (mGoogleApiClient == null) {
-            mGoogleApiClient = new GoogleApiClient.Builder(getActivity())
-                    .enableAutoManage(getActivity() /* FragmentActivity */, this /* OnConnectionFailedListener */)
-                    .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
-                    .build();
-        }
-
-        SignInButton signInButton = (SignInButton) view.findViewById(R.id.sign_in_button);
-        signInButton.setSize(SignInButton.SIZE_STANDARD);
-        signInButton.setScopes(gso.getScopeArray());
-
-        if (!BluetoothUtils.deviceHasBluetooth()) {
-            view.findViewById(R.id.configureBeacon).setVisibility(View.INVISIBLE);
-        }
-
-        return view;
-    }
 
     @Override
     public void onStart() {
@@ -198,6 +205,20 @@ public class SignInFragment extends Fragment implements GoogleApiClient.OnConnec
     }
 
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_disconnect:
+                revokeAccess();
+                return true;
+            case R.id.action_logout:
+                signOut();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
     private void revokeAccess() {
         Auth.GoogleSignInApi.revokeAccess(mGoogleApiClient).setResultCallback(
                 new ResultCallback<Status>() {
@@ -221,15 +242,6 @@ public class SignInFragment extends Fragment implements GoogleApiClient.OnConnec
         FolderListFragment folderListFragment = FolderListFragment.newInstance();
         fragmentStackManager.loadFragment(folderListFragment, R.id.main_frame);
 
-    }
-
-    private void configureBeacon() {
-        BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        BluetoothUtils.ensureBluetoothIsEnabled(getActivity(), bluetoothAdapter);
-
-
-        BeaconConfigFragment beaconConfigFragment = BeaconConfigFragment.newInstance();
-        fragmentStackManager.loadFragment(beaconConfigFragment, R.id.main_frame);
     }
 
     @Override
@@ -257,16 +269,22 @@ public class SignInFragment extends Fragment implements GoogleApiClient.OnConnec
 
     private void updateUI(boolean signedIn) {
         if (signedIn) {
+
+            toolbar.dispatchMenuVisibilityChanged(false);
+
             view.findViewById(R.id.sign_in_button).setVisibility(View.GONE);
-            view.findViewById(R.id.sign_out_and_disconnect).setVisibility(View.VISIBLE);
-            view.findViewById(R.id.subLogoButtons).setVisibility(View.VISIBLE);
+            view.findViewById(R.id.proceedToDocumentList).setVisibility(View.VISIBLE);
+//            view.findViewById(R.id.sign_out_and_disconnect).setVisibility(View.VISIBLE);
+//            view.findViewById(R.id.subLogoButtons).setVisibility(View.VISIBLE);
 
 
         } else {
             mStatusTextView.setText(R.string.signed_out);
             view.findViewById(R.id.sign_in_button).setVisibility(View.VISIBLE);
-            view.findViewById(R.id.sign_out_and_disconnect).setVisibility(View.GONE);
-            view.findViewById(R.id.subLogoButtons).setVisibility(View.GONE);
+            view.findViewById(R.id.proceedToDocumentList).setVisibility(View.GONE);
+//            view.findViewById(R.id.sign_out_and_disconnect).setVisibility(View.GONE);
+//            view.findViewById(R.id.subLogoButtons).setVisibility(View.GONE);
+            toolbar.dispatchMenuVisibilityChanged(true);
         }
 
 
@@ -279,17 +297,14 @@ public class SignInFragment extends Fragment implements GoogleApiClient.OnConnec
             case R.id.sign_in_button:
                 signIn();
                 break;
-            case R.id.sign_out_button:
-                signOut();
-                break;
-            case R.id.disconnect_button:
-                revokeAccess();
-                break;
+//            case R.id.sign_out_button:
+//                signOut();
+//                break;
+//            case R.id.disconnect_button:
+//                revokeAccess();
+//                break;
             case R.id.proceedToDocumentList:
                 loadDocumentsList();
-                break;
-            case R.id.configureBeacon:
-                configureBeacon();
                 break;
         }
     }

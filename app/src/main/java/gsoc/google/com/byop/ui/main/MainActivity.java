@@ -12,6 +12,7 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.Menu;
 import android.view.MenuItem;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -54,9 +55,16 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
         SignInFragment fragment = new SignInFragment();
         fragmentStackManager.loadFragment(fragment, R.id.main_frame);
-
-
     }
+
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.actionbar_menu, menu);
+        return true;
+    }
+
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {

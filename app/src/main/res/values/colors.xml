@@ -8,6 +8,8 @@
 
     <color name="white">#FFFFFF</color>
 
+    <color name="red">#FF0000</color>
+
     <color name="header_color">#1C47C1</color>
     <color name="url_color">#099F39</color>
     <color name="description_color">#545454</color>

@@ -388,6 +388,7 @@ public class BeaconConfigFragment extends Fragment implements TextView.OnEditorA
         mEditCard.setVisibility(View.VISIBLE);
         Animation animation = AnimationUtils.loadAnimation(getActivity(), R.anim.fade_in_and_slide_up);
         mEditCard.startAnimation(animation);
+        saveEditCardUrlToBeacon();
     }
 
     public void setEditCardUrl(String url) {

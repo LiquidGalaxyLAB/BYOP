@@ -50,6 +50,47 @@
                 android:layout_toRightOf="@+id/file_photo"
                 android:layout_below="@+id/document_title" />
 
+            <ImageButton
+                android:id="@+id/imageBtnAddPoi"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_toLeftOf="@+id/imageBtnUploadDoc"
+                android:src="@drawable/ic_add_location_black_24dp"
+                android:paddingTop="5dp"
+                android:paddingRight="10dp"
+                android:background="@null" />
+
+            <ImageButton
+                android:id="@+id/imageBtnUploadDoc"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_toLeftOf="@+id/imageBtnEdit"
+                android:src="@drawable/ic_backup_black_24dp"
+                android:paddingTop="5dp"
+                android:paddingRight="10dp"
+                android:background="@null" />
+
+            <ImageButton
+                android:id="@+id/imageBtnEdit"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_toLeftOf="@+id/imageBtnDelete"
+                android:src="@drawable/ic_mode_edit_black_24dp"
+                android:paddingTop="5dp"
+                android:paddingRight="10dp"
+                android:background="@null" />
+
+            <ImageButton
+                android:id="@+id/imageBtnDelete"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:src="@drawable/ic_delete_forever_black_24dp"
+                android:paddingTop="5dp"
+                android:paddingRight="10dp"
+                android:background="@null"
+                android:tint="@color/red" />
+
         </RelativeLayout>
 
     </android.support.v7.widget.CardView>

@@ -51,85 +51,27 @@
             android:scrollbars="vertical"
             android:textColor="@android:color/white"
             android:textSize="14sp" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/subLogoButtons"
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:paddingLeft="16dp"
-        android:paddingRight="16dp"
-        android:visibility="gone"
-        tools:visibility="visible">
-
-        <Button
-            android:id="@+id/sign_out_button"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/sign_out"
-            android:theme="@style/ThemeOverlay.MyDarkButton" />
-
-        <Button
-            android:id="@+id/disconnect_button"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="@string/disconnect"
-            android:theme="@style/ThemeOverlay.MyDarkButton" />
 
 
-    </LinearLayout>
-
-
-    <RelativeLayout
-        android:layout_width="fill_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:background="@color/blue_grey_900">
-
-
-        <com.google.android.gms.common.SignInButton
-            android:id="@+id/sign_in_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:visibility="visible"
-            tools:visibility="gone" />
-
-
-
-        <LinearLayout
-            android:id="@+id/sign_out_and_disconnect"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:orientation="horizontal"
-            android:paddingLeft="10dp"
-            android:paddingRight="10dp"
-            android:visibility="gone"
-            tools:visibility="visible">
-
-            <Button
-                android:id="@+id/configureBeacon"
-                android:layout_width="0dp"
-                android:layout_weight="1"
+            <com.google.android.gms.common.SignInButton
+                android:id="@+id/sign_in_button"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/configure_beacon"
-                android:theme="@style/ThemeOverlay.MyDarkButton" />
+                android:layout_centerInParent="true"
+                android:visibility="visible"
+                tools:visibility="gone" />
+
 
             <Button
                 android:id="@+id/proceedToDocumentList"
-                android:layout_width="0dp"
-                android:layout_weight="1"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:drawableLeft="@drawable/folder"
+                android:layout_centerInParent="true"
                 android:text="@string/goToPOIS"
                 android:theme="@style/ThemeOverlay.MyDarkButton" />
 
 
         </LinearLayout>
-
-    </RelativeLayout>
 
 </LinearLayout>

@@ -21,6 +21,7 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -73,6 +74,7 @@ public class FolderListFragment extends Fragment {
     private String folderName;
 
     private String accountEmail;
+
 
     public static FolderListFragment newInstance() {
         FolderListFragment newfolderListFragment = new FolderListFragment();
@@ -131,6 +133,7 @@ public class FolderListFragment extends Fragment {
         rv.setHasFixedSize(true);
         refreshLayout = (SwipeRefreshLayout) rootView.findViewById(R.id.swipeRefresh);
         fab = (FloatingActionButton) rootView.findViewById(R.id.add_document);
+
 
 
         // Initialize credentials and service object.
@@ -209,6 +212,11 @@ public class FolderListFragment extends Fragment {
             }
 
             @Override
+            public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int i) {
+                super.onBindViewHolder(viewHolder, i);
+            }
+
+            @Override
             public RecyclerView.ViewHolder onCreateViewHolderImpl(ViewGroup viewGroup, final ParallaxRecyclerAdapter<DriveDocument> parallaxRecyclerAdapter, int i) {
                 return new DriveDocumentHolder(LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.drivedocument_list_item_card, viewGroup, false));
             }
@@ -244,12 +252,67 @@ public class FolderListFragment extends Fragment {
         String fileLink;
         String fileResourceId = "";
 
+        ImageButton uploadButton;
+        ImageButton editButton;
+        ImageButton deleteButton;
+
         public DriveDocumentHolder(View itemView) {
             super(itemView);
             documentTitle = (TextView) itemView.findViewById(R.id.document_title);
             documentDescription = (TextView) itemView.findViewById(R.id.document_description);
             documentExtension = (TextView) itemView.findViewById(R.id.document_extension);
             filePhoto = (ImageView) itemView.findViewById(R.id.file_photo);
+
+
+            this.uploadButton = (ImageButton) itemView.findViewById(R.id.imageBtnUploadDoc);
+
+            this.uploadButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+                    BluetoothUtils.ensureBluetoothIsEnabled(getActivity(), bluetoothAdapter);
+
+                    BeaconConfigFragment beaconConfigFragment = BeaconConfigFragment.newInstance(fileLink);
+                    fragmentStackManager.loadFragment(beaconConfigFragment, R.id.main_frame);
+                }
+            });
+
+
+            this.editButton = (ImageButton) itemView.findViewById(R.id.imageBtnEdit);
+            this.editButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    RenameDocumentFragment renameDocumentFragment = RenameDocumentFragment.newInstance(fileResourceId, documentTitle.getText().toString(),
+                            documentDescription.getText().toString());
+                    fragmentStackManager.loadFragment(renameDocumentFragment, R.id.main_frame);
+                }
+            });
+
+
+            this.deleteButton = (ImageButton) itemView.findViewById(R.id.imageBtnDelete);
+            this.deleteButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
+                    alert.setTitle(getResources().getString(R.string.are_you_sure));
+
+                    alert.setPositiveButton(getResources().getString(R.string.yes), new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int whichButton) {
+                            //deleteFilesThroughApi(fileResourceId);
+                            deleteTask = new MakeDeleteTask(mCredential, fileResourceId);
+                            deleteTask.execute();
+                        }
+                    });
+
+                    alert.setNegativeButton(getResources().getString(R.string.no),
+                            new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int whichButton) {
+                                }
+                            });
+
+                    alert.show();
+                }
+            });
             itemView.setOnCreateContextMenuListener(this);
         }
 
