@@ -207,8 +207,9 @@ public class FolderListFragment extends Fragment {
                 documentHolder.documentTitle.setText(driveDoc.getTitle());
                 documentHolder.documentDescription.setText(driveDoc.getDescription());
                 documentHolder.documentExtension.setText(driveDoc.getExtension());
-                documentHolder.filePhoto.setImageDrawable(ContextCompat.getDrawable(getActivity().getApplicationContext(), R.drawable.xml_file));
+                documentHolder.filePhoto.setImageDrawable(ContextCompat.getDrawable(getActivity().getApplicationContext(), R.drawable.ic_insert_drive_file_black_48dp));
                 documentHolder.fileLink = driveDoc.getLink();
+                documentHolder.document = driveDoc;
             }
 
             @Override
@@ -251,7 +252,9 @@ public class FolderListFragment extends Fragment {
 
         String fileLink;
         String fileResourceId = "";
+        DriveDocument document;
 
+        ImageButton addPoisButton;
         ImageButton uploadButton;
         ImageButton editButton;
         ImageButton deleteButton;
@@ -265,7 +268,6 @@ public class FolderListFragment extends Fragment {
 
 
             this.uploadButton = (ImageButton) itemView.findViewById(R.id.imageBtnUploadDoc);
-
             this.uploadButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -313,6 +315,16 @@ public class FolderListFragment extends Fragment {
                     alert.show();
                 }
             });
+
+            this.addPoisButton = (ImageButton) itemView.findViewById(R.id.imageBtnAddPoi);
+            this.addPoisButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    POISListFragment poisListFragment = POISListFragment.newInstance(document);
+                    fragmentStackManager.loadFragment(poisListFragment, R.id.main_frame);
+                }
+            });
+
             itemView.setOnCreateContextMenuListener(this);
         }
 
@@ -588,7 +600,6 @@ public class FolderListFragment extends Fragment {
             }
         }
     }
-
 
     private class MakeDeleteTask extends AsyncTask<Void, Void, Void> {
         private com.google.api.services.drive.Drive mService = null;

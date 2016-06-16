@@ -22,6 +22,7 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -230,6 +231,20 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
         }
     }
 
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == Constants.REQUEST_AUTHORIZATION_POIS_LIST) {
+            fragmentStackManager.popBackStatFragment();
+            POISListFragment poisListFragment = POISListFragment.newInstance(document);
+            fragmentStackManager.loadFragment(poisListFragment, R.id.main_frame);
+        } else if (requestCode == Constants.SERVICE_INVALID_POIS_LIST) {
+            requestContentsTask = new RequestContentsTask(mCredential);
+            requestContentsTask.execute();
+        }
+    }
+
     private class POIHolder extends RecyclerView.ViewHolder implements View.OnCreateContextMenuListener {
         TextView poiName;
         TextView poiDescription;
@@ -240,6 +255,10 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
         String latitude;
         String longitude;
 
+        ImageButton viewPoiButton;
+        ImageButton editPoiButton;
+        ImageButton deletePoiButton;
+
 
         public POIHolder(View itemView) {
             super(itemView);
@@ -249,6 +268,57 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
             poiLatitude = (TextView) itemView.findViewById(R.id.poi_latitude);
             poiLongitude = (TextView) itemView.findViewById(R.id.poi_longitude);
             itemView.setOnCreateContextMenuListener(this);
+
+
+            this.viewPoiButton = (ImageButton) itemView.findViewById(R.id.imageBtnViewPoi);
+            this.viewPoiButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    ViewPOIMapFragment poiMapFragment = ViewPOIMapFragment.newInstance(latitude, longitude, poiName.getText().toString(), poiDescription.getText().toString());
+                    fragmentStackManager.loadFragment(poiMapFragment, R.id.main_frame);
+                }
+            });
+
+            this.editPoiButton = (ImageButton) itemView.findViewById(R.id.imageBtnEditPoi);
+            this.editPoiButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    EditPOIMapFragment editPOIMapFragment = EditPOIMapFragment.newInstance(latitude, longitude, poiName.getText().toString(), poiDescription.getText().toString());
+
+                    editPOIMapFragment.setDriveDocument(document);
+
+                    fragmentStackManager.loadFragment(editPOIMapFragment, R.id.main_frame);
+                }
+            });
+
+            this.deletePoiButton = (ImageButton) itemView.findViewById(R.id.imageBtnDeletePoi);
+            this.deletePoiButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
+                    alert.setTitle(getResources().getString(R.string.are_you_sure));
+
+                    alert.setPositiveButton(getResources().getString(R.string.yes), new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int whichButton) {
+                            //Delete POI
+                            poiUtils = new POIUtils(poiName.getText().toString(), poiDescription.getText().toString(),
+                                    latitude, longitude, document, mGoogleApiClient, mCredential, getActivity(), poisFragment);
+
+                            poiUtils.deletePOI();
+
+                            populateUI();
+                        }
+                    });
+
+                    alert.setNegativeButton(getResources().getString(R.string.no),
+                            new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int whichButton) {
+                                }
+                            });
+
+                    alert.show();
+                }
+            });
         }
 
 
@@ -317,18 +387,6 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
         }
     }
 
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == Constants.REQUEST_AUTHORIZATION_POIS_LIST) {
-            fragmentStackManager.popBackStatFragment();
-            POISListFragment poisListFragment = POISListFragment.newInstance(document);
-            fragmentStackManager.loadFragment(poisListFragment, R.id.main_frame);
-        } else if (requestCode == Constants.SERVICE_INVALID_POIS_LIST) {
-            requestContentsTask = new RequestContentsTask(mCredential);
-            requestContentsTask.execute();
-        }
-    }
 
     public void fillAdapter(final List<POI> poisList) {
         parallaxRecyclerAdapter = new ParallaxRecyclerAdapter<POI>(poisList) {
@@ -348,6 +406,11 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
                 poiHolder.longitude = poi.getPoint().getLongitude();
 
                 poiHolder.filePhoto.setImageDrawable(ContextCompat.getDrawable(getActivity().getApplicationContext(), R.drawable.poi_icon));
+            }
+
+            @Override
+            public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int i) {
+                super.onBindViewHolder(viewHolder, i);
             }
 
             @Override
@@ -508,14 +571,16 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
                 AndroidUtils.showMessage(getResources().getString(R.string.request_cancelled), getActivity());
             }
         }
+
+        private List<POI> checkContents(InputStream inputStream) throws IOException, XmlPullParserException {
+            BYOPXmlPullParser parser = new BYOPXmlPullParser();
+
+            List<POI> poiList = parser.parse(inputStream);
+
+            return poiList;
+        }
     }
 
-    private List<POI> checkContents(InputStream inputStream) throws IOException, XmlPullParserException {
-        BYOPXmlPullParser parser = new BYOPXmlPullParser();
 
-        List<POI> poiList = parser.parse(inputStream);
-
-        return poiList;
-    }
 
 }
