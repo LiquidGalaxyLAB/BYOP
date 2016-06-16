@@ -17,6 +17,7 @@
 package gsoc.google.com.byop.utils.PW;
 
 
+import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
@@ -73,7 +74,7 @@ public class BeaconConfigFragment extends Fragment implements TextView.OnEditorA
 
     public static final String ARG_FILE_LINK = "fileLink";
     private String fileLink;
-
+    private ProgressDialog progressDialog;
 
     private static final String TAG = "BeaconConfigFragment";
     private static final byte TX_POWER_DEFAULT = -22;
@@ -388,7 +389,6 @@ public class BeaconConfigFragment extends Fragment implements TextView.OnEditorA
         mEditCard.setVisibility(View.VISIBLE);
         Animation animation = AnimationUtils.loadAnimation(getActivity(), R.anim.fade_in_and_slide_up);
         mEditCard.startAnimation(animation);
-        saveEditCardUrlToBeacon();
     }
 
     public void setEditCardUrl(String url) {
@@ -401,8 +401,28 @@ public class BeaconConfigFragment extends Fragment implements TextView.OnEditorA
             mEditCardUrl.setText(url);
         }
 
-        // Show the beacon configuration card
-        showConfigurableBeaconCard();
+        // we don't show the beacon configuration card, instead we directly save the URL
+
+        progressDialog = new ProgressDialog(this.getActivity());
+        progressDialog.setMessage(getResources().getString(R.string.saving_url));
+        progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        progressDialog.setIndeterminate(true);
+        progressDialog.show();
+
+        final Thread t = new Thread() {
+            @Override
+            public void run() {
+                try {
+                    sleep(1000);
+                    progressDialog.dismiss();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        };
+        t.start();
+        saveEditCardUrlToBeacon();
+        // showConfigurableBeaconCard();
     }
 
     /**

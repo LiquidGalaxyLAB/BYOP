@@ -53,6 +53,7 @@ public class CreatePOIMapFragment extends Fragment implements OnMapReadyCallback
     private DriveDocument document;
     private String accountEmail;
 
+
     private LocationRequest locationRequest;
 
     private double latitude = 41.5583194;
@@ -177,9 +178,12 @@ public class CreatePOIMapFragment extends Fragment implements OnMapReadyCallback
 
     @Override
     public void onMapLongClick(LatLng latLng) {
-        MarkerOptions options = new MarkerOptions().icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ROSE));
-        options.position(latLng);
-        googleMap.addMarker(options);
+        googleMap.clear();
+
+        MarkerOptions marker = new MarkerOptions().icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ROSE));
+        marker.position(latLng);
+        googleMap.addMarker(marker);
+
 
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, googleMap.getCameraPosition().zoom));
 

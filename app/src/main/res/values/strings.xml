@@ -159,6 +159,8 @@
     <string name="editing_poi">Editing Poi</string>
     <string name="viewing_poi">Viewing Poi</string>
     <string name="new_poi">New Poi</string>
+    <string name="addPoi">Add POI</string>
+    <string name="saving_url">The URL to the document is being uploaded to the Beacon</string>
 
 
 </resources>
