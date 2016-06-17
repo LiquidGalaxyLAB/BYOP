@@ -14,6 +14,9 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
@@ -97,6 +100,21 @@ public class EditPOIDataFragment extends Fragment implements GoogleApiClient.Con
     }
 
     @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        MenuItem itemLogout = menu.findItem(R.id.action_logout);
+        itemLogout.setVisible(false);
+        MenuItem itemDisconnect = menu.findItem(R.id.action_disconnect);
+        itemDisconnect.setVisible(false);
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
     }
@@ -173,7 +191,6 @@ public class EditPOIDataFragment extends Fragment implements GoogleApiClient.Con
         poi_description_input.setText(actualPOIDescription);
         poi_latitude_input.setText(String.valueOf(newPoiLatitude));
         poi_longitude_input.setText(String.valueOf(newPoiLongitude));
-
 
         Button saveChanges = (Button) rootView.findViewById(R.id.btn_edit_poi);
 

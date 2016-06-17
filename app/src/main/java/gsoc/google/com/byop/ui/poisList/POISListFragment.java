@@ -21,6 +21,8 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -92,7 +94,6 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
 
     ImageButton poisListHelpBtn;
 
-
     public static POISListFragment getInstance() {
         if (poisFragment != null) {
             poisFragment = POISListFragment.newInstance(poisFragment.document);
@@ -152,6 +153,20 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
         }
     }
 
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        MenuItem itemLogout = menu.findItem(R.id.action_logout);
+        itemLogout.setVisible(false);
+        MenuItem itemDisconnect = menu.findItem(R.id.action_disconnect);
+        itemDisconnect.setVisible(false);
+        super.onCreateOptionsMenu(menu, inflater);
+    }
 
     @Nullable
     @Override
@@ -210,7 +225,6 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
     private void populateUI() {
         requestContentsTask = new RequestContentsTask(mCredential);
         requestContentsTask.execute();
-
     }
 
     @Override
@@ -290,7 +304,6 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
             poiLatitude = (TextView) itemView.findViewById(R.id.poi_latitude);
             poiLongitude = (TextView) itemView.findViewById(R.id.poi_longitude);
             itemView.setOnCreateContextMenuListener(this);
-
 
             Toolbar toolbarCard = (Toolbar) itemView.findViewById(R.id.poisToolbar);
             toolbarCard.inflateMenu(R.menu.menu_pois_cardview);
@@ -375,7 +388,6 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
                 }
             });
 
-
             MenuItem editItem = menu.add(0, v.getId(), 1, R.string.context_menu_edit);
             editItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
                 @Override
@@ -411,7 +423,6 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
             @Override
             public void onBindViewHolderImpl(RecyclerView.ViewHolder viewHolder, ParallaxRecyclerAdapter<POI> parallaxRecyclerAdapter, int i) {
                 POI poi = parallaxRecyclerAdapter.getData().get(i);
-
 
                 POIHolder poiHolder = (POIHolder) viewHolder;
                 poiHolder.poiName.setText(poi.getName());
@@ -594,11 +605,7 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
             BYOPXmlPullParser parser = new BYOPXmlPullParser();
 
             List<POI> poiList = parser.parse(inputStream);
-
             return poiList;
         }
     }
-
-
-
 }

@@ -5,6 +5,9 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -61,6 +64,21 @@ public class EditPOIMapFragment extends Fragment implements GoogleMap.OnMarkerDr
         bundle.putString(POI_DESC, poiDescription);
         editPoiMapFragment.setArguments(bundle);
         return editPoiMapFragment;
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        MenuItem itemLogout = menu.findItem(R.id.action_logout);
+        itemLogout.setVisible(false);
+        MenuItem itemDisconnect = menu.findItem(R.id.action_disconnect);
+        itemDisconnect.setVisible(false);
+        super.onCreateOptionsMenu(menu, inflater);
     }
 
     @Override

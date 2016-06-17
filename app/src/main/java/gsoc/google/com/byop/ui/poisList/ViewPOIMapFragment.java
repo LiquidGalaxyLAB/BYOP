@@ -2,8 +2,12 @@ package gsoc.google.com.byop.ui.poisList;
 
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -52,6 +56,20 @@ public class ViewPOIMapFragment extends Fragment implements OnMapReadyCallback, 
         return poiMapFragment;
     }
 
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        MenuItem itemLogout = menu.findItem(R.id.action_logout);
+        itemLogout.setVisible(false);
+        MenuItem itemDisconnect = menu.findItem(R.id.action_disconnect);
+        itemDisconnect.setVisible(false);
+        super.onCreateOptionsMenu(menu, inflater);
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -78,7 +96,6 @@ public class ViewPOIMapFragment extends Fragment implements OnMapReadyCallback, 
                 .addOnConnectionFailedListener(this)
                 .addApi(LocationServices.API)
                 .build();
-
     }
 
     @Override

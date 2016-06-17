@@ -9,6 +9,9 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.TextInputLayout;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
@@ -50,13 +53,11 @@ public class RenameDocumentFragment extends Fragment {
 
     private EditText document_description_input;
 
-
     private RenameTask renameTask;
 
     private String fileId;
     private String actualName;
     private String accountEmail;
-
 
     GoogleAccountCredential mCredential;
 
@@ -68,6 +69,21 @@ public class RenameDocumentFragment extends Fragment {
         bundle.putString(ARG_DESC, actualDescription);
         renameDocument.setArguments(bundle);
         return renameDocument;
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        MenuItem itemLogout = menu.findItem(R.id.action_logout);
+        itemLogout.setVisible(false);
+        MenuItem itemDisconnect = menu.findItem(R.id.action_disconnect);
+        itemDisconnect.setVisible(false);
+        super.onCreateOptionsMenu(menu, inflater);
     }
 
     @Nullable

@@ -12,6 +12,9 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.TextInputLayout;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
@@ -69,6 +72,21 @@ public class CreateDocumentFragment extends Fragment implements GoogleApiClient.
         return createDocument;
     }
 
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        MenuItem itemLogout = menu.findItem(R.id.action_logout);
+        itemLogout.setVisible(false);
+        MenuItem itemDisconnect = menu.findItem(R.id.action_disconnect);
+        itemDisconnect.setVisible(false);
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -121,7 +139,6 @@ public class CreateDocumentFragment extends Fragment implements GoogleApiClient.
         folderId = getArguments().getString(ARG_FOLDER_ID);
     }
 
-
     @Override
     public void onConnected(@Nullable Bundle bundle) {/*Do Nothing*/}
 
@@ -130,7 +147,6 @@ public class CreateDocumentFragment extends Fragment implements GoogleApiClient.
 
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {/*Do Nothing*/}
-
 
     private class CreateTask extends AsyncTask<Void, Void, Void> {
         private com.google.api.services.drive.Drive mService = null;
@@ -268,7 +284,6 @@ public class CreateDocumentFragment extends Fragment implements GoogleApiClient.
         }
     }
 
-
     private class MakePermissionsTask extends AsyncTask<Void, Void, Void> {
         private com.google.api.services.drive.Drive mService = null;
         private Exception mLastError = null;
@@ -357,6 +372,4 @@ public class CreateDocumentFragment extends Fragment implements GoogleApiClient.
             }
         }
     }
-
-
 }

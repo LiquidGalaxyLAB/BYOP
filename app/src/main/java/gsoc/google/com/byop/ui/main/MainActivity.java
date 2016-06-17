@@ -32,6 +32,15 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     private FragmentStackManager fragmentStackManager;
     private GoogleApiClient mGoogleApiClient;
 
+    public static AlertDialog.Builder closeDialog(Context context, DialogInterface.OnClickListener accept, DialogInterface.OnClickListener cancel) {
+        final AlertDialog.Builder closeDialog = new AlertDialog.Builder(context);
+        closeDialog.setTitle(context.getResources().getString(R.string.close));
+        closeDialog.setMessage(context.getResources().getString(R.string.close_body));
+        closeDialog.setPositiveButton(context.getResources().getString(R.string.Accept), accept);
+        closeDialog.setNegativeButton(context.getResources().getString(R.string.cancel_dialog), cancel);
+        return closeDialog;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -57,7 +66,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         fragmentStackManager.loadFragment(fragment, R.id.main_frame);
     }
 
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -65,12 +73,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
         return true;
     }
 
-
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
     }
-
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -82,16 +88,6 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 return super.onOptionsItemSelected(item);
         }
     }
-
-    public static AlertDialog.Builder closeDialog(Context context, DialogInterface.OnClickListener accept, DialogInterface.OnClickListener cancel) {
-        final AlertDialog.Builder closeDialog = new AlertDialog.Builder(context);
-        closeDialog.setTitle(context.getResources().getString(R.string.close));
-        closeDialog.setMessage(context.getResources().getString(R.string.close_body));
-        closeDialog.setPositiveButton(context.getResources().getString(R.string.Accept), accept);
-        closeDialog.setNegativeButton(context.getResources().getString(R.string.cancel_dialog), cancel);
-        return closeDialog;
-    }
-
 
     @Override
     protected void onResume() {
@@ -177,12 +173,10 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
-
     }
 
     @Override
     public void onConnectionSuspended(int i) {
-
     }
 
 }

@@ -53,29 +53,8 @@ public class SignInFragment extends Fragment implements GoogleApiClient.OnConnec
 
     GoogleSignInAccount acct;
 
-    int operationMode = 0;
-    private static String ARG_OPERATION = "operation";
-
-
     public static SignInFragment newInstance() {
-
         SignInFragment signInFragment = new SignInFragment();
-
-        return signInFragment;
-    }
-
-    /**
-     * @param operation 1: Disconnect, 2:logout
-     * @return
-     */
-    public static SignInFragment newInstance(int operation) {
-        Bundle bundle = new Bundle();
-        bundle.putInt(ARG_OPERATION, operation);
-
-
-        SignInFragment signInFragment = new SignInFragment();
-        signInFragment.setArguments(bundle);
-
         return signInFragment;
     }
 
@@ -87,15 +66,6 @@ public class SignInFragment extends Fragment implements GoogleApiClient.OnConnec
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        if (getArguments() != null && getArguments().getInt(ARG_OPERATION) != 0) {
-            this.operationMode = getArguments().getInt(ARG_OPERATION);
-        }
-
-        if (this.operationMode == 1) {
-            revokeAccess();
-        } else if (this.operationMode == 2) {
-            signOut();
-        }
         super.onActivityCreated(savedInstanceState);
     }
 
@@ -133,7 +103,6 @@ public class SignInFragment extends Fragment implements GoogleApiClient.OnConnec
         signInButton.setSize(SignInButton.SIZE_STANDARD);
         signInButton.setScopes(gso.getScopeArray());
 
-
         return view;
     }
 
@@ -151,9 +120,6 @@ public class SignInFragment extends Fragment implements GoogleApiClient.OnConnec
     public void onPause() {
         super.onPause();
     }
-
-
-
 
     @Override
     public void onStart() {
@@ -193,7 +159,6 @@ public class SignInFragment extends Fragment implements GoogleApiClient.OnConnec
         }
     }
 
-
     private void handleSignInResult(GoogleSignInResult result) {
         Log.d(TAG, "handleSignInResult:" + result.isSuccess());
         if (result.isSuccess()) {
@@ -202,22 +167,16 @@ public class SignInFragment extends Fragment implements GoogleApiClient.OnConnec
             mStatusTextView.setText(getString(R.string.signed_in_fmt, acct.getDisplayName()));
             updateUI(true);
 
-            String id_token = acct.getIdToken();
-
-
             SharedPreferences settings =
                     this.getActivity().getPreferences(Context.MODE_PRIVATE);
             SharedPreferences.Editor editor = settings.edit();
             editor.putString(Constants.PREF_ACCOUNT_EMAIL, acct.getEmail());
-            editor.putString("GG_LOGED", id_token);
             editor.apply();
-
         } else {
             // Signed out, show unauthenticated UI.
             updateUI(false);
         }
     }
-
 
     private void signIn() {
         Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
@@ -233,7 +192,6 @@ public class SignInFragment extends Fragment implements GoogleApiClient.OnConnec
                     }
                 });
     }
-
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -268,10 +226,8 @@ public class SignInFragment extends Fragment implements GoogleApiClient.OnConnec
     }
 
     private void loadDocumentsList() {
-
         FolderListFragment folderListFragment = FolderListFragment.newInstance();
         fragmentStackManager.loadFragment(folderListFragment, R.id.main_frame);
-
     }
 
     @Override
@@ -287,7 +243,6 @@ public class SignInFragment extends Fragment implements GoogleApiClient.OnConnec
             mProgressDialog.setMessage(getString(R.string.loading));
             mProgressDialog.setIndeterminate(true);
         }
-
         mProgressDialog.show();
     }
 
@@ -299,22 +254,16 @@ public class SignInFragment extends Fragment implements GoogleApiClient.OnConnec
 
     private void updateUI(boolean signedIn) {
         if (signedIn) {
-
             toolbar.dispatchMenuVisibilityChanged(false);
-
             view.findViewById(R.id.sign_in_button).setVisibility(View.GONE);
             view.findViewById(R.id.proceedToDocumentList).setVisibility(View.VISIBLE);
-
         } else {
-            while (fragmentStackManager.popBackStatFragment()) {
-            }
             mStatusTextView.setText(R.string.signed_out);
             view.findViewById(R.id.sign_in_button).setVisibility(View.VISIBLE);
             view.findViewById(R.id.proceedToDocumentList).setVisibility(View.GONE);
             toolbar.dispatchMenuVisibilityChanged(true);
         }
     }
-
 
     @Override
     public void onClick(View v) {

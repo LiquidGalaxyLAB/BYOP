@@ -22,6 +22,8 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -50,7 +52,6 @@ import java.util.List;
 
 import gsoc.google.com.byop.R;
 import gsoc.google.com.byop.model.DriveDocument;
-import gsoc.google.com.byop.ui.main.SignInFragment;
 import gsoc.google.com.byop.ui.poisList.POISListFragment;
 import gsoc.google.com.byop.utils.AndroidUtils;
 import gsoc.google.com.byop.utils.BluetoothUtils;
@@ -63,7 +64,6 @@ import gsoc.google.com.byop.utils.PW.BeaconConfigFragment;
  * Created by lgwork on 23/05/16.
  */
 public class FolderListFragment extends Fragment {
-
 
     protected FragmentStackManager fragmentStackManager;
     GoogleAccountCredential mCredential;
@@ -84,7 +84,6 @@ public class FolderListFragment extends Fragment {
 
     private String accountEmail;
 
-
     public static FolderListFragment newInstance() {
         FolderListFragment newfolderListFragment = new FolderListFragment();
         return newfolderListFragment;
@@ -94,13 +93,21 @@ public class FolderListFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+    }
 
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        MenuItem itemLogout = menu.findItem(R.id.action_logout);
+        itemLogout.setVisible(false);
+        MenuItem itemDisconnect = menu.findItem(R.id.action_disconnect);
+        itemDisconnect.setVisible(false);
+        super.onCreateOptionsMenu(menu, inflater);
     }
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        setHasOptionsMenu(true);
+
         getActivity().setTitle(getActivity().getResources().getString(R.string.app_name) + " " + getResources().getString(R.string.folderList));
 
         fragmentStackManager = FragmentStackManager.getInstance(getActivity());
@@ -134,8 +141,6 @@ public class FolderListFragment extends Fragment {
             requestTask = new MakeRequestTask(mCredential, byopFolderId);
             requestTask.execute();
         }
-
-
     }
 
     @Nullable
@@ -188,25 +193,7 @@ public class FolderListFragment extends Fragment {
 
         mCredential.setSelectedAccountName(accountEmail);
 
-
         return rootView;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        SignInFragment fragment;
-        switch (item.getItemId()) {
-            case R.id.action_disconnect:
-                fragment = SignInFragment.newInstance(1);
-                fragmentStackManager.loadFragment(fragment, R.id.main_frame);
-                return true;
-            case R.id.action_logout:
-                fragment = SignInFragment.newInstance(2);
-                fragmentStackManager.loadFragment(fragment, R.id.main_frame);
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
     }
 
     @Override
@@ -222,7 +209,6 @@ public class FolderListFragment extends Fragment {
             fragmentStackManager.loadFragment(folderListFragment, R.id.main_frame);
         }
     }
-
 
     @Override
     public void onStart() {
@@ -245,7 +231,6 @@ public class FolderListFragment extends Fragment {
             checkFolderTask.cancel(true);
         }
     }
-
 
     private void populateUI(String folderId) {
         requestTask = new MakeRequestTask(mCredential, folderId);
@@ -299,7 +284,6 @@ public class FolderListFragment extends Fragment {
             }
         });
     }
-
 
     private class DriveDocumentHolder extends RecyclerView.ViewHolder implements View.OnCreateContextMenuListener {
         TextView documentTitle;
@@ -824,6 +808,4 @@ public class FolderListFragment extends Fragment {
             }
         }
     }
-
-
 }

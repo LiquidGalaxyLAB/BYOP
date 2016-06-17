@@ -13,6 +13,9 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.TextInputLayout;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
@@ -91,6 +94,21 @@ public class CreatePOIDialogFragment extends Fragment implements GoogleApiClient
     }
 
     @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        MenuItem itemLogout = menu.findItem(R.id.action_logout);
+        itemLogout.setVisible(false);
+        MenuItem itemDisconnect = menu.findItem(R.id.action_disconnect);
+        itemDisconnect.setVisible(false);
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         fragmentStackManager = FragmentStackManager.getInstance(getActivity());
@@ -101,7 +119,6 @@ public class CreatePOIDialogFragment extends Fragment implements GoogleApiClient
         latitude = getArguments().getDouble(ARG_LATITUDE);
         longitude = getArguments().getDouble(ARG_LONGITUDE);
 
-
         new_poi_name = (TextInputLayout) rootView.findViewById(R.id.create_poi_name);
 
         poi_name_input = (EditText) rootView.findViewById(R.id.create_poi_name_input);
@@ -109,10 +126,8 @@ public class CreatePOIDialogFragment extends Fragment implements GoogleApiClient
         TextView poi_latitude_input = (TextView) rootView.findViewById(R.id.create_poi_latitude_input);
         poi_longitude_input = (TextView) rootView.findViewById(R.id.create_poi_longitude_input);
 
-
         poi_latitude_input.setText(getResources().getString(R.string.latitude) + String.valueOf(latitude));
         poi_longitude_input.setText(getResources().getString(R.string.longitude) + String.valueOf(longitude));
-
 
         Button saveChanges = (Button) rootView.findViewById(R.id.btn_create_poi);
 

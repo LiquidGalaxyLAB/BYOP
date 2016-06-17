@@ -13,6 +13,9 @@ import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
@@ -53,7 +56,6 @@ public class CreatePOIMapFragment extends Fragment implements OnMapReadyCallback
     private DriveDocument document;
     private String accountEmail;
 
-
     private LocationRequest locationRequest;
 
     private double latitude = 41.5583194;
@@ -71,6 +73,21 @@ public class CreatePOIMapFragment extends Fragment implements OnMapReadyCallback
         createPOIMapFragment.setArguments(bundle);
 
         return createPOIMapFragment;
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        MenuItem itemLogout = menu.findItem(R.id.action_logout);
+        itemLogout.setVisible(false);
+        MenuItem itemDisconnect = menu.findItem(R.id.action_disconnect);
+        itemDisconnect.setVisible(false);
+        super.onCreateOptionsMenu(menu, inflater);
     }
 
     @Override
@@ -126,7 +143,6 @@ public class CreatePOIMapFragment extends Fragment implements OnMapReadyCallback
         LatLng latLong = new LatLng(latitude, longitude);
 
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLong, 10));
-
     }
 
     private void enableMyLocation() {
@@ -157,7 +173,6 @@ public class CreatePOIMapFragment extends Fragment implements OnMapReadyCallback
         locationRequest.setFastestInterval(FATEST_INTERVAL);
         locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
         //  locationRequest.setSmallestDisplacement(DISPLACEMENT);
-
         if (ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getActivity(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return;
         }
@@ -183,7 +198,6 @@ public class CreatePOIMapFragment extends Fragment implements OnMapReadyCallback
         MarkerOptions marker = new MarkerOptions().icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ROSE));
         marker.position(latLng);
         googleMap.addMarker(marker);
-
 
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, googleMap.getCameraPosition().zoom));
 
