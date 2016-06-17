@@ -87,8 +87,8 @@ public class SignInFragment extends Fragment implements GoogleApiClient.OnConnec
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        if (savedInstanceState != null && savedInstanceState.getInt(ARG_OPERATION) != 0) {
-            this.operationMode = savedInstanceState.getInt(ARG_OPERATION);
+        if (getArguments() != null && getArguments().getInt(ARG_OPERATION) != 0) {
+            this.operationMode = getArguments().getInt(ARG_OPERATION);
         }
 
         if (this.operationMode == 1) {
