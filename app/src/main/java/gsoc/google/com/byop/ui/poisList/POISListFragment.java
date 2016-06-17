@@ -1,5 +1,6 @@
 package gsoc.google.com.byop.ui.poisList;
 
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -17,11 +18,13 @@ import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -86,6 +89,9 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
     private GoogleApiClient mGoogleApiClient;
 
     GoogleAccountCredential mCredential;
+
+    ImageButton poisListHelpBtn;
+
 
     public static POISListFragment getInstance() {
         if (poisFragment != null) {
@@ -177,6 +183,27 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
 
         mCredential.setSelectedAccountName(accountEmail);
 
+        poisListHelpBtn = (ImageButton) rootView.findViewById(R.id.poisListHelp);
+
+        poisListHelpBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // custom dialog
+                final Dialog dialog = new Dialog(getContext());
+                dialog.setContentView(R.layout.help_pois_list_dialog);
+                dialog.setTitle(getResources().getString(R.string.poisListHelpTitle));
+
+                Button dialogButton = (Button) dialog.findViewById(R.id.dialogPoisButtonOK);
+                dialogButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        dialog.dismiss();
+                    }
+                });
+                dialog.show();
+            }
+        });
+
         return rootView;
     }
 
@@ -255,11 +282,6 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
         String latitude;
         String longitude;
 
-        ImageButton viewPoiButton;
-        ImageButton editPoiButton;
-        ImageButton deletePoiButton;
-
-
         public POIHolder(View itemView) {
             super(itemView);
             poiName = (TextView) itemView.findViewById(R.id.poi_name);
@@ -270,53 +292,49 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
             itemView.setOnCreateContextMenuListener(this);
 
 
-            this.viewPoiButton = (ImageButton) itemView.findViewById(R.id.imageBtnViewPoi);
-            this.viewPoiButton.setOnClickListener(new View.OnClickListener() {
+            Toolbar toolbarCard = (Toolbar) itemView.findViewById(R.id.poisToolbar);
+            toolbarCard.inflateMenu(R.menu.menu_pois_cardview);
+            toolbarCard.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
                 @Override
-                public void onClick(View v) {
-                    ViewPOIMapFragment poiMapFragment = ViewPOIMapFragment.newInstance(latitude, longitude, poiName.getText().toString(), poiDescription.getText().toString());
-                    fragmentStackManager.loadFragment(poiMapFragment, R.id.main_frame);
-                }
-            });
+                public boolean onMenuItemClick(MenuItem item) {
+                    switch (item.getItemId()) {
+                        case R.id.viewPOIMenuItem:
+                            ViewPOIMapFragment poiMapFragment = ViewPOIMapFragment.newInstance(latitude, longitude, poiName.getText().toString(), poiDescription.getText().toString());
+                            fragmentStackManager.loadFragment(poiMapFragment, R.id.main_frame);
+                            break;
+                        case R.id.editPoiMenuItem:
+                            EditPOIMapFragment editPOIMapFragment = EditPOIMapFragment.newInstance(latitude, longitude, poiName.getText().toString(), poiDescription.getText().toString());
 
-            this.editPoiButton = (ImageButton) itemView.findViewById(R.id.imageBtnEditPoi);
-            this.editPoiButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    EditPOIMapFragment editPOIMapFragment = EditPOIMapFragment.newInstance(latitude, longitude, poiName.getText().toString(), poiDescription.getText().toString());
+                            editPOIMapFragment.setDriveDocument(document);
 
-                    editPOIMapFragment.setDriveDocument(document);
+                            fragmentStackManager.loadFragment(editPOIMapFragment, R.id.main_frame);
+                            break;
+                        case R.id.deletePoiMenuItem:
+                            AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
+                            alert.setTitle(getResources().getString(R.string.are_you_sure));
 
-                    fragmentStackManager.loadFragment(editPOIMapFragment, R.id.main_frame);
-                }
-            });
-
-            this.deletePoiButton = (ImageButton) itemView.findViewById(R.id.imageBtnDeletePoi);
-            this.deletePoiButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
-                    alert.setTitle(getResources().getString(R.string.are_you_sure));
-
-                    alert.setPositiveButton(getResources().getString(R.string.yes), new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int whichButton) {
-                            //Delete POI
-                            poiUtils = new POIUtils(poiName.getText().toString(), poiDescription.getText().toString(),
-                                    latitude, longitude, document, mGoogleApiClient, mCredential, getActivity(), poisFragment);
-
-                            poiUtils.deletePOI();
-
-                            populateUI();
-                        }
-                    });
-
-                    alert.setNegativeButton(getResources().getString(R.string.no),
-                            new DialogInterface.OnClickListener() {
+                            alert.setPositiveButton(getResources().getString(R.string.yes), new DialogInterface.OnClickListener() {
                                 public void onClick(DialogInterface dialog, int whichButton) {
+                                    //Delete POI
+                                    poiUtils = new POIUtils(poiName.getText().toString(), poiDescription.getText().toString(),
+                                            latitude, longitude, document, mGoogleApiClient, mCredential, getActivity(), poisFragment);
+
+                                    poiUtils.deletePOI();
+
+                                    populateUI();
                                 }
                             });
 
-                    alert.show();
+                            alert.setNegativeButton(getResources().getString(R.string.no),
+                                    new DialogInterface.OnClickListener() {
+                                        public void onClick(DialogInterface dialog, int whichButton) {
+                                        }
+                                    });
+
+                            alert.show();
+                            break;
+                    }
+                    return true;
                 }
             });
         }

@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_gravity="center_vertical"
+        android:layout_marginTop="10dp">
+
+        <TextView
+            android:drawableStart="@drawable/ic_add_location_black_24dp"
+            android:drawablePadding="10dp"
+            android:id="@+id/addPOIToDocHelText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/addPoiHelp" />
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_gravity="center_vertical"
+        android:layout_marginTop="10dp">
+
+        <ImageView
+            android:id="@+id/UploadDocHelpImg"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:src="@drawable/upload_pw_trans" />
+
+        <TextView
+            android:id="@+id/UploadDocHelpText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/uploadDocHelp"
+            android:layout_marginStart="5dp"
+            android:layout_gravity="center_vertical" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_gravity="center_vertical"
+        android:layout_marginTop="10dp">
+
+        <ImageView
+            android:id="@+id/newDocHelpImg"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_add_circle_black_24dp"
+            android:tint="@color/green" />
+
+        <TextView
+            android:id="@+id/newDocDocHelpText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/newDocDocHelp"
+            android:layout_marginStart="5dp" />
+    </LinearLayout>
+
+
+    <Button
+        android:id="@+id/dialogButtonOK"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginEnd="5dp"
+        android:layout_marginTop="5dp"
+        android:text="@string/gotIt" />
+
+</LinearLayout>
+
+

@@ -6,12 +6,13 @@
     <string name="folderName">BYOP POIS</string>
     <string name="save">Save</string>
     <string name="cancel">Cancel</string>
-    <string name="saving">Saving...</string>
+    <string name="saving">Saving…</string>
     <string name="are_you_sure">Are you sure?</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
     <string name="latitude">Latitude:</string>
     <string name="longitude">Longitude:</string>
+    <string name="help">Help</string>
 
     <!-- Strings related to login -->
     <string name="prompt_email">Email</string>
@@ -51,6 +52,8 @@
 
     <!-- Content Description for images -->
     <string name="desc_lg_icon">Liquid Logo</string>
+    <string name="desc_byop_logo">Byop Logo</string>
+
 
     <!-- Rationale for asking for Contacts -->
     <string name="contacts_permission_rationale">Contacts access is needed in order to retrieve your email address.</string>
@@ -77,7 +80,7 @@
     <string name="context_menu_delete">Delete</string>
     <string name="context_menu_view">View</string>
     <string name="context_menu_edit">Edit</string>
-    <string name="context_menu_share">Share Link</string>
+    <string name="context_menu_share">Upload to PW Beacon</string>
 
     <!--Add Document-->
     <string name="add_document_header">New POIS File</string>
@@ -98,6 +101,11 @@
     <string name="poi_data">POI DATA</string>
     <string name="edit_poi_latitude">Latitude</string>
     <string name="edit_poi_longitude">Longitude</string>
+    <string name="editing">Editing</string>
+    <string name="editing_poi">Editing Poi</string>
+    <string name="viewing_poi">Viewing Poi</string>
+    <string name="new_poi">New Poi</string>
+    <string name="addPoi">Add POI</string>
 
     <!--Beacons-->
     <string name="config_no_beacons_found">No Beacons Found</string>
@@ -139,6 +147,7 @@
     <string name="notification_view_more_beacons">VIEW MORE</string>
     <string name="user_opted_in_flag">userOptedIn</string>
     <string name="main_prefs_key">physical_web_preferences</string>
+    <string name="saving_url">The URL to the document is being uploaded to the Beacon</string>
 
     <!-- CLOSE DIALOG-->
     <string name="close">Exit</string>
@@ -155,12 +164,19 @@
     <string name="request_cancelled">Request cancelled.</string>
     <string name="play_services_needed">This app requires Google Play Services. Please install Google Play Services on your device and relaunch this app.</string>
     <string name="something_wrong">Something went wrong:</string>
-    <string name="editing">Editing</string>
-    <string name="editing_poi">Editing Poi</string>
-    <string name="viewing_poi">Viewing Poi</string>
-    <string name="new_poi">New Poi</string>
-    <string name="addPoi">Add POI</string>
-    <string name="saving_url">The URL to the document is being uploaded to the Beacon</string>
+
+
+    <!--_Help-->
+    <string name="addPoiHelp">Add POI to surrounding document</string>
+    <string name="uploadDocHelp">Upload document to PW Beacon</string>
+    <string name="documentListHelpTitle">Document Management Help</string>
+    <string name="gotIt">Got It</string>
+    <string name="viewPoiHelp">View POI in map</string>
+    <string name="editPOIHelp">Edit POI</string>
+    <string name="deletePOIHelp">Remove POI</string>
+    <string name="poisListHelpTitle">POIs Management Help</string>
+    <string name="newDocDocHelp">Add a new document that holds POIs</string>
+    <string name="newPoiHelp">Add new POI location</string>
 
 
 </resources>

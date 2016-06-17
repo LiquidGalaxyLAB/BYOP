@@ -42,7 +42,7 @@
                         android:fontFamily="sans-serif"
                         android:textColor="@color/header_color"
                         android:maxLines="1"
-                        android:ellipsize="end"></TextView>
+                        android:ellipsize="end" />
 
                     <TextView
                         android:id="@+id/url_firstBeacon"
@@ -53,7 +53,7 @@
                         android:fontFamily="sans-serif"
                         android:textColor="@color/url_color"
                         android:maxLines="1"
-                        android:ellipsize="end"></TextView>
+                        android:ellipsize="end" />
                 </LinearLayout>
 
                 <LinearLayout
@@ -68,7 +68,7 @@
                         android:layout_width="24dp"
                         android:layout_height="24dp"
                         android:layout_marginTop="6dp"
-                        android:contentDescription="@string/nearby_beacon_favicon_content_description"></ImageView>
+                        android:contentDescription="@string/nearby_beacon_favicon_content_description" />
                 </LinearLayout>
 
             </LinearLayout>
@@ -87,7 +87,7 @@
                     android:textColor="@color/description_color"
                     android:maxLines="1"
                     android:ellipsize="end"
-                    android:lineSpacingExtra="1.5dp"></TextView>
+                    android:lineSpacingExtra="1.5dp" />
             </LinearLayout>
 
         </LinearLayout>
@@ -101,7 +101,7 @@
             android:id="@+id/firstBeacon_one_click_action"
             android:visibility="gone"
             android:gravity="end"
-            android:paddingTop="36dp"></TextView>
+            android:paddingTop="36dp" />
 
     </LinearLayout>
 
@@ -139,7 +139,7 @@
                         android:fontFamily="sans-serif"
                         android:textColor="@color/header_color"
                         android:maxLines="1"
-                        android:ellipsize="end"></TextView>
+                        android:ellipsize="end" />
 
                     <TextView
                         android:id="@+id/url_secondBeacon"
@@ -150,7 +150,7 @@
                         android:fontFamily="sans-serif"
                         android:textColor="@color/url_color"
                         android:maxLines="1"
-                        android:ellipsize="end"></TextView>
+                        android:ellipsize="end" />
                 </LinearLayout>
 
                 <LinearLayout
@@ -165,7 +165,7 @@
                         android:layout_width="24dp"
                         android:layout_height="24dp"
                         android:layout_marginTop="6dp"
-                        android:contentDescription="@string/nearby_beacon_favicon_content_description"></ImageView>
+                        android:contentDescription="@string/nearby_beacon_favicon_content_description" />
                 </LinearLayout>
             </LinearLayout>
 
@@ -183,7 +183,7 @@
                     android:textColor="@color/description_color"
                     android:maxLines="1"
                     android:ellipsize="end"
-                    android:lineSpacingExtra="1.5dp"></TextView>
+                    android:lineSpacingExtra="1.5dp" />
             </LinearLayout>
         </LinearLayout>
 
@@ -196,7 +196,7 @@
             android:id="@+id/secondBeacon_one_click_action"
             android:visibility="gone"
             android:gravity="end"
-            android:paddingTop="36dp"></TextView>
+            android:paddingTop="36dp" />
 
     </LinearLayout>
 
@@ -218,7 +218,7 @@
             android:textColor="@color/description_color"
             android:ellipsize="end"
             android:lineSpacingExtra="1.5dp"
-            android:gravity="end"></TextView>
+            android:gravity="end" />
 
     </LinearLayout>
 

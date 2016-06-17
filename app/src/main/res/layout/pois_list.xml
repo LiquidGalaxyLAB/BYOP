@@ -35,4 +35,14 @@
         app:pressedTranslationZ="12dp"
         app:rippleColor="@color/blue_grey_900" />
 
+    <ImageButton
+        android:id="@+id/poisListHelp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_help_black_48dp"
+        android:layout_alignParentEnd="true"
+        android:layout_marginRight="5dp"
+        android:background="@null" />
+
+
 </RelativeLayout>

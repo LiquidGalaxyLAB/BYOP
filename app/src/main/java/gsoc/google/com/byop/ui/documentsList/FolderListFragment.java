@@ -1,5 +1,6 @@
 package gsoc.google.com.byop.ui.documentsList;
 
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
@@ -16,11 +17,13 @@ import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -70,6 +73,9 @@ public class FolderListFragment extends Fragment {
     private CreationTask creationTask;
     private CheckFolderTask checkFolderTask;
 
+    ImageButton documentListHelpBtn;
+
+
     private String byopFolderId = "";
     private String folderName;
 
@@ -79,6 +85,13 @@ public class FolderListFragment extends Fragment {
     public static FolderListFragment newInstance() {
         FolderListFragment newfolderListFragment = new FolderListFragment();
         return newfolderListFragment;
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+
     }
 
     @Override
@@ -119,6 +132,7 @@ public class FolderListFragment extends Fragment {
             requestTask.execute();
         }
 
+
     }
 
     @Nullable
@@ -135,6 +149,28 @@ public class FolderListFragment extends Fragment {
         fab = (FloatingActionButton) rootView.findViewById(R.id.add_document);
 
 
+        documentListHelpBtn = (ImageButton) rootView.findViewById(R.id.documentListHelp);
+
+        documentListHelpBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // custom dialog
+                final Dialog dialog = new Dialog(getContext());
+                dialog.setContentView(R.layout.help_document_list_dialog);
+                dialog.setTitle(getResources().getString(R.string.documentListHelpTitle));
+
+
+                Button dialogButton = (Button) dialog.findViewById(R.id.dialogButtonOK);
+                dialogButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        dialog.dismiss();
+                    }
+                });
+                dialog.show();
+            }
+        });
+
 
         // Initialize credentials and service object.
         mCredential = GoogleAccountCredential.usingOAuth2(getContext(), Arrays.asList(Constants.SCOPES))
@@ -144,7 +180,6 @@ public class FolderListFragment extends Fragment {
         SharedPreferences settings = this.getActivity().getPreferences(Context.MODE_PRIVATE);
 
         accountEmail = settings.getString(Constants.PREF_ACCOUNT_EMAIL, "");
-
 
         mCredential.setSelectedAccountName(accountEmail);
 
@@ -230,6 +265,7 @@ public class FolderListFragment extends Fragment {
 
         parallaxRecyclerAdapter.setParallaxHeader(getActivity().getLayoutInflater().inflate(R.layout.drivedocument_list_header_layout, rv, false), rv);
 
+
         rv.setAdapter(parallaxRecyclerAdapter);
 
         //On click on recycler view item
@@ -254,10 +290,6 @@ public class FolderListFragment extends Fragment {
         String fileResourceId = "";
         DriveDocument document;
 
-        ImageButton addPoisButton;
-        ImageButton uploadButton;
-        ImageButton editButton;
-        ImageButton deleteButton;
 
         public DriveDocumentHolder(View itemView) {
             super(itemView);
@@ -266,66 +298,54 @@ public class FolderListFragment extends Fragment {
             documentExtension = (TextView) itemView.findViewById(R.id.document_extension);
             filePhoto = (ImageView) itemView.findViewById(R.id.file_photo);
 
+            itemView.setOnCreateContextMenuListener(this);
 
-            this.uploadButton = (ImageButton) itemView.findViewById(R.id.imageBtnUploadDoc);
-            this.uploadButton.setOnClickListener(new View.OnClickListener() {
+
+            Toolbar toolbarCard = (Toolbar) itemView.findViewById(R.id.documentToolbar);
+            toolbarCard.inflateMenu(R.menu.menu_document_cardview);
+            toolbarCard.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
                 @Override
-                public void onClick(View v) {
-                    BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-                    BluetoothUtils.ensureBluetoothIsEnabled(getActivity(), bluetoothAdapter);
+                public boolean onMenuItemClick(MenuItem item) {
+                    switch (item.getItemId()) {
+                        case R.id.addPOIMenuItem:
+                            POISListFragment poisListFragment = POISListFragment.newInstance(document);
+                            fragmentStackManager.loadFragment(poisListFragment, R.id.main_frame);
+                            break;
+                        case R.id.uploadDocMenuItem:
+                            BluetoothAdapter bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+                            BluetoothUtils.ensureBluetoothIsEnabled(getActivity(), bluetoothAdapter);
 
-                    BeaconConfigFragment beaconConfigFragment = BeaconConfigFragment.newInstance(fileLink);
-                    fragmentStackManager.loadFragment(beaconConfigFragment, R.id.main_frame);
-                }
-            });
+                            BeaconConfigFragment beaconConfigFragment = BeaconConfigFragment.newInstance(fileLink);
+                            fragmentStackManager.loadFragment(beaconConfigFragment, R.id.main_frame);
+                            break;
+                        case R.id.editDocumentMenuItem:
+                            RenameDocumentFragment renameDocumentFragment = RenameDocumentFragment.newInstance(fileResourceId, documentTitle.getText().toString(),
+                                    documentDescription.getText().toString());
+                            fragmentStackManager.loadFragment(renameDocumentFragment, R.id.main_frame);
+                            break;
+                        case R.id.deleteDocumentMenuItem:
+                            AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
+                            alert.setTitle(getResources().getString(R.string.are_you_sure));
 
-
-            this.editButton = (ImageButton) itemView.findViewById(R.id.imageBtnEdit);
-            this.editButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    RenameDocumentFragment renameDocumentFragment = RenameDocumentFragment.newInstance(fileResourceId, documentTitle.getText().toString(),
-                            documentDescription.getText().toString());
-                    fragmentStackManager.loadFragment(renameDocumentFragment, R.id.main_frame);
-                }
-            });
-
-
-            this.deleteButton = (ImageButton) itemView.findViewById(R.id.imageBtnDelete);
-            this.deleteButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
-                    alert.setTitle(getResources().getString(R.string.are_you_sure));
-
-                    alert.setPositiveButton(getResources().getString(R.string.yes), new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int whichButton) {
-                            //deleteFilesThroughApi(fileResourceId);
-                            deleteTask = new MakeDeleteTask(mCredential, fileResourceId);
-                            deleteTask.execute();
-                        }
-                    });
-
-                    alert.setNegativeButton(getResources().getString(R.string.no),
-                            new DialogInterface.OnClickListener() {
+                            alert.setPositiveButton(getResources().getString(R.string.yes), new DialogInterface.OnClickListener() {
                                 public void onClick(DialogInterface dialog, int whichButton) {
+                                    deleteTask = new MakeDeleteTask(mCredential, fileResourceId);
+                                    deleteTask.execute();
                                 }
                             });
 
-                    alert.show();
+                            alert.setNegativeButton(getResources().getString(R.string.no),
+                                    new DialogInterface.OnClickListener() {
+                                        public void onClick(DialogInterface dialog, int whichButton) {
+                                        }
+                                    });
+                            alert.show();
+                            break;
+                    }
+                    return true;
                 }
             });
 
-            this.addPoisButton = (ImageButton) itemView.findViewById(R.id.imageBtnAddPoi);
-            this.addPoisButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    POISListFragment poisListFragment = POISListFragment.newInstance(document);
-                    fragmentStackManager.loadFragment(poisListFragment, R.id.main_frame);
-                }
-            });
-
-            itemView.setOnCreateContextMenuListener(this);
         }
 
 

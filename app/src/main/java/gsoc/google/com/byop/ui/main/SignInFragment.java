@@ -82,8 +82,6 @@ public class SignInFragment extends Fragment implements GoogleApiClient.OnConnec
 
         // Button listeners
         view.findViewById(R.id.sign_in_button).setOnClickListener(this);
-//        view.findViewById(R.id.sign_out_button).setOnClickListener(this);
-//        view.findViewById(R.id.disconnect_button).setOnClickListener(this);
         view.findViewById(R.id.proceedToDocumentList).setOnClickListener(this);
 
         toolbar = ((AppCompatActivity) getActivity()).getSupportActionBar();

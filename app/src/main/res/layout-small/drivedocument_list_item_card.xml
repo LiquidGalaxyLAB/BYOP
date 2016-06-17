@@ -53,6 +53,7 @@
             android:gravity="right"
             android:paddingTop="10dp">
 
+
             <android.support.v7.widget.Toolbar
                 android:id="@+id/documentToolbar"
                 android:layout_width="fill_parent"
