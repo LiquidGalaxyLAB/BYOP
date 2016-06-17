@@ -14,7 +14,9 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -48,6 +50,7 @@ import java.util.List;
 
 import gsoc.google.com.byop.R;
 import gsoc.google.com.byop.model.DriveDocument;
+import gsoc.google.com.byop.ui.main.SignInFragment;
 import gsoc.google.com.byop.ui.poisList.POISListFragment;
 import gsoc.google.com.byop.utils.AndroidUtils;
 import gsoc.google.com.byop.utils.BluetoothUtils;
@@ -74,7 +77,7 @@ public class FolderListFragment extends Fragment {
     private CheckFolderTask checkFolderTask;
 
     ImageButton documentListHelpBtn;
-
+    ActionBar toolbar;
 
     private String byopFolderId = "";
     private String folderName;
@@ -90,7 +93,7 @@ public class FolderListFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        setHasOptionsMenu(true);
 
     }
 
@@ -149,6 +152,8 @@ public class FolderListFragment extends Fragment {
         fab = (FloatingActionButton) rootView.findViewById(R.id.add_document);
 
 
+        toolbar = ((AppCompatActivity) getActivity()).getSupportActionBar();
+
         documentListHelpBtn = (ImageButton) rootView.findViewById(R.id.documentListHelp);
 
         documentListHelpBtn.setOnClickListener(new View.OnClickListener() {
@@ -187,6 +192,22 @@ public class FolderListFragment extends Fragment {
         return rootView;
     }
 
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        SignInFragment fragment;
+        switch (item.getItemId()) {
+            case R.id.action_disconnect:
+                fragment = SignInFragment.newInstance(1);
+                fragmentStackManager.loadFragment(fragment, R.id.main_frame);
+                return true;
+            case R.id.action_logout:
+                fragment = SignInFragment.newInstance(2);
+                fragmentStackManager.loadFragment(fragment, R.id.main_frame);
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {

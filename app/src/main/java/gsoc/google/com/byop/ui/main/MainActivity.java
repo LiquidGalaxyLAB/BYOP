@@ -69,12 +69,8 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-//        if (requestCode == Constants.SERVICE_INVALID_POIS_LIST) {
-//            fragmentStackManager.popBackStatFragment();
-//            POISListFragment poisListFragment = POISListFragment.getInstance();
-//            fragmentStackManager.loadFragment(poisListFragment, R.id.main_frame);
-//        }
     }
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {

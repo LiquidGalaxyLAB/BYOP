@@ -53,6 +53,9 @@ public class SignInFragment extends Fragment implements GoogleApiClient.OnConnec
 
     GoogleSignInAccount acct;
 
+    int operationMode = 0;
+    private static String ARG_OPERATION = "operation";
+
 
     public static SignInFragment newInstance() {
 
@@ -61,10 +64,39 @@ public class SignInFragment extends Fragment implements GoogleApiClient.OnConnec
         return signInFragment;
     }
 
+    /**
+     * @param operation 1: Disconnect, 2:logout
+     * @return
+     */
+    public static SignInFragment newInstance(int operation) {
+        Bundle bundle = new Bundle();
+        bundle.putInt(ARG_OPERATION, operation);
+
+
+        SignInFragment signInFragment = new SignInFragment();
+        signInFragment.setArguments(bundle);
+
+        return signInFragment;
+    }
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setHasOptionsMenu(true);
+    }
+
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        if (savedInstanceState != null && savedInstanceState.getInt(ARG_OPERATION) != 0) {
+            this.operationMode = savedInstanceState.getInt(ARG_OPERATION);
+        }
+
+        if (this.operationMode == 1) {
+            revokeAccess();
+        } else if (this.operationMode == 2) {
+            signOut();
+        }
+        super.onActivityCreated(savedInstanceState);
     }
 
     @Override
@@ -272,20 +304,15 @@ public class SignInFragment extends Fragment implements GoogleApiClient.OnConnec
 
             view.findViewById(R.id.sign_in_button).setVisibility(View.GONE);
             view.findViewById(R.id.proceedToDocumentList).setVisibility(View.VISIBLE);
-//            view.findViewById(R.id.sign_out_and_disconnect).setVisibility(View.VISIBLE);
-//            view.findViewById(R.id.subLogoButtons).setVisibility(View.VISIBLE);
-
 
         } else {
+            while (fragmentStackManager.popBackStatFragment()) {
+            }
             mStatusTextView.setText(R.string.signed_out);
             view.findViewById(R.id.sign_in_button).setVisibility(View.VISIBLE);
             view.findViewById(R.id.proceedToDocumentList).setVisibility(View.GONE);
-//            view.findViewById(R.id.sign_out_and_disconnect).setVisibility(View.GONE);
-//            view.findViewById(R.id.subLogoButtons).setVisibility(View.GONE);
             toolbar.dispatchMenuVisibilityChanged(true);
         }
-
-
     }
 
 
@@ -295,12 +322,6 @@ public class SignInFragment extends Fragment implements GoogleApiClient.OnConnec
             case R.id.sign_in_button:
                 signIn();
                 break;
-//            case R.id.sign_out_button:
-//                signOut();
-//                break;
-//            case R.id.disconnect_button:
-//                revokeAccess();
-//                break;
             case R.id.proceedToDocumentList:
                 loadDocumentsList();
                 break;
