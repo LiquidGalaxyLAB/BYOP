@@ -5,13 +5,12 @@
     android:layout_height="match_parent"
     android:background="@color/blue_grey_700"
     android:orientation="vertical"
-    android:weightSum="4"
-    android:gravity="center_horizontal">
-
+    android:gravity="center_horizontal"
+    android:weightSum="4">
 
     <LinearLayout
         android:layout_width="wrap_content"
-        android:layout_height="150dp"
+        android:layout_height="50dp"
         android:gravity="center_horizontal"
         android:orientation="horizontal">
 
@@ -27,17 +26,19 @@
             android:id="@+id/lg_icon"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
             android:layout_weight="1"
-            android:layout_marginStart="5dp"
             android:contentDescription="@string/desc_lg_icon"
             android:src="@drawable/logo_liquidgalaxylab" />
     </LinearLayout>
 
+
     <ImageView
         android:id="@+id/byop_logo"
-        android:layout_width="wrap_content"
-        android:layout_height="150dp"
+        android:layout_width="75dp"
+        android:layout_height="75dp"
         android:gravity="center"
+        android:layout_marginBottom="10dp"
         android:contentDescription="@string/pcital"
         android:src="@drawable/byop_logo" />
 
@@ -63,7 +64,7 @@
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="match_parent">
 
         <com.google.android.gms.common.SignInButton
             android:id="@+id/sign_in_button"
@@ -79,8 +80,8 @@
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
             android:drawableLeft="@drawable/folder"
+            android:textSize="10sp"
             android:text="@string/goToPOIS"
             android:theme="@style/ThemeOverlay.MyDarkButton" />
     </RelativeLayout>
-
 </LinearLayout>

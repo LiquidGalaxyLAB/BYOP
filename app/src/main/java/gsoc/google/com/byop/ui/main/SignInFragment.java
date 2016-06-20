@@ -64,10 +64,18 @@ public class SignInFragment extends Fragment implements GoogleApiClient.OnConnec
         setHasOptionsMenu(true);
     }
 
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-    }
+//     @Override
+//    public void onConfigurationChanged(Configuration newConfig) {
+//        super.onConfigurationChanged(newConfig);
+//
+//        LayoutInflater inflater = (LayoutInflater)this.getActivity().getApplicationContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+//        if(newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+//            view = inflater.inflate(R.layout.activity_sign_in_land, null);
+////            fragmentStackManager.loadFragment(this, R.id.main_frame);
+//            getActivity().addContentView(view,view.getLayoutParams());
+//        }
+//       // mainlayout.addView(view);
+//    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -94,7 +102,7 @@ public class SignInFragment extends Fragment implements GoogleApiClient.OnConnec
 
         if (mGoogleApiClient == null) {
             mGoogleApiClient = new GoogleApiClient.Builder(getActivity())
-                    .enableAutoManage(getActivity() /* FragmentActivity */, this /* OnConnectionFailedListener */)
+                    .enableAutoManage(getActivity(), this)
                     .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
                     .build();
         }
@@ -104,6 +112,11 @@ public class SignInFragment extends Fragment implements GoogleApiClient.OnConnec
         signInButton.setScopes(gso.getScopeArray());
 
         return view;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
     }
 
     @Override
@@ -124,6 +137,7 @@ public class SignInFragment extends Fragment implements GoogleApiClient.OnConnec
     @Override
     public void onStart() {
         super.onStart();
+
         mGoogleApiClient.connect();
 
         opr = Auth.GoogleSignInApi.silentSignIn(mGoogleApiClient);

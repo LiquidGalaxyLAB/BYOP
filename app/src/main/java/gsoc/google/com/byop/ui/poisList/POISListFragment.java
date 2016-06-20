@@ -604,7 +604,8 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
         private List<POI> checkContents(InputStream inputStream) throws IOException, XmlPullParserException {
             BYOPXmlPullParser parser = new BYOPXmlPullParser();
 
-            List<POI> poiList = parser.parse(inputStream);
+            List<POI> poiList = parser.parse(inputStream, getActivity());
+
             return poiList;
         }
     }

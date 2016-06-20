@@ -167,16 +167,19 @@
 
 
     <!--_Help-->
-    <string name="addPoiHelp">Add POI to surrounding document</string>
-    <string name="uploadDocHelp">Upload document to PW Beacon</string>
+    <string name="addPoiHelp">Add POI to List</string>
+    <string name="uploadDocHelp">Upload document to Physical Web Beacon</string>
     <string name="documentListHelpTitle">Document Management Help</string>
     <string name="gotIt">Got It</string>
     <string name="viewPoiHelp">View POI in map</string>
     <string name="editPOIHelp">Edit POI</string>
     <string name="deletePOIHelp">Remove POI</string>
     <string name="poisListHelpTitle">POIs Management Help</string>
-    <string name="newDocDocHelp">Add a new document that holds POIs</string>
+    <string name="newDocDocHelp">Add a new POI List</string>
     <string name="newPoiHelp">Add new POI location</string>
+    <string name="pcital">Parc Científic i Tecnològic</string>
+    <string name="parsingError">Error parsing XML Document</string>
+    <string name="galaxy_drive">Galaxy Drive Folder Configuration</string>
 
 
 </resources>

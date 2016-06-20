@@ -1,5 +1,6 @@
 package gsoc.google.com.byop.utils;
 
+import android.app.Activity;
 import android.util.Xml;
 
 import org.xmlpull.v1.XmlPullParser;
@@ -10,6 +11,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import gsoc.google.com.byop.R;
 import gsoc.google.com.byop.model.POI;
 import gsoc.google.com.byop.model.Point;
 
@@ -23,16 +25,19 @@ public class BYOPXmlPullParser {
     // We don't use namespaces
 
 
-    public List<POI> parse(InputStream in) throws XmlPullParserException, IOException {
+    public List<POI> parse(InputStream in, Activity activity) throws IOException {
         try {
             XmlPullParser parser = Xml.newPullParser();
             parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false);
             parser.setInput(in, null);
             parser.nextTag();
             return readPOIS(parser);
+        } catch (XmlPullParserException e) {
+            AndroidUtils.showMessage(activity.getResources().getString(R.string.parsingError), activity);
         } finally {
             in.close();
         }
+        return new ArrayList<POI>();
     }
 
     private List<POI> readPOIS(XmlPullParser parser) throws XmlPullParserException, IOException {

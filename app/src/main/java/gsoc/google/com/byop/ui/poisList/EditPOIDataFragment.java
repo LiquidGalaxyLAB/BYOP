@@ -383,6 +383,7 @@ public class EditPOIDataFragment extends Fragment implements GoogleApiClient.Con
                                             fileOutputStream.getChannel().position(0);
                                             Writer writer = new OutputStreamWriter(fileOutputStream);
                                             writer.write(newContents);
+                                            fileOutputStream.getChannel().truncate(newContents.length());
                                             writer.close();
 
                                             MetadataChangeSet changeSet = new MetadataChangeSet.Builder().setMimeType("text/xml").build();

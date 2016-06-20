@@ -89,6 +89,7 @@ public class FolderListFragment extends Fragment {
         return newfolderListFragment;
     }
 
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -220,6 +221,7 @@ public class FolderListFragment extends Fragment {
         super.onResume();
     }
 
+
     @Override
     public void onStop() {
         super.onStop();
@@ -350,7 +352,6 @@ public class FolderListFragment extends Fragment {
                     return true;
                 }
             });
-
         }
 
 
