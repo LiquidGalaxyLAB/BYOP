@@ -38,7 +38,7 @@
         android:layout_width="75dp"
         android:layout_height="75dp"
         android:gravity="center"
-        android:layout_marginBottom="10dp"
+        android:layout_marginBottom="5dp"
         android:contentDescription="@string/pcital"
         android:src="@drawable/byop_logo" />
 
@@ -62,6 +62,17 @@
         android:textColor="@android:color/white"
         android:textSize="10sp" />
 
+
+    <Button
+        android:id="@+id/proceedToDocumentList"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:drawableLeft="@drawable/folder"
+        android:textSize="10sp"
+        android:text="@string/goToPOIS"
+        android:theme="@style/ThemeOverlay.MyDarkButton" />
+
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
@@ -74,14 +85,5 @@
             android:visibility="visible"
             tools:visibility="gone" />
 
-        <Button
-            android:id="@+id/proceedToDocumentList"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:drawableLeft="@drawable/folder"
-            android:textSize="10sp"
-            android:text="@string/goToPOIS"
-            android:theme="@style/ThemeOverlay.MyDarkButton" />
     </RelativeLayout>
 </LinearLayout>

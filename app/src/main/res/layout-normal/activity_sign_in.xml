@@ -61,6 +61,15 @@
         android:textColor="@android:color/white"
         android:textSize="10sp" />
 
+    <Button
+        android:id="@+id/proceedToDocumentList"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:drawableLeft="@drawable/folder"
+        android:text="@string/goToPOIS"
+        android:theme="@style/ThemeOverlay.MyDarkButton" />
+
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
@@ -72,15 +81,7 @@
             android:layout_centerInParent="true"
             android:visibility="visible"
             tools:visibility="gone" />
-
-        <Button
-            android:id="@+id/proceedToDocumentList"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:drawableLeft="@drawable/folder"
-            android:text="@string/goToPOIS"
-            android:theme="@style/ThemeOverlay.MyDarkButton" />
     </RelativeLayout>
+
 
 </LinearLayout>

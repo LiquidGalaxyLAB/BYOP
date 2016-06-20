@@ -2,18 +2,23 @@ package gsoc.google.com.byop.ui.main;
 
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBar;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.text.InputType;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import com.google.android.gms.auth.api.Auth;
@@ -29,6 +34,7 @@ import com.google.android.gms.common.api.Status;
 
 import gsoc.google.com.byop.R;
 import gsoc.google.com.byop.ui.documentsList.FolderListFragment;
+import gsoc.google.com.byop.ui.settings.SettingsFragment;
 import gsoc.google.com.byop.utils.AndroidUtils;
 import gsoc.google.com.byop.utils.Constants;
 import gsoc.google.com.byop.utils.FragmentStackManager;
@@ -64,18 +70,22 @@ public class SignInFragment extends Fragment implements GoogleApiClient.OnConnec
         setHasOptionsMenu(true);
     }
 
-//     @Override
-//    public void onConfigurationChanged(Configuration newConfig) {
-//        super.onConfigurationChanged(newConfig);
-//
-//        LayoutInflater inflater = (LayoutInflater)this.getActivity().getApplicationContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-//        if(newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-//            view = inflater.inflate(R.layout.activity_sign_in_land, null);
-////            fragmentStackManager.loadFragment(this, R.id.main_frame);
-//            getActivity().addContentView(view,view.getLayoutParams());
-//        }
-//       // mainlayout.addView(view);
-//    }
+
+    private void populateViewForOrientation(LayoutInflater inflater, ViewGroup container) {
+        container.removeAllViewsInLayout();
+        view = inflater.inflate(R.layout.activity_sign_in, container, false);
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+//        LayoutInflater inflater = LayoutInflater.from(getActivity());
+//        populateViewForOrientation(inflater, (ViewGroup) getView());
+        mGoogleApiClient.disconnect();
+        mGoogleApiClient.stopAutoManage(this.getActivity());
+        fragmentStackManager.popBackStatFragment();
+        fragmentStackManager.loadFragment(SignInFragment.newInstance(), R.id.main_frame);
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -113,6 +123,7 @@ public class SignInFragment extends Fragment implements GoogleApiClient.OnConnec
 
         return view;
     }
+
 
     @Override
     public void onResume() {
@@ -216,6 +227,9 @@ public class SignInFragment extends Fragment implements GoogleApiClient.OnConnec
             case R.id.action_logout:
                 signOut();
                 return true;
+            case R.id.action_settings:
+                loadSettings();
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -242,6 +256,51 @@ public class SignInFragment extends Fragment implements GoogleApiClient.OnConnec
     private void loadDocumentsList() {
         FolderListFragment folderListFragment = FolderListFragment.newInstance();
         fragmentStackManager.loadFragment(folderListFragment, R.id.main_frame);
+    }
+
+    private void loadSettings() {
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this.getActivity());
+        builder.setTitle(getResources().getString(R.string.enter_password));
+
+
+        final EditText input = new EditText(this.getActivity());
+
+        input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+        builder.setView(input);
+
+
+        builder.setPositiveButton(getResources().getString(R.string.Accept), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                SharedPreferences prefs = getActivity().getSharedPreferences(Constants.PREFERENCES_NAME, Context.MODE_PRIVATE);
+                String password = prefs.getString("password", "");
+                if (password.equals(input.getText().toString())) {
+                    SettingsFragment settingsFragment = SettingsFragment.newInstance();
+                    fragmentStackManager.loadFragment(settingsFragment, R.id.main_frame);
+                } else {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                    builder.setMessage(getResources().getString(R.string.error_incorrect_password));
+                    builder.setPositiveButton(getResources().getString(R.string.Accept), new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                        }
+                    });
+                    builder.show();
+                }
+            }
+        });
+        builder.setNegativeButton(getResources().getString(R.string.cancel), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+
+        builder.show();
+
+
     }
 
     @Override

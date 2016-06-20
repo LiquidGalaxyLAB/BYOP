@@ -10,9 +10,16 @@ repositories {
 
 
 android {
+//    signingConfigs {
+//        config {
+//            keyAlias 'lqgalaxy'
+//            keyPassword 'lqgalaxy'
+//            storeFile file('/home/lgwork/AndroidStudioProjects/keyStore/keystore.jks')
+//            storePassword 'lqgalaxy'
+//        }
+//    }
     compileSdkVersion 23
     buildToolsVersion "23.0.3"
-
     defaultConfig {
         applicationId "gsoc.google.com.byop"
         minSdkVersion 19
@@ -53,8 +60,10 @@ dependencies {
         exclude group: 'org.apache.httpcomponents'
     }
     compile 'com.mcxiaoke.volley:library-aar:1.0.1'
-
     compile 'com.android.support:multidex:1.0.1'
 }
+
+
+
 
 

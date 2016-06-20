@@ -30,6 +30,8 @@ public class Constants {
     //  public static final String PREF_ACCOUNT_NAME = "accountName";
     public static final String PREF_ACCOUNT_EMAIL = "accountEmail";
 
+    public static final String PREFERENCES_NAME = "byopSharedPreferences";
+
     public static final String[] SCOPES = {DriveScopes.DRIVE};
 
     /**

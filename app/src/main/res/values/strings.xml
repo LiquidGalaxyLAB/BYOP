@@ -164,7 +164,7 @@
     <string name="request_cancelled">Request cancelled.</string>
     <string name="play_services_needed">This app requires Google Play Services. Please install Google Play Services on your device and relaunch this app.</string>
     <string name="something_wrong">Something went wrong:</string>
-
+    <string name="passwords_no_match">The passwords are not equal</string>
 
     <!--_Help-->
     <string name="addPoiHelp">Add POI to List</string>
@@ -180,6 +180,9 @@
     <string name="pcital">Parc Científic i Tecnològic</string>
     <string name="parsingError">Error parsing XML Document</string>
     <string name="galaxy_drive">Galaxy Drive Folder Configuration</string>
+    <string name="lg_drive_folder">LG Shared Folder</string>
+
+    <string name="enter_password">Enter Administrative Password</string>
 
 
 </resources>

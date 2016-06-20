@@ -68,6 +68,8 @@ public class ViewPOIMapFragment extends Fragment implements OnMapReadyCallback, 
         itemLogout.setVisible(false);
         MenuItem itemDisconnect = menu.findItem(R.id.action_disconnect);
         itemDisconnect.setVisible(false);
+        MenuItem itemSettings = menu.findItem(R.id.action_settings);
+        itemSettings.setVisible(false);
         super.onCreateOptionsMenu(menu, inflater);
     }
 
