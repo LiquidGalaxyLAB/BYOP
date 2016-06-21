@@ -571,7 +571,7 @@ public class FolderListFragment extends Fragment {
         private List<DriveDocument> getDataFromApi() throws IOException {
             List<DriveDocument> documentsList = new ArrayList<>();
 
-            FileList result = mService.files().list().setQ("\'" + this.folderId + "\' in parents and trashed=false").setFields("files(description,id,name,webViewLink)").execute();
+            FileList result = mService.files().list().setOrderBy("name,modifiedTime").setQ("\'" + this.folderId + "\' in parents and trashed=false").setFields("files(description,id,name,webViewLink)").execute();
 
             List<File> files = result.getFiles();
             if (files != null) {

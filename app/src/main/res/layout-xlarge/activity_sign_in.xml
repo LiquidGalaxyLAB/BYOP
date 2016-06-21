@@ -23,7 +23,7 @@
             android:scaleType="fitStart"
             android:layout_gravity="center_horizontal"
             android:contentDescription="@string/pcital"
-            android:src="@drawable/pcital_logo" />
+            android:src="@drawable/pcital_logo_trans" />
 
         <ImageView
             android:id="@+id/lg_icon"
@@ -34,7 +34,7 @@
             android:scaleType="fitEnd"
             android:layout_weight="1"
             android:contentDescription="@string/desc_lg_icon"
-            android:src="@drawable/logo_liquidgalaxylab" />
+            android:src="@drawable/logo_liquidgalaxylab_trans" />
     </LinearLayout>
 
     <ImageView

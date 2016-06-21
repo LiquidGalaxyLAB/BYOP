@@ -206,7 +206,7 @@ public class CreateDocumentFragment extends Fragment implements GoogleApiClient.
 
         private void createFile() throws IOException {
             File fileMetadata = new File();
-            fileMetadata.setName(this.documentName + ".xml");
+            fileMetadata.setName(this.documentName);
             fileMetadata.setDescription(this.documentDescription);
 
             List<String> parents = new ArrayList<>();
