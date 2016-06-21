@@ -236,21 +236,40 @@ public class SignInFragment extends Fragment implements GoogleApiClient.OnConnec
     }
 
     private void revokeAccess() {
-        Auth.GoogleSignInApi.revokeAccess(mGoogleApiClient).setResultCallback(
-                new ResultCallback<Status>() {
-                    @Override
-                    public void onResult(Status status) {
-                        updateUI(false);
+
+
+        AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
+        alert.setTitle(getResources().getString(R.string.are_you_sure_clear_data));
+
+        alert.setPositiveButton(getResources().getString(R.string.yes), new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                Auth.GoogleSignInApi.revokeAccess(mGoogleApiClient).setResultCallback(
+                        new ResultCallback<Status>() {
+                            @Override
+                            public void onResult(Status status) {
+                                updateUI(false);
+                            }
+                        });
+
+                //Delete shared Preferences
+                SharedPreferences settings = getActivity().getPreferences(Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = settings.edit();
+                editor.clear();
+                editor.commit();
+
+                AndroidUtils.clearApplicationData(getActivity().getApplication());
+            }
+        });
+
+        alert.setNegativeButton(getResources().getString(R.string.no),
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
                     }
                 });
 
-        //Delete shared Preferences
-        SharedPreferences settings = this.getActivity().getPreferences(Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = settings.edit();
-        editor.clear();
-        editor.commit();
+        alert.show();
 
-        AndroidUtils.clearApplicationData(getActivity().getApplication());
+
     }
 
     private void loadDocumentsList() {

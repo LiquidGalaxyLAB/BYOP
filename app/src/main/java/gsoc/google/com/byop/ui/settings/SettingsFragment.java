@@ -26,6 +26,7 @@ public class SettingsFragment extends Fragment {
     private EditText passwordInput1;
     private EditText passwordInput2;
     private EditText driveLgFolderInput;
+    private EditText driveLgFolderNameInput;
 
     private TextInputLayout password1;
     private TextInputLayout password2;
@@ -47,7 +48,8 @@ public class SettingsFragment extends Fragment {
 
         SharedPreferences prefs = getActivity().getSharedPreferences(Constants.PREFERENCES_NAME, Context.MODE_PRIVATE);
         String password = prefs.getString("password", "");
-        String folder = prefs.getString("lgDriveFolder", "https://drive.google.com/open?id=0B8LNo6g9735tTklCbUtwSkRiYm8");
+        String folderLink = prefs.getString("lgDriveFolder", "https://drive.google.com/open?id=0B8LNo6g9735tTklCbUtwSkRiYm8");
+        String folderName = prefs.getString("lgDriveFolderName", "");
 
 
         passwordInput1 = (EditText) rootView.findViewById(R.id.lg_password_1_input);
@@ -59,24 +61,29 @@ public class SettingsFragment extends Fragment {
         password2 = (TextInputLayout) rootView.findViewById(R.id.lg_password_2);
 
         driveLgFolderInput = (EditText) rootView.findViewById(R.id.lg_drive_folder_input);
-        driveLgFolderInput.setText(folder);
+        driveLgFolderInput.setText(folderLink);
 
+        driveLgFolderNameInput = (EditText) rootView.findViewById(R.id.lg_shared_folder_name_input);
+        driveLgFolderNameInput.setText(folderName);
 
         saveChanges = (Button) rootView.findViewById(R.id.btn_save_preferences);
         saveChanges.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Resources res = getActivity().getResources();
-                if (!passwordInput1.getText().equals(passwordInput2.getText())) {
+                if (!passwordInput1.getText().toString().equals(passwordInput2.getText().toString())) {
                     password1.setError(res.getString(R.string.passwords_no_match));
                     password2.setError(res.getString(R.string.passwords_no_match));
                 } else {
                     password1.setErrorEnabled(false);
                     password2.setErrorEnabled(false);
                     SharedPreferences.Editor editor = getActivity().getSharedPreferences(Constants.PREFERENCES_NAME, Context.MODE_PRIVATE).edit();
-                    editor.putString("password", passwordInput1.getText().toString());
-                    editor.putString("lgDriveFolder", driveLgFolderInput.getText().toString());
+                    editor.putString("password", passwordInput1.getText() != null ? passwordInput1.getText().toString() : "");
+                    editor.putString("lgDriveFolder", driveLgFolderInput.getText() != null ? driveLgFolderInput.getText().toString() : "");
+                    editor.putString("lgDriveFolderName", driveLgFolderNameInput.getText() != null ? driveLgFolderNameInput.getText().toString() : "");
                     editor.commit();
+
+                    fragmentStackManager.popBackStatFragment();
                 }
             }
         });

@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
@@ -33,10 +34,17 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.drive.Drive;
+import com.google.android.gms.drive.DriveApi;
+import com.google.android.gms.drive.DriveContents;
+import com.google.android.gms.drive.DriveFile;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GooglePlayServicesAvailabilityIOException;
 import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
+import com.google.api.client.http.FileContent;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
@@ -45,7 +53,11 @@ import com.google.api.services.drive.model.File;
 import com.google.api.services.drive.model.FileList;
 import com.poliveira.parallaxrecyclerview.ParallaxRecyclerAdapter;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -63,10 +75,13 @@ import gsoc.google.com.byop.utils.PW.BeaconConfigFragment;
 /**
  * Created by lgwork on 23/05/16.
  */
-public class FolderListFragment extends Fragment {
+public class FolderListFragment extends Fragment implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
     protected FragmentStackManager fragmentStackManager;
+
     GoogleAccountCredential mCredential;
+    private GoogleApiClient mGoogleApiClient;
+
     private RecyclerView rv = null;
     private SwipeRefreshLayout refreshLayout;
     private FloatingActionButton fab;
@@ -185,6 +200,13 @@ public class FolderListFragment extends Fragment {
         });
 
 
+        mGoogleApiClient = new GoogleApiClient.Builder(this.getActivity())
+                .addApi(Drive.API)
+                .addScope(Drive.SCOPE_FILE)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .build();
+
         // Initialize credentials and service object.
         mCredential = GoogleAccountCredential.usingOAuth2(getContext(), Arrays.asList(Constants.SCOPES))
                 .setBackOff(new ExponentialBackOff());
@@ -216,6 +238,7 @@ public class FolderListFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
+        mGoogleApiClient.connect();
     }
 
     @Override
@@ -227,6 +250,7 @@ public class FolderListFragment extends Fragment {
     @Override
     public void onStop() {
         super.onStop();
+        mGoogleApiClient.disconnect();
 
         if (requestTask != null) {
             requestTask.cancel(true);
@@ -289,6 +313,29 @@ public class FolderListFragment extends Fragment {
         });
     }
 
+    @Override
+    public void onConnected(@Nullable Bundle bundle) {
+
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+//        if (connectionResult.hasResolution()) {
+//            try {
+//                connectionResult.startResolutionForResult(this.getActivity(), Constants.SERVICE_INVALID_POIS_LIST);
+//            } catch (IntentSender.SendIntentException e) {
+//                // Unable to resolve, message user appropriately
+//            }
+//        } else {
+//            GooglePlayServicesUtil.getErrorDialog(connectionResult.getErrorCode(), getActivity(), 0).show();
+//        }
+    }
+
     private class DriveDocumentHolder extends RecyclerView.ViewHolder implements View.OnCreateContextMenuListener {
         TextView documentTitle;
         TextView documentDescription;
@@ -332,6 +379,12 @@ public class FolderListFragment extends Fragment {
                                     documentDescription.getText().toString());
                             fragmentStackManager.loadFragment(renameDocumentFragment, R.id.main_frame);
                             break;
+                        /****ONLY FOR TESTING*********/
+                        case R.id.upload_lg:
+                            checkSharedLG(documentTitle.getText().toString(), documentDescription.getText().toString(), document.getResourceId());
+                            break;
+                        /****************************/
+
                         case R.id.deleteDocumentMenuItem:
                             AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
                             alert.setTitle(getResources().getString(R.string.are_you_sure));
@@ -356,6 +409,10 @@ public class FolderListFragment extends Fragment {
             });
         }
 
+        public void checkSharedLG(String documentName, String documentDescription, String fileResourceId) {
+            UploadToLGSharedFolder getSharedFolderTask = new UploadToLGSharedFolder(mCredential, documentName, documentDescription, fileResourceId);
+            getSharedFolderTask.execute();
+        }
 
         @Override
         public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
@@ -371,7 +428,6 @@ public class FolderListFragment extends Fragment {
 
                     alert.setPositiveButton(getResources().getString(R.string.yes), new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int whichButton) {
-                            //deleteFilesThroughApi(fileResourceId);
                             deleteTask = new MakeDeleteTask(mCredential, fileResourceId);
                             deleteTask.execute();
                         }
@@ -415,6 +471,213 @@ public class FolderListFragment extends Fragment {
                     return true;
                 }
             });
+        }
+    }
+
+
+    private class UploadToLGSharedFolder extends AsyncTask<Void, Void, Boolean> {
+        private com.google.api.services.drive.Drive mService = null;
+        private Exception mLastError = null;
+        private ProgressDialog dialog;
+        private String documentName;
+        private String documentDescription;
+        private String documentResourceId;
+        private boolean isCompleted = false;
+
+        public UploadToLGSharedFolder(GoogleAccountCredential credential, String documentName, String documentDescription, String resourceId) {
+            HttpTransport transport = AndroidHttp.newCompatibleTransport();
+            JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
+            mService = new com.google.api.services.drive.Drive.Builder(
+                    transport, jsonFactory, credential)
+                    .setApplicationName(getResources().getString(R.string.app_name))
+                    .build();
+
+            this.documentName = documentName;
+            this.documentDescription = documentDescription;
+            this.documentResourceId = resourceId;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            if (dialog == null) {
+                dialog = new ProgressDialog(getContext());
+                dialog.setMessage(getActivity().getResources().getString(R.string.loading));
+                dialog.setIndeterminate(false);
+                dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+                dialog.setCancelable(true);
+                dialog.setCanceledOnTouchOutside(false);
+                dialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                    @Override
+                    public void onCancel(DialogInterface dialog) {
+                        requestTask.cancel(true);
+                    }
+                });
+                dialog.show();
+            }
+        }
+
+
+        @Override
+        protected Boolean doInBackground(Void... params) {
+            try {
+                return getDataFromApi();
+            } catch (Exception e) {
+                mLastError = e;
+                cancel(true);
+            }
+            return false;
+        }
+
+
+        private boolean getDataFromApi() throws IOException {
+            boolean success = false;
+
+            SharedPreferences prefs = getActivity().getSharedPreferences(Constants.PREFERENCES_NAME, Context.MODE_PRIVATE);
+            String folderName = prefs.getString("lgDriveFolderName", "");
+
+            FileList result = mService.files().list().setQ("name = \'" + folderName + "\' and mimeType = 'application/vnd.google-apps.folder' and sharedWithMe=true").setFields("files(description,id,name,webViewLink)").execute();
+
+            List<File> files = result.getFiles();
+            if (files != null) {
+                for (File file : files) {
+                    if (file.getTrashed() == null || !file.getTrashed()) {
+                        success = uploadDocumentToSharedLg(file.getId());
+                    }
+                }
+            }
+            return success;
+        }
+
+
+        public boolean uploadDocumentToSharedLg(String sharedFolderId) throws IOException {
+            File fileMetadata = new File();
+            fileMetadata.setName(this.documentName);
+            fileMetadata.setDescription(this.documentDescription);
+
+            List<String> parents = new ArrayList<>();
+            parents.add(sharedFolderId);
+            fileMetadata.setParents(parents);
+            fileMetadata.setMimeType("text/xml");
+
+            String contents = getActualDocumentContents(this.documentResourceId);
+
+            FileContent fileContents = getFileContentsFromString(contents);
+
+            File newDriveDocument = mService.files().create(fileMetadata, fileContents).execute();
+
+            if (newDriveDocument.getId() != null && !newDriveDocument.getId().equals("")) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+
+        private FileContent getFileContentsFromString(String content) throws IOException {
+            java.io.File outputDir = getContext().getCacheDir(); // context being the Activity pointer
+            java.io.File outputFile = java.io.File.createTempFile("prefix", "extension", outputDir);
+
+            BufferedWriter bw = new BufferedWriter(new FileWriter(outputFile));
+            bw.write(content);
+            bw.close();
+
+            return new FileContent("text/xml", outputFile);
+        }
+
+
+        private String getActualDocumentContents(String documentResourceId) throws IOException {
+            File actualFile = mService.files().get(documentResourceId).execute();
+            final String[] content = {""};
+            //DRIVE API
+            Drive.DriveApi.fetchDriveId(mGoogleApiClient, actualFile.getId()).setResultCallback(new ResultCallback<DriveApi.DriveIdResult>() {
+                @Override
+                public void onResult(@NonNull DriveApi.DriveIdResult driveIdResult) {
+                    if (driveIdResult.getStatus().isSuccess()) {
+                        final DriveFile[] file = {Drive.DriveApi.getFile(mGoogleApiClient, driveIdResult.getDriveId())};
+                        file[0].open(mGoogleApiClient, DriveFile.MODE_READ_ONLY, null)
+                                .setResultCallback(new ResultCallback<DriveApi.DriveContentsResult>() {
+                                    @Override
+                                    public void onResult(@NonNull DriveApi.DriveContentsResult driveContentsResult) {
+                                        if (!driveContentsResult.getStatus().isSuccess()) {
+                                            // display an error saying file can't be opened
+                                            return;
+                                        }
+                                        // DriveContents object contains pointers
+                                        // to the actual byte stream
+                                        DriveContents contents = driveContentsResult.getDriveContents();
+
+                                        content[0] = getContentAsString(contents);
+                                        isCompleted = true;
+                                    }
+                                });
+                    } else {
+                        AndroidUtils.showMessage(getResources().getString(R.string.something_wrong) + driveIdResult.getStatus(), getActivity());
+                        dialog.dismiss();
+                        return;
+                    }
+                }
+
+            });
+
+            while (!isCompleted) {/*Wait for complete*/}
+            return content[0];
+        }
+
+
+        private String getContentAsString(DriveContents driveContents) {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(driveContents.getInputStream()));
+            StringBuilder builder = new StringBuilder();
+            String line;
+            try {
+                while ((line = reader.readLine()) != null) {
+                    builder.append(line);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            String contentsAsString = builder.toString();
+            return contentsAsString;
+        }
+
+
+        @Override
+        protected void onPostExecute(Boolean output) {
+            super.onPostExecute(output);
+            if (output != null && output) {
+                AndroidUtils.showMessage(getResources().getString(R.string.uploadDocSuccess), getActivity());
+            } else if (!output) {
+                AndroidUtils.showMessage(getResources().getString(R.string.uploadDocFailure), getActivity());
+            } else {
+                cancel(true);
+            }
+            if (dialog != null) {
+                dialog.hide();
+                dialog.dismiss();
+            }
+            refreshLayout.setRefreshing(false);
+        }
+
+        @Override
+        protected void onCancelled() {
+
+            if (mLastError != null) {
+                if (mLastError instanceof GooglePlayServicesAvailabilityIOException) {
+                    GooglePlayUtils.showGooglePlayServicesAvailabilityErrorDialog(getActivity(),
+                            ((GooglePlayServicesAvailabilityIOException) mLastError)
+                                    .getConnectionStatusCode());
+                } else if (mLastError instanceof UserRecoverableAuthIOException) {
+                    startActivityForResult(
+                            ((UserRecoverableAuthIOException) mLastError).getIntent(),
+                            Constants.REQUEST_AUTHORIZATION);
+                    dialog.dismiss();
+
+                } else {
+                    AndroidUtils.showMessage((getResources().getString(R.string.following_error) + "\n"
+                            + mLastError.getMessage()), getActivity());
+                }
+            } else {
+                // AndroidUtils.showMessage(getResources().getString(R.string.request_cancelled), getActivity());
+            }
         }
     }
 
@@ -540,7 +803,7 @@ public class FolderListFragment extends Fragment {
             super.onPreExecute();
             if (dialog == null) {
                 dialog = new ProgressDialog(getContext());
-                dialog.setMessage(getActivity().getResources().getString(R.string.loading));
+                dialog.setMessage(getActivity().getResources().getString(R.string.uploading));
                 dialog.setIndeterminate(false);
                 dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
                 dialog.setCancelable(true);
@@ -571,7 +834,7 @@ public class FolderListFragment extends Fragment {
         private List<DriveDocument> getDataFromApi() throws IOException {
             List<DriveDocument> documentsList = new ArrayList<>();
 
-            FileList result = mService.files().list().setOrderBy("name,modifiedTime").setQ("\'" + this.folderId + "\' in parents and trashed=false").setFields("files(description,id,name,webViewLink)").execute();
+            FileList result = mService.files().list().setOrderBy("name,modifiedTime desc").setQ("\'" + this.folderId + "\' in parents and trashed=false").setFields("files(description,id,name,webViewLink)").execute();
 
             List<File> files = result.getFiles();
             if (files != null) {

@@ -48,7 +48,8 @@
     <!-- Button labels -->
     <string name="goToPOIS">POIS Management</string>
     <string name="sign_out">Sign Out</string>
-    <string name="disconnect">Disconnect and revoke</string>
+    <string name="disconnect">Disconnect, revoke and clean app data</string>
+    <string name="are_you_sure_clear_data">Are you sure? This action will clean all the configuration data stored in the application</string>
 
     <!-- Content Description for images -->
     <string name="desc_lg_icon">Liquid Logo</string>
@@ -179,10 +180,16 @@
     <string name="newPoiHelp">Add new POI location</string>
     <string name="pcital">Parc Científic i Tecnològic</string>
     <string name="parsingError">Error parsing XML Document</string>
+
+
+    <!--Administrative menu-->
+    <string name="enter_password">Enter Administrative Password</string>
+    <string name="lg_shared_folder">Name of the drive shared folder by Liquid Galaxy</string>
+    <string name="uploadDocSuccess">Document Correctly Uploaded to Shared Drive</string>
+    <string name="uploadDocFailure">Failed</string>
     <string name="galaxy_drive">Galaxy Drive Folder Configuration</string>
     <string name="lg_drive_folder">LG Shared Folder</string>
-
-    <string name="enter_password">Enter Administrative Password</string>
+    <string name="uploading">Uploading to Liquid Galaxy Folder</string>
 
 
 </resources>
