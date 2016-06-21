@@ -254,8 +254,7 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
 
     @Override
     public void onConnected(Bundle bundle) {
-        requestContentsTask = new RequestContentsTask(mCredential);
-        requestContentsTask.execute();
+        populateUI();
     }
 
     @Override
@@ -477,8 +476,7 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
         private Exception mLastError = null;
         private ProgressDialog dialog;
 
-        private List<POI> innerPOIList = new ArrayList<>();
-        private boolean isCompleted = false;
+        private List<POI> innerPOIList = null;
 
         public RequestContentsTask(GoogleAccountCredential credential) {
             HttpTransport transport = AndroidHttp.newCompatibleTransport();
@@ -547,14 +545,33 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
                                         // to the actual byte stream
                                         DriveContents contents = driveContentsResult.getDriveContents();
                                         try {
+                                            innerPOIList = new ArrayList<>();
                                             innerPOIList = checkContents(contents.getInputStream());
-                                            isCompleted = true;
+
+                                            if (innerPOIList != null) {
+                                                fillAdapter(innerPOIList);
+                                                if (dialog != null) {
+                                                    dialog.hide();
+                                                    dialog.dismiss();
+                                                }
+                                                refreshLayout.setRefreshing(false);
+                                            }
+
                                         } catch (IOException e) {
                                             e.printStackTrace();
+                                            return;
                                         } catch (XmlPullParserException e) {
                                             e.printStackTrace();
+                                            return;
                                         }
+                                    }
 
+                                    private List<POI> checkContents(InputStream inputStream) throws IOException, XmlPullParserException {
+                                        BYOPXmlPullParser parser = new BYOPXmlPullParser();
+
+                                        List<POI> poiList = parser.parse(inputStream, getActivity());
+
+                                        return poiList;
                                     }
                                 });
                     } else {
@@ -564,7 +581,7 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
                     }
                 }
             });
-            while (!isCompleted) {/*wait for complete*/}
+            //while (!isCompleted) {/*wait for complete*/}
             return innerPOIList;
         }
 
@@ -572,13 +589,14 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
         @Override
         protected void onPostExecute(List<POI> output) {
             super.onPostExecute(output);
-            if (output != null)
+            if (output != null) {
                 fillAdapter(output);
-            if (dialog != null) {
-                dialog.hide();
-                dialog.dismiss();
+                if (dialog != null) {
+                    dialog.hide();
+                    dialog.dismiss();
+                }
+                refreshLayout.setRefreshing(false);
             }
-            refreshLayout.setRefreshing(false);
         }
 
         @Override
@@ -601,14 +619,6 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
             } else {
                 AndroidUtils.showMessage(getResources().getString(R.string.request_cancelled), getActivity());
             }
-        }
-
-        private List<POI> checkContents(InputStream inputStream) throws IOException, XmlPullParserException {
-            BYOPXmlPullParser parser = new BYOPXmlPullParser();
-
-            List<POI> poiList = parser.parse(inputStream, getActivity());
-
-            return poiList;
         }
     }
 }

@@ -502,7 +502,7 @@ public class FolderListFragment extends Fragment implements GoogleApiClient.Conn
             super.onPreExecute();
             if (dialog == null) {
                 dialog = new ProgressDialog(getContext());
-                dialog.setMessage(getActivity().getResources().getString(R.string.loading));
+                dialog.setMessage(getActivity().getResources().getString(R.string.uploadingLG));
                 dialog.setIndeterminate(false);
                 dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
                 dialog.setCancelable(true);
@@ -803,7 +803,7 @@ public class FolderListFragment extends Fragment implements GoogleApiClient.Conn
             super.onPreExecute();
             if (dialog == null) {
                 dialog = new ProgressDialog(getContext());
-                dialog.setMessage(getActivity().getResources().getString(R.string.uploading));
+                dialog.setMessage(getActivity().getResources().getString(R.string.loading));
                 dialog.setIndeterminate(false);
                 dialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
                 dialog.setCancelable(true);
