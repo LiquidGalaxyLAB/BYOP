@@ -8,8 +8,9 @@
     android:weightSum="4"
     android:gravity="center_horizontal">
 
+
     <LinearLayout
-        android:layout_width="200dp"
+        android:layout_width="wrap_content"
         android:layout_height="200dp"
         android:gravity="center_horizontal"
         android:orientation="horizontal">
@@ -18,30 +19,33 @@
             android:id="@+id/pcital_icon"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="10dp"
             android:layout_weight="1"
+            android:scaleType="fitStart"
+            android:layout_gravity="center_horizontal"
             android:contentDescription="@string/pcital"
-            android:src="@drawable/pcital_logo" />
+            android:src="@drawable/pcital_logo_trans" />
 
         <ImageView
             android:id="@+id/lg_icon"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="10dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginStart="5dp"
+            android:scaleType="fitEnd"
             android:layout_weight="1"
             android:contentDescription="@string/desc_lg_icon"
-            android:src="@drawable/logo_liquidgalaxylab" />
+            android:src="@drawable/logo_liquidgalaxylab_trans" />
     </LinearLayout>
 
-    <TextView
-        android:id="@+id/title_text"
+    <ImageView
+        android:id="@+id/byop_logo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="10dp"
         android:gravity="center"
-        android:text="@string/title_activity_sign_in"
-        android:textColor="@android:color/white"
-        android:textSize="36sp" />
+        android:layout_marginBottom="10dp"
+        android:contentDescription="@string/pcital"
+        android:src="@drawable/byop_logo" />
+
 
     <TextView
         android:id="@+id/status"
@@ -86,4 +90,3 @@
     </RelativeLayout>
 
 </LinearLayout>
-

@@ -195,6 +195,7 @@
     <string name="about_byop_message">About Bring Your Own Pois</string>
     <string name="aboutDocText1">This app has been developed thanks to GSOC 2016 Program</string>
     <string name="aboutDocText2">by Ivan Josa Llovera (ivanjosallovera@gmail.com)</string>
+    <string name="aboutDocText3">https://github.com/LiquidGalaxyLAB/BYOP</string>
 
 
 </resources>

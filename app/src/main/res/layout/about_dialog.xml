@@ -25,6 +25,16 @@
         android:drawableStart="@drawable/ic_email_black_24dp"
         android:text="@string/aboutDocText2" />
 
+    <TextView
+        android:id="@+id/aboutDocHeader3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:layout_marginTop="10dp"
+        android:drawablePadding="10dp"
+        android:drawableStart="@drawable/github_32"
+        android:text="@string/aboutDocText3" />
+
 
     <Button
         android:id="@+id/aboutDialogButtonOK"

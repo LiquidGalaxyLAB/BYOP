@@ -309,50 +309,52 @@ public class POISListFragment extends Fragment implements GoogleApiClient.Connec
             itemView.setOnCreateContextMenuListener(this);
 
             Toolbar toolbarCard = (Toolbar) itemView.findViewById(R.id.poisToolbar);
-            toolbarCard.inflateMenu(R.menu.menu_pois_cardview);
-            toolbarCard.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
-                @Override
-                public boolean onMenuItemClick(MenuItem item) {
-                    switch (item.getItemId()) {
-                        case R.id.viewPOIMenuItem:
-                            ViewPOIMapFragment poiMapFragment = ViewPOIMapFragment.newInstance(latitude, longitude, poiName.getText().toString(), poiDescription.getText().toString());
-                            fragmentStackManager.loadFragment(poiMapFragment, R.id.main_frame);
-                            break;
-                        case R.id.editPoiMenuItem:
-                            EditPOIMapFragment editPOIMapFragment = EditPOIMapFragment.newInstance(latitude, longitude, poiName.getText().toString(), poiDescription.getText().toString());
+            if (toolbarCard != null) {
+                toolbarCard.inflateMenu(R.menu.menu_pois_cardview);
+                toolbarCard.setOnMenuItemClickListener(new Toolbar.OnMenuItemClickListener() {
+                    @Override
+                    public boolean onMenuItemClick(MenuItem item) {
+                        switch (item.getItemId()) {
+                            case R.id.viewPOIMenuItem:
+                                ViewPOIMapFragment poiMapFragment = ViewPOIMapFragment.newInstance(latitude, longitude, poiName.getText().toString(), poiDescription.getText().toString());
+                                fragmentStackManager.loadFragment(poiMapFragment, R.id.main_frame);
+                                break;
+                            case R.id.editPoiMenuItem:
+                                EditPOIMapFragment editPOIMapFragment = EditPOIMapFragment.newInstance(latitude, longitude, poiName.getText().toString(), poiDescription.getText().toString());
 
-                            editPOIMapFragment.setDriveDocument(document);
+                                editPOIMapFragment.setDriveDocument(document);
 
-                            fragmentStackManager.loadFragment(editPOIMapFragment, R.id.main_frame);
-                            break;
-                        case R.id.deletePoiMenuItem:
-                            AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
-                            alert.setTitle(getResources().getString(R.string.are_you_sure));
+                                fragmentStackManager.loadFragment(editPOIMapFragment, R.id.main_frame);
+                                break;
+                            case R.id.deletePoiMenuItem:
+                                AlertDialog.Builder alert = new AlertDialog.Builder(getActivity());
+                                alert.setTitle(getResources().getString(R.string.are_you_sure));
 
-                            alert.setPositiveButton(getResources().getString(R.string.yes), new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int whichButton) {
-                                    //Delete POI
-                                    poiUtils = new POIUtils(poiName.getText().toString(), poiDescription.getText().toString(),
-                                            latitude, longitude, document, mGoogleApiClient, mCredential, getActivity(), poisFragment);
+                                alert.setPositiveButton(getResources().getString(R.string.yes), new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int whichButton) {
+                                        //Delete POI
+                                        poiUtils = new POIUtils(poiName.getText().toString(), poiDescription.getText().toString(),
+                                                latitude, longitude, document, mGoogleApiClient, mCredential, getActivity(), poisFragment);
 
-                                    poiUtils.deletePOI();
+                                        poiUtils.deletePOI();
 
-                                    populateUI();
-                                }
-                            });
+                                        populateUI();
+                                    }
+                                });
 
-                            alert.setNegativeButton(getResources().getString(R.string.no),
-                                    new DialogInterface.OnClickListener() {
-                                        public void onClick(DialogInterface dialog, int whichButton) {
-                                        }
-                                    });
+                                alert.setNegativeButton(getResources().getString(R.string.no),
+                                        new DialogInterface.OnClickListener() {
+                                            public void onClick(DialogInterface dialog, int whichButton) {
+                                            }
+                                        });
 
-                            alert.show();
-                            break;
+                                alert.show();
+                                break;
+                        }
+                        return true;
                     }
-                    return true;
-                }
-            });
+                });
+            }
         }
 
 
