@@ -1,5 +1,6 @@
 package gsoc.google.com.byop.ui.main;
 
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -18,6 +19,7 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -230,9 +232,27 @@ public class SignInFragment extends Fragment implements GoogleApiClient.OnConnec
             case R.id.action_settings:
                 loadSettings();
                 return true;
+            case R.id.action_about:
+                showAbout();
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    private void showAbout() {
+        final Dialog dialog = new Dialog(getContext());
+        dialog.setContentView(R.layout.about_dialog);
+        dialog.setTitle(getResources().getString(R.string.about_byop_message));
+
+        Button dialogButton = (Button) dialog.findViewById(R.id.aboutDialogButtonOK);
+        dialogButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+            }
+        });
+        dialog.show();
     }
 
     private void revokeAccess() {

@@ -191,6 +191,10 @@
     <string name="galaxy_drive">Galaxy Drive Folder Configuration</string>
     <string name="lg_drive_folder">LG Shared Folder</string>
     <string name="uploadingLG">Uploading to Liquid Galaxy Folder</string>
+    <string name="about">About</string>
+    <string name="about_byop_message">About Bring Your Own Pois</string>
+    <string name="aboutDocText1">This app has been developed thanks to GSOC 2016 Program</string>
+    <string name="aboutDocText2">by Ivan Josa Llovera (ivanjosallovera@gmail.com)</string>
 
 
 </resources>
