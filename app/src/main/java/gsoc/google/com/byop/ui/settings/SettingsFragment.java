@@ -8,8 +8,12 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.TextInputLayout;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 
@@ -39,6 +43,25 @@ public class SettingsFragment extends Fragment {
         return new SettingsFragment();
     }
 
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        MenuItem itemLogout = menu.findItem(R.id.action_logout);
+        itemLogout.setVisible(false);
+        MenuItem itemDisconnect = menu.findItem(R.id.action_disconnect);
+        itemDisconnect.setVisible(false);
+        MenuItem itemSettings = menu.findItem(R.id.action_settings);
+        itemSettings.setVisible(false);
+        MenuItem aboutSettins = menu.findItem(R.id.action_about);
+        aboutSettins.setVisible(false);
+        super.onCreateOptionsMenu(menu, inflater);
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
+    }
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -48,7 +71,7 @@ public class SettingsFragment extends Fragment {
 
         SharedPreferences prefs = getActivity().getSharedPreferences(Constants.PREFERENCES_NAME, Context.MODE_PRIVATE);
         String password = prefs.getString("password", "");
-        String folderLink = prefs.getString("lgDriveFolder", "https://drive.google.com/open?id=0B8LNo6g9735tTklCbUtwSkRiYm8");
+//        String folderLink = prefs.getString("lgDriveFolder", "https://drive.google.com/open?id=0B8LNo6g9735tTklCbUtwSkRiYm8");
         String folderName = prefs.getString("lgDriveFolderName", "");
 
 
@@ -60,8 +83,8 @@ public class SettingsFragment extends Fragment {
         if (!password.equals("")) passwordInput2.setText(password);
         password2 = (TextInputLayout) rootView.findViewById(R.id.lg_password_2);
 
-        driveLgFolderInput = (EditText) rootView.findViewById(R.id.lg_drive_folder_input);
-        driveLgFolderInput.setText(folderLink);
+//        driveLgFolderInput = (EditText) rootView.findViewById(R.id.lg_drive_folder_input);
+//        driveLgFolderInput.setText(folderLink);
 
         driveLgFolderNameInput = (EditText) rootView.findViewById(R.id.lg_shared_folder_name_input);
         driveLgFolderNameInput.setText(folderName);
@@ -79,10 +102,15 @@ public class SettingsFragment extends Fragment {
                     password2.setErrorEnabled(false);
                     SharedPreferences.Editor editor = getActivity().getSharedPreferences(Constants.PREFERENCES_NAME, Context.MODE_PRIVATE).edit();
                     editor.putString("password", passwordInput1.getText() != null ? passwordInput1.getText().toString() : "");
-                    editor.putString("lgDriveFolder", driveLgFolderInput.getText() != null ? driveLgFolderInput.getText().toString() : "");
+//                    editor.putString("lgDriveFolder", driveLgFolderInput.getText() != null ? driveLgFolderInput.getText().toString() : "");
                     editor.putString("lgDriveFolderName", driveLgFolderNameInput.getText() != null ? driveLgFolderNameInput.getText().toString() : "");
                     editor.commit();
 
+                    View view = getActivity().getCurrentFocus();
+                    if (view != null) {
+                        InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+                        imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+                    }
                     fragmentStackManager.popBackStatFragment();
                 }
             }
@@ -92,6 +120,11 @@ public class SettingsFragment extends Fragment {
         cancelChanges.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                View view = getActivity().getCurrentFocus();
+                if (view != null) {
+                    InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+                }
                 fragmentStackManager.popBackStatFragment();
             }
         });

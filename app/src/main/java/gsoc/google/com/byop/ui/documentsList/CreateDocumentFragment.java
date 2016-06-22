@@ -86,6 +86,8 @@ public class CreateDocumentFragment extends Fragment implements GoogleApiClient.
         itemDisconnect.setVisible(false);
         MenuItem itemSettings = menu.findItem(R.id.action_settings);
         itemSettings.setVisible(false);
+        MenuItem aboutSettins = menu.findItem(R.id.action_about);
+        aboutSettins.setVisible(false);
         super.onCreateOptionsMenu(menu, inflater);
     }
 
