@@ -80,20 +80,16 @@ public class FolderListFragment extends Fragment implements GoogleApiClient.Conn
     protected FragmentStackManager fragmentStackManager;
 
     GoogleAccountCredential mCredential;
+    ImageButton documentListHelpBtn;
+    ActionBar toolbar;
     private GoogleApiClient mGoogleApiClient;
-
     private RecyclerView rv = null;
     private SwipeRefreshLayout refreshLayout;
     private FloatingActionButton fab;
-
     private MakeRequestTask requestTask;
     private MakeDeleteTask deleteTask;
     private CreationTask creationTask;
     private CheckFolderTask checkFolderTask;
-
-    ImageButton documentListHelpBtn;
-    ActionBar toolbar;
-
     private String byopFolderId = "";
     private String folderName;
 
@@ -382,9 +378,9 @@ public class FolderListFragment extends Fragment implements GoogleApiClient.Conn
                             fragmentStackManager.loadFragment(renameDocumentFragment, R.id.main_frame);
                             break;
                         /****ONLY FOR TESTING*********/
-                        case R.id.upload_lg:
-                            checkSharedLG(documentTitle.getText().toString(), documentDescription.getText().toString(), document.getResourceId());
-                            break;
+//                        case R.id.upload_lg:
+//                            checkSharedLG(documentTitle.getText().toString(), documentDescription.getText().toString(), document.getResourceId());
+//                            break;
                         /****************************/
 
                         case R.id.deleteDocumentMenuItem:

@@ -198,6 +198,8 @@ public class EditPOIDataFragment extends Fragment implements GoogleApiClient.Con
 
         Button saveChanges = (Button) rootView.findViewById(R.id.btn_edit_poi);
 
+        Button cancel = (Button) rootView.findViewById(R.id.btn_cancel_edit_poi);
+
         mGoogleApiClient = new GoogleApiClient.Builder(getActivity())
                 .addApi(Drive.API)
                 .addScope(Drive.SCOPE_FILE)
@@ -217,6 +219,14 @@ public class EditPOIDataFragment extends Fragment implements GoogleApiClient.Con
                 editedPoi.setPoint(point);
 
                 editPoiThroughApi();
+            }
+        });
+
+        cancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                fragmentStackManager.popBackStatFragment();
+                fragmentStackManager.popBackStatFragment();
             }
         });
 

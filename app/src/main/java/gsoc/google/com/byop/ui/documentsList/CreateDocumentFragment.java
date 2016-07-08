@@ -97,6 +97,14 @@ public class CreateDocumentFragment extends Fragment implements GoogleApiClient.
         View rootView = inflater.inflate(R.layout.add_new_document, container, false);
         fragmentStackManager = FragmentStackManager.getInstance(getActivity());
 
+        Button cancelButton = (Button) rootView.findViewById(R.id.btn_cancel_add_document);
+        cancelButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                fragmentStackManager.popBackStatFragment();
+            }
+        });
+
         Button saveDocument = (Button) rootView.findViewById(R.id.btn_add_document);
 
         new_document_name_input = (EditText) rootView.findViewById(R.id.new_document_name_input);

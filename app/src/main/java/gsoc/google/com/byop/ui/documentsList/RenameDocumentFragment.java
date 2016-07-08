@@ -42,24 +42,18 @@ import gsoc.google.com.byop.utils.GooglePlayUtils;
  */
 public class RenameDocumentFragment extends Fragment {
 
-    protected FragmentStackManager fragmentStackManager;
-
     public static final String ARG_FILE_ID = "fileId";
     public static final String ARG_NAME = "name";
     public static final String ARG_DESC = "description";
-
+    protected FragmentStackManager fragmentStackManager;
+    GoogleAccountCredential mCredential;
     private EditText document_name_input;
     private TextInputLayout document_name;
-
     private EditText document_description_input;
-
     private RenameTask renameTask;
-
     private String fileId;
     private String actualName;
     private String accountEmail;
-
-    GoogleAccountCredential mCredential;
 
     public static RenameDocumentFragment newInstance(String fileId, String actualName, String actualDescription) {
         RenameDocumentFragment renameDocument = new RenameDocumentFragment();
@@ -95,6 +89,14 @@ public class RenameDocumentFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.rename_document, container, false);
         fragmentStackManager = FragmentStackManager.getInstance(getActivity());
+
+        Button cancelButton = (Button) rootView.findViewById(R.id.btn_cancel_rename_document);
+        cancelButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                fragmentStackManager.popBackStatFragment();
+            }
+        });
 
         Button saveDocument = (Button) rootView.findViewById(R.id.btn_rename_document);
 

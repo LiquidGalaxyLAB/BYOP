@@ -10,11 +10,11 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_alignParentTop="true"
+            android:background="@color/cardview_light_background"
             android:orientation="vertical"
             android:paddingLeft="20dp"
             android:paddingRight="20dp"
-            android:paddingTop="10dp"
-            android:background="@color/cardview_light_background">
+            android:paddingTop="10dp">
 
             <TextView
                 android:layout_width="wrap_content"
@@ -47,15 +47,36 @@
                     android:inputType="textCapWords" />
             </android.support.design.widget.TextInputLayout>
 
-            <Button
-                android:id="@+id/btn_rename_document"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="10dp"
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
                 android:layout_marginTop="10dp"
-                android:background="@color/blue_grey_900"
-                android:text="@string/save_new_document"
-                android:textColor="@android:color/white" />
+                android:background="@color/white"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/btn_cancel_rename_document"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="10dp"
+                    android:layout_marginStart="10dp"
+                    android:layout_weight="1"
+                    android:background="@color/blue_grey_900"
+                    android:text="@string/cancel"
+                    android:textColor="@android:color/white" />
+
+                <Button
+                    android:id="@+id/btn_rename_document"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="10dp"
+                    android:layout_marginEnd="10dp"
+                    android:layout_marginStart="10dp"
+                    android:layout_weight="1"
+                    android:background="@color/blue_grey_900"
+                    android:text="@string/save_new_document"
+                    android:textColor="@android:color/white" />
+            </LinearLayout>
         </LinearLayout>
     </android.support.v4.widget.NestedScrollView>
 </android.support.design.widget.CoordinatorLayout>

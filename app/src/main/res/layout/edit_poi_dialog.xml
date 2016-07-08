@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical">
 
 
     <android.support.design.widget.TextInputLayout
@@ -29,9 +29,9 @@
             android:id="@+id/edit_poi_desc_input"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:gravity="top"
             android:hint="@string/edit_poi_desc"
             android:inputType="textCapWords"
-            android:gravity="top"
             android:lines="5" />
     </android.support.design.widget.TextInputLayout>
 
@@ -46,7 +46,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="@string/edit_poi_latitude"
-            android:inputType="number" />
+            android:inputType="numberDecimal" />
     </android.support.design.widget.TextInputLayout>
 
     <android.support.design.widget.TextInputLayout
@@ -60,18 +60,45 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="@string/edit_poi_longitude"
-            android:inputType="number" />
+            android:inputType="numberDecimal" />
     </android.support.design.widget.TextInputLayout>
 
-    <Button
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/white"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/btn_cancel_edit_poi"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:layout_marginStart="10dp"
+            android:layout_weight="1"
+            android:background="@color/blue_grey_900"
+            android:text="@string/cancel"
+            android:textColor="@android:color/white" />
+
+        <Button
         android:id="@+id/btn_edit_poi"
-        android:layout_width="fill_parent"
+            android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="10dp"
+            android:layout_marginEnd="10dp"
+            android:layout_marginStart="10dp"
+            android:layout_weight="1"
         android:background="@color/blue_grey_900"
         android:text="@string/save_new_document"
         android:textColor="@android:color/white" />
+    </LinearLayout>
 
+    <ProgressBar
+        android:id="@+id/progressBar"
+        style="?android:attr/progressBarStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="right" />
 </LinearLayout>
 
 

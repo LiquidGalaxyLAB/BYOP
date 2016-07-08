@@ -135,6 +135,8 @@ public class CreatePOIDialogFragment extends Fragment implements GoogleApiClient
 
         Button saveChanges = (Button) rootView.findViewById(R.id.btn_create_poi);
 
+        final Button cancel = (Button) rootView.findViewById(R.id.btn_cancel_create_poi);
+
         saveChanges.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -147,6 +149,13 @@ public class CreatePOIDialogFragment extends Fragment implements GoogleApiClient
                     createTask = new CreateTask(mCredential, poi_name_input.getText().toString(), poi_description_input.getText().toString(), latitude, longitude, document);
                     createTask.execute();
                 }
+            }
+        });
+
+        cancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                fragmentStackManager.popBackStatFragment();
             }
         });
 
