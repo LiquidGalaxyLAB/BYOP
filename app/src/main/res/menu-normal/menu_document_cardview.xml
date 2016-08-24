@@ -15,7 +15,11 @@
         android:icon="@drawable/upload_pw_trans"
         app:showAsAction="ifRoom" />
 
-
+    <item
+        android:id="@+id/upload_lg"
+        android:title="Upload To LG"
+        android:icon="@drawable/lg_icon_trans"
+        app:showAsAction="ifRoom" />
     <item
         android:id="@+id/editDocumentMenuItem"
         android:title="@string/context_menu_edit"

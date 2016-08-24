@@ -378,9 +378,9 @@ public class FolderListFragment extends Fragment implements GoogleApiClient.Conn
                             fragmentStackManager.loadFragment(renameDocumentFragment, R.id.main_frame);
                             break;
                         /****ONLY FOR TESTING*********/
-//                        case R.id.upload_lg:
-//                            checkSharedLG(documentTitle.getText().toString(), documentDescription.getText().toString(), document.getResourceId());
-//                            break;
+                        case R.id.upload_lg:
+                            checkSharedLG(documentTitle.getText().toString(), documentDescription.getText().toString(), document.getResourceId());
+                            break;
                         /****************************/
 
                         case R.id.deleteDocumentMenuItem:

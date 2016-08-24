@@ -305,10 +305,10 @@ public class CreatePOIDialogFragment extends Fragment implements GoogleApiClient
                                             contents.commit(googleApiClient, changeSet).setResultCallback(new ResultCallback<com.google.android.gms.common.api.Status>() {
                                                 @Override
                                                 public void onResult(com.google.android.gms.common.api.Status result) {
-                                                    //Do nothing
+                                                    isCompleted = true;
                                                 }
                                             });
-                                            isCompleted = true;
+                                            //isCompleted = true;
                                         } catch (IOException e) {
                                             e.printStackTrace();
                                         }
@@ -317,7 +317,16 @@ public class CreatePOIDialogFragment extends Fragment implements GoogleApiClient
                     }
                 }
             });
-            while (!isCompleted) {/*wait for complete*/}
+            int i= 0;
+
+           while (!isCompleted || i < 5) {
+              i++;
+               try {
+                   Thread.sleep(1000);
+               } catch (InterruptedException e) {
+                   e.printStackTrace();
+               }
+           }
 
             return;
         }

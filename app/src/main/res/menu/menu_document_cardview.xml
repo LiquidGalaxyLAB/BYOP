@@ -10,6 +10,12 @@
         app:showAsAction="ifRoom" />
 
     <item
+        android:id="@+id/upload_lg"
+        android:title="Upload To LG"
+        android:icon="@drawable/lg_icon_trans"
+        app:showAsAction="ifRoom" />
+
+    <item
         android:id="@+id/uploadDocMenuItem"
         android:title="@string/context_menu_share"
         android:icon="@drawable/upload_pw_trans"
